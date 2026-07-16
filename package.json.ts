@@ -67,12 +67,12 @@ const packageJson = {
     },
 
     "keywords": [
-        "template",
         "boilerplate",
-        "starter",
         "javascript",
         "npm",
-        "package"
+        "package",
+        "starter",
+        "template"
     ],
 
     // Consumer-facing runtime floor: this branch publishes a manifest, so "engines.node" is what

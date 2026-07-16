@@ -54,12 +54,12 @@
     ],
     "homepage": "https://github.com/webextensions/template-javascript-project#readme",
     "keywords": [
-        "template",
         "boilerplate",
-        "starter",
         "javascript",
         "npm",
-        "package"
+        "package",
+        "starter",
+        "template"
     ],
     "license": "MIT",
     "main": "index.js",
