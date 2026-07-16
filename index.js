@@ -8,8 +8,8 @@
 
 /* Begin: package specific exports */
 
-export const abstractNpmPackage = function () {
-    return 'abstract-npm-package base template';
+export const templateJavascriptProject = function () {
+    return 'template-javascript-project base template';
 };
 
 /* End: package specific exports */
