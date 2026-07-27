@@ -17,6 +17,9 @@ The recommended workflow for setting up a new project/package using a template f
 
 For pulling later template updates into an already-forked project, see [template-sync.md](./template-sync.md).
 
+A fork that would rather start from a clean linear history can fork from a `-flat` mirror of a `template-` branch
+instead, and keep merging updates as usual - see [flat-branches.md](./flat-branches.md).
+
 ## Vision
 
 To maintain a family of ready-to-use JavaScript project templates as git branches, so that a new project can fork from
