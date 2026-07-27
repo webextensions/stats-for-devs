@@ -7,15 +7,16 @@ description: Use when asked to run, start, launch, serve, or demo this project, 
 
 ## This branch has no runnable app
 
-`abstract-javascript-project` is the root base branch of the template family: it carries the shared tooling baseline
-(health checks, template-sync scripts, housekeeping) and ships no source code of its own. There is no server, CLI, UI,
-or extension to start - do not invent a start command, and do not go looking for an entry point that does not exist.
+`abstract-npm-package` is the shared base for the npm-package template branches: it layers the npm publishing baseline
+on the `abstract-javascript-project` tooling and ships only a placeholder library entry point (`index.js`) - not an
+app. There is no server, CLI, UI, or extension to start - do not invent a start command.
 
 ## What "running" means here
 
-- `node --run test` - the full health-check suite. On this branch this is the closest thing to "running the project":
-  it is what proves the repo works.
+- `node --run test` - the full health-check suite, including `publint`, which proves the publishable manifest
+  (`main` / `exports` / `files`) resolves. On this branch this is the closest thing to "running the project".
 - `node --run test:optimize-for-change` - change-aware run for fast local iteration.
+- The placeholder export is exercised by the Vitest suite (`test/index.test.js`) - there is nothing to "launch".
 - Everything else executable is a documented `package.json` script (generated from `package.json.ts`, where each script
   carries a comment explaining it). Read that file rather than guessing.
 

@@ -128,7 +128,7 @@ const packageJson = {
         "chalk": "^5.6.2", // Terminal string styling (used by the health-check orchestrator)
         "concurrently": "^10.0.3", // Runs tasks in parallel
         "del": "^8.0.1", // Deletes files/folders (used by scripts/housekeeping/clean.ts)
-        "eslint": "^10.7.0",
+        "eslint": "^10.8.0",
         "eslint-config-ironplate": "^3.0.0", // Shared ESLint base config (see eslint.config.js); the eslint-plugin-* entries below marked "ironplate peer" are its required peerDependencies
         "eslint-plugin-import-newlines": "^2.0.0",
         "eslint-plugin-import-x": "^4.17.1", // ironplate peer: import-x/* rules (no-unresolved, extensions, exports-last, no-default-export, ...)
@@ -145,7 +145,7 @@ const packageJson = {
         "lodash-es": "^4.18.1", // Utility functions (used by scripts/housekeeping/clean.ts, which deep-imports only the functions it needs)
         "node-notifier": "^10.0.1", // Desktop notification when a health check fails
         "package-cjson": "^3.0.0", // Generates package.json from package.json.ts (see scripts "housekeeping:*")
-        "publint": "^0.3.21", // Lints the package for publish-time correctness (main/exports/files resolution); wired as the "publint" health check
+        "publint": "^0.3.22", // Lints the package for publish-time correctness (main/exports/files resolution); wired as the "publint" health check
         "semver": "^7.8.5", // Semantic-version comparison used by the node-version and npm-install health checks
         "shell-quote": "^1.10.0", // Shell-safe quoting of some commands
         "typescript": "~6.0.3", // Powers the tsc type check (test:types); optional ironplate peer for its TypeScript configs
