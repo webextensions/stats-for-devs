@@ -16,7 +16,7 @@
         "react-dom": "^19.2.8",
         "zustand": "^5.0.14"
     },
-    "description": "Abstract template branch adding a React + Vite (Rolldown) frontend build architecture - config-driven builds, stylelint, and a minimal Express server - on top of the shared JavaScript tooling baseline",
+    "description": "Template for npm packages shipping React components/hooks - publishable manifest with publint, plus a config-driven React + Vite (Rolldown) frontend build as the development/demo harness - on top of the shared JavaScript tooling baseline",
     "devDependencies": {
         "@babel/core": "^8.0.1",
         "@eslint-react/eslint-plugin": "^5.18.0",

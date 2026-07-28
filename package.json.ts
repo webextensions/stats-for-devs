@@ -41,7 +41,7 @@ try {
 const packageJson = {
     "name": "@webextensions/template-javascript-project",
     version, // Owned by npm (see header); derived from package.json / package-version.json, never hard-coded
-    "description": "Abstract template branch adding a React + Vite (Rolldown) frontend build architecture - config-driven builds, stylelint, and a minimal Express server - on top of the shared JavaScript tooling baseline",
+    "description": "Template for npm packages shipping React components/hooks - publishable manifest with publint, plus a config-driven React + Vite (Rolldown) frontend build as the development/demo harness - on top of the shared JavaScript tooling baseline",
     "author": "webextensions.org",
     "license": "MIT",
 

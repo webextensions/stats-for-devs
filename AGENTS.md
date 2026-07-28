@@ -13,11 +13,13 @@ to the shared homes that keep receiving template updates.
 
 ## Project overview
 
-`abstract-frontend-build` - the abstract base branch carrying the frontend-build architecture for
-the frontend template branches (`template-widget`, `template-webextension`, `template-web-app`):
-a config-driven Vite (Rolldown) + React + TypeScript build under `frontend/`, layered environment
-configs in `config/`, stylelint, and a minimal Express server (opt-in Vite HMR) under
-`backend/src/server/`. Not directly usable as a project template - fork from a `template-` branch.
+`template-npm-package-for-react` - the template branch for npm packages shipping React
+component(s) and/or hook(s): `abstract-frontend-build` (a config-driven Vite (Rolldown) + React +
+TypeScript build under `frontend/`, layered environment configs in `config/`, stylelint, and a
+minimal Express server with opt-in Vite HMR under `backend/src/server/`) plus
+`abstract-npm-package` (publishable manifest - `main`/`exports`/`files` - publint, and a
+placeholder library entry point `index.js`). The React package code itself is still to come; the
+frontend build serves as the development/demo harness. Directly usable as a project template.
 Vision, branching tree, and the fork/merge model:
 [docs/template-project/README.md](docs/template-project/README.md); the frontend build itself:
 [docs/development/frontend-build.md](docs/development/frontend-build.md).
