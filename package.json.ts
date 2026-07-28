@@ -126,7 +126,7 @@ const packageJson = {
         "auto-changelog": "^2.6.0", // Generates CHANGELOG.md from git history (see .auto-changelog); wired into "npm version"
         "boxen": "^8.0.1", // Boxes terminal output
         "chalk": "^5.6.2", // Terminal string styling (used by the health-check orchestrator)
-        "concurrently": "^10.0.3", // Runs tasks in parallel
+        "concurrently": "^10.0.4", // Runs tasks in parallel
         "del": "^8.0.1", // Deletes files/folders (used by scripts/housekeeping/clean.ts)
         "eslint": "^10.8.0",
         "eslint-config-ironplate": "^3.0.0", // Shared ESLint base config (see eslint.config.js); the eslint-plugin-* entries below marked "ironplate peer" are its required peerDependencies
