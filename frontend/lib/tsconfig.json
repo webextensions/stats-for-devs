@@ -1,0 +1,51 @@
+{
+    // Type-check config for the publishable library zone - the React source in src/ (with its
+    // colocated tests) plus the build config at this level (tsdown.config.ts) - and the shared
+    // ambient declarations in ../../types/. Separate from frontend/tsconfig.json (the demo-app
+    // zone, which excludes ./lib) so the PUBLISHED surface gets library-grade strictness
+    // (strict: true, verbatimModuleSyntax) without dragging the relaxed app zone along -
+    // strictness here directly improves the quality of the shipped dist/index.d.ts. Run by
+    // "test:types:lib" (tsc --pretty --project frontend/lib/tsconfig.json; the "types:lib"
+    // health check); tsdown reads it too for the dist/ declaration bundle. noEmit: nothing is
+    // emitted from this pass - tsdown owns the dist/ output (see tsdown.config.ts).
+    "compilerOptions": {
+        "module": "esnext",
+        "moduleResolution": "bundler", // Bundler-style resolution: literal ".ts"/".tsx" specifiers, no Node lookup rules
+        "target": "es2022",
+        "lib": ["es2022", "DOM", "DOM.Iterable"], // Browser globals: document, Element, HTMLElement, ...
+        "types": ["node"], // Node ambient types for the build config here (import.meta.dirname in tsdown.config.ts)
+
+        "jsx": "react-jsx", // Automatic runtime - no "import React" needed in .tsx files
+
+        // The source imports its siblings with explicit ".ts"/".tsx" extensions (the real files).
+        // Under moduleResolution "bundler" that needs allowImportingTsExtensions, which in turn
+        // requires noEmit (set below).
+        "allowImportingTsExtensions": true,
+
+        "verbatimModuleSyntax": true,
+        "isolatedModules": true,
+        "resolveJsonModule": true,
+        "noEmit": true,
+        "strict": true,
+        "skipLibCheck": true,
+
+        // Editor-only (tsc ignores plugins): real per-class types for *.module.css imports, same
+        // as the demo-app zone's frontend/tsconfig.json
+        "plugins": [
+            {
+                "name": "typescript-plugin-css-modules",
+                "options": {
+                    "customMatcher": "\\.module\\.css$"
+                }
+            }
+        ]
+    },
+
+    // "." is this directory (frontend/lib/): the library source, colocated tests, the nested
+    // src/eslint.config.js, and the build config. "../../types" holds the shared ambient
+    // declarations (css-modules.d.ts).
+    "include": [
+        "./**/*",
+        "../../types/**/*"
+    ]
+}

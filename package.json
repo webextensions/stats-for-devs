@@ -3,31 +3,22 @@
     "bugs": {
         "url": "https://github.com/webextensions/template-javascript-project/issues"
     },
-    "dependencies": {
-        "@jridgewell/gen-mapping": "^0.3.13",
-        "@jridgewell/trace-mapping": "^0.3.31",
-        "classnames": "^2.5.1",
-        "compression": "^1.8.1",
-        "express": "^5.2.1",
-        "extend": "^3.0.2",
-        "jotai": "^2.20.2",
-        "local-ip-addresses-and-hostnames": "=0.3.0",
-        "react": "^19.2.8",
-        "react-dom": "^19.2.8",
-        "zustand": "^5.0.14"
-    },
-    "description": "Template for npm packages shipping React components/hooks - publishable manifest with publint, plus a config-driven React + Vite (Rolldown) frontend build as the development/demo harness - on top of the shared JavaScript tooling baseline",
+    "dependencies": {},
+    "description": "Template for npm packages shipping React components/hooks - tsdown-built library (ESM + bundled types + CSS Modules) with a publishable manifest verified by publint, plus a config-driven React + Vite (Rolldown) frontend build as the development/demo harness - on top of the shared JavaScript tooling baseline",
     "devDependencies": {
         "@babel/core": "^8.0.1",
         "@eslint-react/eslint-plugin": "^5.18.0",
         "@eslint/js": "^10.0.1",
         "@eslint/markdown": "^8.0.3",
+        "@jridgewell/gen-mapping": "^0.3.13",
+        "@jridgewell/trace-mapping": "^0.3.31",
         "@rolldown/plugin-babel": "^0.2.3",
         "@stylistic/eslint-plugin": "^5.10.0",
         "@stylistic/stylelint-plugin": "^5.2.1",
         "@testing-library/dom": "^10.4.1",
         "@testing-library/jest-dom": "^7.0.0",
         "@testing-library/react": "^16.3.2",
+        "@tsdown/css": "^0.22.14",
         "@types/extend": "^3.0.4",
         "@types/node": "~24.13.3",
         "@types/node-notifier": "^8.0.5",
@@ -40,7 +31,9 @@
         "babel-plugin-react-compiler": "^1.0.0",
         "boxen": "^8.0.1",
         "chalk": "^5.6.2",
+        "classnames": "^2.5.1",
         "commander": "^15.0.0",
+        "compression": "^1.8.1",
         "concurrently": "^10.0.4",
         "console-panel": "^1.0.4",
         "del": "^8.0.1",
@@ -56,10 +49,14 @@
         "eslint-plugin-simple-import-sort": "^14.0.0",
         "eslint-plugin-unicorn": "^72.0.0",
         "execa": "^10.0.0",
+        "express": "^5.2.1",
+        "extend": "^3.0.2",
         "globals": "^17.7.0",
         "husky": "^9.1.7",
+        "jotai": "^2.20.2",
         "jsdom": "^29.1.1",
         "knip": "^6.29.0",
+        "local-ip-addresses-and-hostnames": "=0.3.0",
         "lockfile-lint": "^5.0.0",
         "lodash-es": "^4.18.1",
         "node-notifier": "^10.0.1",
@@ -68,33 +65,42 @@
         "postcss-selector-parser": "^7.1.4",
         "postcss-value-parser": "^4.2.0",
         "publint": "^0.3.22",
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8",
         "semver": "^7.8.5",
         "shell-quote": "^1.10.0",
         "stats.js": "=0.17.0",
         "stylelint": "^17.14.1",
         "stylelint-config-css-modules": "^4.6.0",
         "stylelint-config-recommended": "^18.0.0",
+        "tsdown": "^0.22.14",
         "typescript": "~6.0.3",
         "typescript-eslint": "^8.65.0",
         "typescript-plugin-css-modules": "^5.2.0",
         "vite": "^8.1.5",
-        "vitest": "^4.1.10"
+        "vitest": "^4.1.10",
+        "zustand": "^5.0.14"
     },
     "engines": {
         "node": ">=22.0.0"
     },
     "exports": {
-        ".": "./index.js",
-        "./package.json": "./package.json"
+        ".": "./dist/index.js",
+        "./package.json": "./package.json",
+        "./style.css": "./dist/style.css"
     },
     "files": [
-        "index.js",
+        "dist/",
+        "frontend/lib/src/",
+        "!**/*.test.*",
         "CHANGELOG.md"
     ],
     "homepage": "https://github.com/webextensions/template-javascript-project#readme",
     "keywords": [
         "boilerplate",
+        "component",
         "frontend",
+        "hooks",
         "javascript",
         "npm",
         "package",
@@ -104,7 +110,8 @@
         "vite"
     ],
     "license": "MIT",
-    "main": "index.js",
+    "main": "./dist/index.js",
+    "module": "./dist/index.js",
     "name": "@webextensions/template-javascript-project",
     "overrides": {
         "react": "$react",
@@ -112,6 +119,10 @@
         "stylelint-config-css-modules": {
             "stylelint": "$stylelint"
         }
+    },
+    "peerDependencies": {
+        "react": ">=18",
+        "react-dom": ">=18"
     },
     "publishConfig": {
         "access": "public"
@@ -137,6 +148,7 @@
         "build:do-not-watch": "node --run build:development:local:do-not-watch",
         "build:dry-run": "node --run build:development:local:dry-run",
         "build:inspect-brk": "node --run build:development:local:inspect-brk",
+        "build:lib": "tsdown --config frontend/lib/tsdown.config.ts",
         "build:production:live": "NODE_ENV=production node ./frontend/build/build.ts     --env config=\"./config/config.production.live.js\"    --bundle-index",
         "changelog": "auto-changelog",
         "changelog:preview": "auto-changelog --unreleased --stdout",
@@ -158,6 +170,7 @@
         "knip": "knip",
         "postversion": "git push --follow-tags",
         "preinstall": "./scripts/npm-run-scripts/preinstall.sh",
+        "prepack": "node --run build:lib",
         "prepare": "./scripts/npm-run-scripts/prepare.sh",
         "prepublishOnly": "node --run test",
         "preversion": "node --run test",
@@ -176,7 +189,7 @@
         "start:server:use-hmr": "node --run server:development:local:use-hmr",
         "status-of-files": "./scripts/health-checks/checks/check-status-of-files.ts --return-exit-code",
         "status-of-files:ensure": "./scripts/health-checks/checks/ensure-status-of-files.ts",
-        "stylelint": "stylelint \"frontend/src/**/*.css\"",
+        "stylelint": "stylelint \"frontend/lib/src/**/*.css\" \"frontend/src/**/*.css\"",
         "stylelint:changed-files": "./scripts/health-checks/checks/stylelint-changed-files.sh",
         "stylelint:changed-files:fix": "./scripts/health-checks/checks/stylelint-changed-files.sh --fix",
         "stylelint:fix": "node --run stylelint -- --fix",
@@ -193,9 +206,14 @@
         "test:optimize-for-change": "node --run all-is-well -- --optimize-for-change",
         "test:types": "tsc --pretty",
         "test:types:frontend": "tsc --pretty --project frontend/tsconfig.json",
+        "test:types:lib": "tsc --pretty --project frontend/lib/tsconfig.json",
         "version": "./scripts/build-and-release/prepare-version.sh",
         "vitest": "vitest run"
     },
+    "sideEffects": [
+        "**/*.css"
+    ],
     "type": "module",
+    "types": "./dist/index.d.ts",
     "version": "0.0.0"
 }

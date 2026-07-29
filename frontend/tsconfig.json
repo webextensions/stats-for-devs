@@ -36,6 +36,7 @@
         "../types/**/*"
     ],
     "exclude": [
+        "./lib", // The publishable library zone - covered by its own STRICT ./lib/tsconfig.json (the "test:types:lib" script)
         "./src/resources/3rdparty/",
         "node_modules"
     ]

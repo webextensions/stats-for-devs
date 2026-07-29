@@ -19,7 +19,9 @@ globs: ["test/**/*.js", "test/**/*.ts", "**/*.test.js", "**/*.test.jsx", "**/*.t
     - **`test/` at the project root** - for tests that benefit from grouping: integration/sanity
       suites and tests spanning multiple modules (e.g. `test/sanity.test.js`).
 - Test file naming: `{subject}.test.js` (or `.test.ts` / `.test.tsx` when the test needs
-  TypeScript / JSX, e.g. `frontend/src/App/App.test.tsx`)
+  TypeScript / JSX, e.g. `frontend/src/App/App.test.tsx` and the colocated library tests under
+  `frontend/lib/src/`; DOM-needing files opt into jsdom via a leading
+  `// @vitest-environment jsdom` pragma - the default environment stays node)
 - When colocating a test in a directory not yet listed in the vitest check's `changeDependencies`
   (`scripts/health-checks/all-is-well.ts`), add that directory - otherwise `--optimize-for-change`
   skips vitest for changes there.

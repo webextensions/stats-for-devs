@@ -9,6 +9,7 @@ import {
     title
 } from './App.module.css';
 import { AppProviders } from './AppProviders.tsx';
+import { LibraryDemo } from './LibraryDemo/LibraryDemo.tsx';
 import { counterAtom } from './store/jotaiStore.ts';
 import {
     clickCount_select,
@@ -33,6 +34,9 @@ const DemoContent = function () {
             <h1 className={title}>Abstract Frontend Build</h1>
 
             <p>Replace this demo with your application.</p>
+
+            {/* The publishable library's stub component (see LibraryDemo/LibraryDemo.tsx) */}
+            <LibraryDemo />
 
             <button
                 onClick={function () {

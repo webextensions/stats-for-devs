@@ -10,8 +10,40 @@ in this repository's template family. On top of the shared `abstract-javascript-
 into git hooks, and a template-sync merge workflow) it carries a config-driven Vite (Rolldown) +
 React + TypeScript frontend build under `frontend/` for developing and demoing the package,
 layered environment configs in `config/`, stylelint, a minimal Express server with opt-in HMR
-under `backend/`, and the publishable-manifest baseline (`main`/`exports`/`files`, publint) with a
-placeholder library entry point (`index.js`). Fork from this branch to start a React npm package.
+under `backend/`, and the publishable React library itself under
+[frontend/lib/](./frontend/lib/): a stub `Greeting` component composing a stub `useCounter` hook
+plus imperative `mount()`/`unmount()` helpers, built by tsdown into the published `dist/` (ESM
+bundle with react externalized, bundled type declarations, and the compiled CSS Modules
+stylesheet), with component/hook tests under jsdom. Forks replace the stub API with their real
+components and hooks. Fork from this branch to start a React npm package.
+
+## Usage
+
+In a React app (replace the stub API with your package's real one):
+
+```jsx
+import { Greeting, useCounter } from '@webextensions/template-javascript-project';
+import '@webextensions/template-javascript-project/style.css';
+
+<Greeting name="Ada" />; // Renders: "Hello, Ada!" plus a counter button
+```
+
+In a non-React host page, via the imperative helpers (`react` / `react-dom` still come from your
+project - they are `peerDependencies`):
+
+```js
+import { mount, unmount } from '@webextensions/template-javascript-project';
+
+mount(document.getElementById('app'), { name: 'Ada' });
+```
+
+Locally: `node --run start` serves the demo app ([frontend/src/](./frontend/src/), which renders
+the library from source) and `node --run build:lib` emits the publishable `dist/` (git-ignored;
+built fresh by `prepack` for every tarball).
+
+> The library source lives in [frontend/lib/src/](./frontend/lib/src/) and ships in the tarball
+> alongside `dist/` (so sourcemaps resolve); the colocated `*.test.{ts,tsx}` tests stay out of it
+> via the `"!**/*.test.*"` negation in the `files` allowlist.
 
 ## Where to look
 

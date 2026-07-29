@@ -17,12 +17,22 @@ to the shared homes that keep receiving template updates.
 component(s) and/or hook(s): `abstract-frontend-build` (a config-driven Vite (Rolldown) + React +
 TypeScript build under `frontend/`, layered environment configs in `config/`, stylelint, and a
 minimal Express server with opt-in Vite HMR under `backend/src/server/`) plus
-`abstract-npm-package` (publishable manifest - `main`/`exports`/`files` - publint, and a
-placeholder library entry point `index.js`). The React package code itself is still to come; the
-frontend build serves as the development/demo harness. Directly usable as a project template.
-Vision, branching tree, and the fork/merge model:
-[docs/template-project/README.md](docs/template-project/README.md); the frontend build itself:
-[docs/development/frontend-build.md](docs/development/frontend-build.md).
+`abstract-npm-package` (publishable manifest, publint) plus the React package code itself under
+[frontend/lib/](frontend/lib/) (see its [README](frontend/lib/README.md)): the public barrel
+`frontend/lib/src/index.ts` re-exporting the stub API (`react/components/Greeting/` composing
+`react/hooks/useCounter/`, plus imperative `mount`/`unmount` helpers - named exports only), built
+by tsdown (`node --run build:lib`, also the all-is-well `build:lib` pre-step and `prepack`) into
+the published `dist/` (ESM bundle with react externalized + bundled `index.d.ts` + extracted
+`style.css`). `react` / `react-dom` are `peerDependencies`; the demo harness's runtime stack
+lives in the `dependenciesForDemo` variable in `package.json.ts` (shipped as devDependencies).
+The library zone has its own STRICT `frontend/lib/tsconfig.json` (`test:types:lib`) and a nested
+ESLint config re-exporting `frontend/src/eslint.config.js`; colocated `*.test.{ts,tsx}` tests run
+in the single root Vitest suite (jsdom opted in per file via the `@vitest-environment jsdom`
+pragma). The frontend app under `frontend/src/` is the development/demo harness - it renders the
+library from source via `frontend/src/App/LibraryDemo/LibraryDemo.tsx` and keeps building into
+the `public-*` folders. Directly usable as a project template. Vision, branching tree, and the
+fork/merge model: [docs/template-project/README.md](docs/template-project/README.md); the
+frontend build itself: [docs/development/frontend-build.md](docs/development/frontend-build.md).
 
 ## Commands
 
@@ -33,6 +43,9 @@ Vision, branching tree, and the fork/merge model:
   Vite middleware HMR instead).
 - `node --run build:dry-run` - one-shot verification build, nothing written (what the
   `build:dry-run` health check runs).
+- `node --run build:lib` - builds the publishable library into the git-ignored `dist/` (tsdown -
+  config: [frontend/lib/tsdown.config.ts](frontend/lib/tsdown.config.ts)); also runs as the
+  all-is-well `build:lib` pre-step and on `prepack`.
 - `node --run housekeeping:generate-package-json` - regenerate `package.json` from
   `package.json.ts`.
 

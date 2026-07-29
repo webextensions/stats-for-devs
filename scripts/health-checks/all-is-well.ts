@@ -6,7 +6,8 @@
 
 // Runs the full health-check suite and reports a single pass/fail. This is what "node --run test"
 // runs. The authoritative list of checks (and the order they are declared in) is the healthChecks
-// array below.
+// array below; sequential pre-steps whose outputs the checks consume (e.g. the library build) live
+// in the preSteps array next to it.
 //
 // Usage (from the project's root folder):
 //     $ ./scripts/health-checks/all-is-well.ts [--sequentially] [--optimize-for-change] [--no-cache]
@@ -78,6 +79,26 @@ const CHECK_BUILD_DRY_RUN: HealthCheck = {
     cmd: 'node',
     args: ['--run', 'build:dry-run'],
     errorMsg: 'Failure in the frontend build (Vite dry-run; no output written). Run "node --run build:dry-run" for details.'
+};
+
+// Builds the publishable library into dist/ (tsdown - see frontend/lib/tsdown.config.ts).
+// Registered as a PRE-STEP, not a concurrent check: publint validates the generated package.json
+// against the real dist/ artifacts, so the build must complete before the checks launch.
+// Pre-steps run sequentially and are deliberately NOT cached: dist/ is git-ignored (invisible to
+// the git content hash), so a cached "pass" could mask a deleted/stale dist/ right before publint
+// reads it.
+const CHECK_BUILD_LIB: HealthCheck = {
+    name: 'build:lib',
+    // "--optimize-for-change" runs this only when the library build's inputs changed (the source
+    // AND the build config both live under frontend/lib/).
+    changeDependencies: [
+        'frontend/lib/',
+        'package-lock.json',
+        'package.json'
+    ],
+    cmd: 'node',
+    args: ['--run', 'build:lib'],
+    errorMsg: 'Library build failed (tsdown). Run "node --run build:lib" for details.'
 };
 
 // Fails when .claude/settings.json is not normalized: its object keys must be alphabetized and the
@@ -273,10 +294,11 @@ const CHECK_PKG_VERSION_SYNC: HealthCheck = {
 const CHECK_PUBLINT: HealthCheck = {
     name: 'publint',
     // "--optimize-for-change" runs this only when the manifest or the published/ignored file set
-    // changes (publint validates what "npm pack" would include, which .npmignore also affects).
+    // changes (publint validates what "npm pack" would include, which .npmignore also affects;
+    // the dist/ files it resolves derive from frontend/lib/ via the "build:lib" pre-step).
     changeDependencies: [
         '.npmignore',
-        'index.js',
+        'frontend/lib/',
         'package.json'
     ],
     cmd: 'node',
@@ -339,6 +361,24 @@ const CHECK_TYPES_FRONTEND: HealthCheck = {
     errorMsg: 'Type check failed for the frontend (tsc --project frontend/tsconfig.json). Run "node --run test:types:frontend" for details.'
 };
 
+// Type check of the publishable library zone (frontend/lib/) via its own STRICT
+// frontend/lib/tsconfig.json (see its header comment). frontend/tsconfig.json excludes ./lib, so
+// this is the only type coverage for that tree - and the same config tsdown reads for the dist/
+// declaration bundle.
+const CHECK_TYPES_LIB: HealthCheck = {
+    name: 'types:lib',
+    // "--optimize-for-change" runs this only when the library or the ambient types changed
+    changeDependencies: [
+        'frontend/lib/',
+        'package-lock.json',
+        'package.json',
+        'types/'
+    ],
+    cmd: 'node',
+    args: ['--run', 'test:types:lib'],
+    errorMsg: 'Type check failed for the library (tsc --project frontend/lib/tsconfig.json). Run "node --run test:types:lib" for details.'
+};
+
 const CHECK_VITEST: HealthCheck = {
     name: 'vitest',
     // "--optimize-for-change" skips this check unless one of these staged paths changed (entries ending
@@ -349,7 +389,6 @@ const CHECK_VITEST: HealthCheck = {
         'frontend/',
         'scripts/health-checks/checks/block-non-keyboard-characters/',
         'scripts/health-checks/helpers/eslint-rules/',
-        'index.js',
         'vitest.config.js',
         'package.json',
         'package-lock.json'
@@ -385,8 +424,17 @@ const healthChecks: HealthCheck[] = [
     CHECK_ESLINT,
     CHECK_TYPES,
     CHECK_TYPES_FRONTEND,
+    CHECK_TYPES_LIB,
     CHECK_BUILD_DRY_RUN,
     CHECK_NPM_AUDIT_SIGNATURES
+];
+
+// Steps that must complete BEFORE the checks launch, because checks consume their outputs (e.g.
+// publint validates the real dist/ artifacts the library build produces). Run sequentially, in
+// order, stopping at the first failure; never cached (see the CHECK_BUILD_LIB comment). The same
+// config disabling and "--optimize-for-change" filtering as for the checks applies.
+const preSteps: HealthCheck[] = [
+    CHECK_BUILD_LIB
 ];
 
 const getStagedPathsAsync = async function (): Promise<Set<string>> {
@@ -453,6 +501,30 @@ interface RunResult {
     flagAllPassed: boolean;
     passedChecks: HealthCheck[]
 }
+
+// Runs the pre-steps (see the preSteps array) sequentially with live output, stopping at the
+// first failure. No cache participation - pre-steps produce git-ignored artifacts the content
+// hash cannot see, so they must run every time they are not filtered out.
+const runPreStepsAsync = async function (steps: HealthCheck[]): Promise<{ flagAllPassed: boolean }> {
+    console.log('Running pre-steps sequentially ...');
+
+    for (const step of steps) {
+        const label = [step.cmd, ...(step.args ?? [])].join(' ');
+        console.log(chalk.blue(`\n$ ${label}`));
+
+        const result = await execa(step.cmd, step.args, {
+            cwd: healthChecksDir,
+            env: step.env,
+            reject: false,
+            stdio: 'inherit'
+        });
+        if ((result.exitCode ?? 1) !== 0) {
+            console.log(chalk.red(`\nError: ${step.errorMsg}`));
+            return { flagAllPassed: false };
+        }
+    }
+    return { flagAllPassed: true };
+};
 
 const runSequentiallyAsync = async function (checks: HealthCheck[]): Promise<RunResult> {
     console.log('Running health checks sequentially ...');
@@ -582,10 +654,10 @@ const config = await loadConfigAsync();
 // Fail loudly on config keys that match no check: a typo (e.g. "vittest") must not silently disable
 // nothing. Validated against the FULL check list and before any cache logic, so a typo'd config can
 // never no-op via a cached exit.
-const unknownConfigCheckNames = getUnknownConfigCheckNames({ checks: healthChecks, config });
+const unknownConfigCheckNames = getUnknownConfigCheckNames({ checks: [...preSteps, ...healthChecks], config });
 if (unknownConfigCheckNames.length > 0) {
     console.log(chalk.red(`Error: the all-is-well config names unknown check(s): ${unknownConfigCheckNames.join(', ')}`));
-    console.log(chalk.red(`Valid check names: ${healthChecks.map((check) => check.name).join(', ')}`));
+    console.log(chalk.red(`Valid check names: ${[...preSteps, ...healthChecks].map((check) => check.name).join(', ')}`));
     process.exit(1);
 }
 
@@ -603,10 +675,40 @@ const optimizedChecks = flagOptimizeForChange ?
 
 const checks = getChecksWithConfigEnv({ checks: optimizedChecks, config });
 
+// The pre-steps go through the same config-disable and "--optimize-for-change" filtering as the
+// checks (their names share the config namespace - see the validation above).
+const configFilteredPreSteps = getConfigFilteredChecks({
+    checks: preSteps,
+    config,
+    isCi: Boolean(process.env.CI)
+});
+const optimizedPreSteps = flagOptimizeForChange ?
+    await getOptimizedHealthChecksAsync(configFilteredPreSteps) :
+    configFilteredPreSteps;
+const preStepsToRun = getChecksWithConfigEnv({ checks: optimizedPreSteps, config });
+
 // Edge: everything got disabled/skipped. Exit before the runners (concurrently([]) is an error
 // path, and a vacuous "pass" must not write a cache entry).
-if (checks.length === 0) {
+if (preStepsToRun.length === 0 && checks.length === 0) {
     console.log(chalk.yellow('No health checks left to run (all disabled by config or skipped); nothing to do.'));
+    process.exit(0);
+}
+
+// Pre-steps run first (sequentially, uncached - see the preSteps comment); a failure aborts the
+// run before any checks launch, since the checks consume the pre-steps' outputs.
+if (preStepsToRun.length > 0) {
+    const { flagAllPassed: flagPreStepsPassed } = await runPreStepsAsync(preStepsToRun);
+    if (!flagPreStepsPassed) {
+        if (!config.disableNotifications) {
+            notifyFailure();
+        }
+        process.exit(1);
+    }
+}
+
+// Edge: only pre-steps were left to run (every check disabled/skipped) and they passed.
+if (checks.length === 0) {
+    console.log(chalk.green('\nSuccess: All is well :-)'));
     process.exit(0);
 }
 

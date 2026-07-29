@@ -1,6 +1,6 @@
 ---
 name: running-the-project
-description: Use when asked to run, start, launch, serve, or demo this project, or to see a change working in the real app - covers this branch's start commands, port/URL, prerequisites, and the startup success signal for the Express server + Vite frontend build.
+description: Use when asked to run, start, launch, serve, or demo this project, or to see a change working in the real app - covers this branch's start commands (the Express server + Vite frontend build demoing the publishable React library), the tsdown library build, port/URL, prerequisites, and the startup success signal.
 ---
 
 # Running the Project
@@ -18,6 +18,15 @@ description: Use when asked to run, start, launch, serve, or demo this project, 
   `Server (HTTP + Vite HMR) is available at:`) followed by the reachable URLs; a busy port prints
   `Error: Port 3000 is already in use (configured via server.access.url.http.port).`
 - `node --run build:dry-run` - one-shot verification build, nothing written.
+- The demo app renders the publishable library's stub `<Greeting name="Ada" />` ("Hello, Ada!"
+  plus a working counter button) via
+  [frontend/src/App/LibraryDemo/LibraryDemo.tsx](../../../frontend/src/App/LibraryDemo/LibraryDemo.tsx),
+  imported from the library source ([frontend/lib/src/](../../../frontend/lib/src/)) so edits show
+  up live.
+- `node --run build:lib` - builds the publishable library itself into the git-ignored `dist/`
+  (tsdown - config: [frontend/lib/tsdown.config.ts](../../../frontend/lib/tsdown.config.ts)); also
+  runs automatically as the all-is-well `build:lib` pre-step and on `prepack`. Not needed for the
+  demo, which consumes the library from source.
 
 ## Prerequisites
 

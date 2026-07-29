@@ -23,7 +23,8 @@ export default defineConfig([
         'node_modules/',
         'coverage/',
         '.cache/',
-        'public-*/' // Frontend build output (config-driven publicDirectory - see config/); ESLint does not read .gitignore
+        'public-*/', // Frontend build output (config-driven publicDirectory - see config/); ESLint does not read .gitignore
+        'dist/' // Library build output (tsdown - see frontend/lib/tsdown.config.ts); to be upstreamed (see docs/specs/todo/TODO-for-template-npm-package-for-react.md)
     ]),
 
     // Shared base config (core + Node.js + TypeScript rules; the TypeScript parser comes bundled,

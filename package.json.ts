@@ -38,10 +38,29 @@ try {
     version = (await import('./package-version.json', { with: { type: 'json' } })).default.version;
 }
 
+// Runtime stack of the demo/dev harness ONLY (the config-driven frontend build under
+// frontend/build/ + frontend/src/ and the minimal Express server under backend/) - inherited from
+// the abstract-frontend-build branch, where these live in "dependencies" because that family
+// DEPLOYS the app. This branch publishes a LIBRARY instead: nothing here is imported by
+// frontend/lib/src/, so none of it may reach consumers as a transitive dependency. Merged into
+// "devDependencies" below; "dependencies" holds only the library's real runtime deps (currently
+// none - react / react-dom are "peerDependencies").
+const dependenciesForDemo = {
+    "@jridgewell/gen-mapping": "^0.3.13", // CSS sourcemap merging (frontend/build/plugins/CssBuildSourcemapsPlugin)
+    "@jridgewell/trace-mapping": "^0.3.31", // CSS sourcemap merging (frontend/build/plugins/CssBuildSourcemapsPlugin)
+    "classnames": "^2.5.1", // Conditional CSS class composition
+    "compression": "^1.8.1", // Express gzip middleware (backend/src/server/server.ts)
+    "express": "^5.2.1", // Serves the built frontend: static + SPA fallback + opt-in Vite HMR middleware (backend/src/server/server.ts)
+    "extend": "^3.0.2", // Deep merge for the config/ layering, the server's config clone, and all-is-well.config.local.ts
+    "jotai": "^2.20.2", // Atomic client state for React
+    "local-ip-addresses-and-hostnames": "=0.3.0", // For development assistance: logs the reachable server URLs on startup (backend/src/server/logServerPaths.ts)
+    "zustand": "^5.0.14" // App/domain state store for React (frontend/src/App/store/zustandStore.ts)
+};
+
 const packageJson = {
     "name": "@webextensions/template-javascript-project",
     version, // Owned by npm (see header); derived from package.json / package-version.json, never hard-coded
-    "description": "Template for npm packages shipping React components/hooks - publishable manifest with publint, plus a config-driven React + Vite (Rolldown) frontend build as the development/demo harness - on top of the shared JavaScript tooling baseline",
+    "description": "Template for npm packages shipping React components/hooks - tsdown-built library (ESM + bundled types + CSS Modules) with a publishable manifest verified by publint, plus a config-driven React + Vite (Rolldown) frontend build as the development/demo harness - on top of the shared JavaScript tooling baseline",
     "author": "webextensions.org",
     "license": "MIT",
 
@@ -68,7 +87,9 @@ const packageJson = {
 
     "keywords": [
         "boilerplate",
+        "component",
         "frontend",
+        "hooks",
         "javascript",
         "npm",
         "package",
@@ -89,41 +110,46 @@ const packageJson = {
 
     "type": "module",
 
-    // Deliberately minimal publish fields for this abstract branch: no "bin" (the CLI child branch
-    // adds it), no "./lib/*" subpath export (the exports child branch adds it), and no "types" /
-    // "module" / "sideEffects" (plain single-entry ESM package; add those only when a child
-    // actually ships types / dual builds / tree-shaking hints).
-    "main": "index.js", // Library entry point (for tooling without "exports" support)
+    // Publish fields for a React component + hook library: consumers import the built ESM bundle
+    // in dist/ (produced by tsdown from frontend/lib/src/ - see frontend/lib/tsdown.config.ts),
+    // with react / react-dom supplied by the consuming project (see "peerDependencies" below). No
+    // "bin" (this branch has no CLI - see template-npm-package-for-exports-cli for that).
+    //
+    // NOTE: package-cjson sorts object keys alphabetically in the generated package.json, so the
+    // "." export is a plain string instead of a { "types", "default" } conditions object (the
+    // sort would put "default" before "types" and trip publint's types-condition-must-be-first
+    // rule). TypeScript resolves the types via the top-level "types" field and the
+    // dist/index.d.ts sibling of the resolved dist/index.js instead.
+    "sideEffects": [
+        "**/*.css" // Everything else is side-effect free (tree-shakable); the "./style.css" import must survive
+    ],
+    "main": "./dist/index.js", // Library entry point (for tooling without "exports" support)
+    "module": "./dist/index.js", // ESM hint for legacy bundlers without "exports" support
+    "types": "./dist/index.d.ts", // Bundled type declarations emitted by tsdown
     "exports": {
-        ".": "./index.js",
+        ".": "./dist/index.js",
+        "./style.css": "./dist/style.css", // Compiled CSS Modules output; import once from the consuming app
         "./package.json": "./package.json"
     },
 
-    // Allowlist of files to publish (default-deny). npm always also includes package.json, README
-    // and LICENSE; CHANGELOG.md is listed explicitly because npm does NOT auto-include it.
-    // .npmignore is kept as a redundant denylist; this allowlist is the primary control over the
-    // tarball contents.
+    // Allowlist of files to publish (default-deny). "dist/" is the built package (tsdown output,
+    // built fresh by "prepack"); "frontend/lib/src/" ships too so the sourcemaps in dist/ resolve
+    // and the source is browsable on the registry CDNs; the "!**/*.test.*" negation keeps the
+    // colocated tests (any depth, any test extension) out of the tarball. npm always also includes
+    // package.json, README and LICENSE; CHANGELOG.md is listed explicitly because npm does NOT
+    // auto-include it. .npmignore is kept as a redundant denylist; this allowlist is the primary
+    // control over the tarball contents.
     "files": [
-        "index.js",
+        "dist/",
+        "frontend/lib/src/",
+        "!**/*.test.*",
         "CHANGELOG.md"
     ],
 
+    // Runtime deps of the PUBLISHED library only (installed by every consumer). The demo/dev
+    // harness's runtime stack lives in dependenciesForDemo (see above) and ships as
+    // devDependencies instead.
     "dependencies": {
-        // Frontend build baseline (owned by this abstract-frontend-build branch): the React app
-        // stack bundled into the frontend build, plus the minimal Express server and the
-        // config-layering runtime
-        "@jridgewell/gen-mapping": "^0.3.13", // CSS sourcemap merging (frontend/build/plugins/CssBuildSourcemapsPlugin)
-        "@jridgewell/trace-mapping": "^0.3.31", // CSS sourcemap merging (frontend/build/plugins/CssBuildSourcemapsPlugin)
-        "classnames": "^2.5.1", // Conditional CSS class composition
-        "compression": "^1.8.1", // Express gzip middleware (backend/src/server/server.ts)
-        "express": "^5.2.1", // Serves the built frontend: static + SPA fallback + opt-in Vite HMR middleware (backend/src/server/server.ts)
-        "extend": "^3.0.2", // Deep merge for the config/ layering, the server's config clone, and all-is-well.config.local.ts
-        "jotai": "^2.20.2", // Atomic client state for React
-        "local-ip-addresses-and-hostnames": "=0.3.0", // For development assistance: logs the reachable server URLs on startup (backend/src/server/logServerPaths.ts)
-        "react": "^19.2.8",
-        "react-dom": "^19.2.8",
-        "zustand": "^5.0.14" // App/domain state store for React (frontend/src/App/store/zustandStore.ts)
-
         /* Begin: package specific "dependencies" */
 
         // TODO: Add package specific "dependencies" here
@@ -131,7 +157,19 @@ const packageJson = {
         /* End: package specific "dependencies" */
     },
 
+    // Supplied by the consuming project, not bundled: tsdown externalizes every "dependencies" /
+    // "peerDependencies" entry by default, so the dist/ bundle imports react from the consumer's
+    // own copy. ">=18" because the library only relies on React 18+ features (hooks, createRoot,
+    // the automatic JSX runtime); development and tests run against the dev copies below.
+    "peerDependencies": {
+        "react": ">=18",
+        "react-dom": ">=18" // Needed by the mount()/unmount() helpers (react-dom/client's createRoot)
+    },
+
     "devDependencies": {
+        // Demo/dev harness runtime stack (see the dependenciesForDemo declaration above)
+        ...dependenciesForDemo,
+
         "@babel/core": "^8.0.1", // Babel host for the React Compiler pass (@rolldown/plugin-babel peer; preset wired inline in frontend/build/build-config-generator.ts)
         "@eslint-react/eslint-plugin": "^5.18.0", // Optional ironplate peer: React rules for eslint-config-ironplate/react-typescript.js (see frontend/src/eslint.config.js)
         "@eslint/js": "^10.0.1",
@@ -141,7 +179,8 @@ const packageJson = {
         "@stylistic/stylelint-plugin": "^5.2.1", // Stylistic formatting rules for stylelint (see stylelint.config.js)
         "@testing-library/dom": "^10.4.1", // Required peer of @testing-library/react
         "@testing-library/jest-dom": "^7.0.0", // Extra DOM matchers; registered per test file via import '@testing-library/jest-dom/vitest'
-        "@testing-library/react": "^16.3.2", // React component testing (see frontend/src/App/App.test.tsx)
+        "@testing-library/react": "^16.3.2", // React component testing (see frontend/src/App/App.test.tsx and the frontend/lib/src/ tests)
+        "@tsdown/css": "^0.22.14", // CSS (incl. CSS Modules) support for tsdown (auto-detected when installed; extracts dist/style.css)
         "@types/extend": "^3.0.4", // Types for extend (ships none)
         "@types/node": "~24.13.3", // Node ambient types for the tsc type check (import.meta.dirname, process, node:*, NodeJS.*); pinned to 24.x to match the dev Node floor
         "@types/node-notifier": "^8.0.5", // Types for node-notifier (ships none)
@@ -182,12 +221,15 @@ const packageJson = {
         "postcss-selector-parser": "^7.1.4", // Selector-level parsing for SplitMultiClassAtScopePlugin
         "postcss-value-parser": "^4.2.0", // Value-level parsing used by the frontend build plugins
         "publint": "^0.3.22", // Lints the package for publish-time correctness (main/exports/files resolution); wired as the "publint" health check
+        "react": "^19.2.8", // Dev copy for the demo + tests; consumers supply their own (see "peerDependencies")
+        "react-dom": "^19.2.8", // Dev copy for the demo + tests; consumers supply their own (see "peerDependencies")
         "semver": "^7.8.5", // Semantic-version comparison used by the node-version and npm-install health checks
         "shell-quote": "^1.10.0", // Shell-safe quoting of some commands
         "stats.js": "=0.17.0", // Vendored into frontend/src/resources/3rdparty/autoloaded/ via "copy-files-from-to" (FPS meter dev overlay)
         "stylelint": "^17.14.1", // CSS linter (see stylelint.config.js and the "stylelint" health check)
         "stylelint-config-css-modules": "^4.6.0", // CSS Modules awareness for stylelint (:export / :global etc.)
         "stylelint-config-recommended": "^18.0.0", // Baseline stylelint ruleset
+        "tsdown": "^0.22.14", // Library bundler (Rolldown-based): builds frontend/lib/src/index.ts into the dist/ ESM bundle + bundled .d.ts + extracted CSS (see frontend/lib/tsdown.config.ts)
         "typescript": "~6.0.3", // Powers the tsc type check (test:types); optional ironplate peer for its TypeScript configs
         "typescript-eslint": "^8.65.0", // Optional ironplate peer: bundles the TypeScript parser + plugin used by eslint-config-ironplate/node-typescript.js
         "typescript-plugin-css-modules": "^5.2.0", // Editor/tsserver types for *.module.css imports (wired in frontend/tsconfig.json "plugins")
@@ -260,8 +302,10 @@ const packageJson = {
         // external URLs are ignored). Uses its own config so the main "eslint" run stays markdown-free.
         "eslint:markdown": "eslint --config eslint.markdown.config.js \"**/*.md\"",
 
-        // CSS linting (config: stylelint.config.js; vendored third-party CSS is excluded via .stylelintignore)
-        "stylelint":         "stylelint \"frontend/src/**/*.css\"",
+        // CSS linting (config: stylelint.config.js; vendored third-party CSS is excluded via
+        // .stylelintignore) - covers both the library CSS Modules (frontend/lib/src/) and the
+        // demo app CSS (frontend/src/)
+        "stylelint":         "stylelint \"frontend/lib/src/**/*.css\" \"frontend/src/**/*.css\"",
         "stylelint:fix":     "node --run stylelint -- --fix",
 
         // Staged-files / changed-files variants via portable wrappers (mirror the eslint:* pairs above)
@@ -304,6 +348,11 @@ const packageJson = {
         // (jsx + "bundler" module resolution); the root tsconfig excludes frontend/ entirely
         "test:types:frontend": "tsc --pretty --project frontend/tsconfig.json",
 
+        // Type check of the publishable library zone (frontend/lib/ - excluded from
+        // frontend/tsconfig.json) via its own STRICT frontend/lib/tsconfig.json (see its header
+        // comment); the "types:lib" health check
+        "test:types:lib": "tsc --pretty --project frontend/lib/tsconfig.json",
+
         // Lints the package for publish-time correctness (main/exports/files resolution); also run
         // as the "publint" check in all-is-well
         "publint": "publint",
@@ -345,6 +394,9 @@ const packageJson = {
         // .claude/hooks/Stop/claude-settings-sort.sh.
         "claude-settings-sort":     "./scripts/health-checks/checks/claude-settings-sort.ts",
         "claude-settings-sort:fix": "./scripts/health-checks/checks/claude-settings-sort.ts --fix",
+
+        // Runs on "npm pack" AND "npm publish": guarantees every tarball carries a freshly built dist/
+        "prepack": "node --run build:lib",
 
         // Runs only on "npm publish" (not on "npm pack" or "npm install"). Catches publishes that
         // skip "npm version" and its preversion hook.
@@ -410,6 +462,13 @@ const packageJson = {
         "build:dry-run":                        "node --run build:development:local:dry-run",
         "build:inspect-brk":                    "node --run build:development:local:inspect-brk",
         "build:production:live":                "NODE_ENV=production node ./frontend/build/build.ts     --env config=\"./config/config.production.live.js\"    --bundle-index",
+
+        // Library build (tsdown - config: frontend/lib/tsdown.config.ts): bundles
+        // frontend/lib/src/index.ts into the publishable dist/ (git-ignored) - ESM bundle +
+        // bundled .d.ts + extracted style.css. Runs from "prepack" and as the "build:lib"
+        // pre-step of all-is-well (publint validates against the real dist/). Unrelated to the
+        // "build*" scripts above, which build the DEMO app (frontend/src/) into public-*/.
+        "build:lib": "tsdown --config frontend/lib/tsdown.config.ts",
 
         // Re-vendors the third-party files listed in copy-files-from-to.cjson into
         // frontend/src/resources/3rdparty/ (committed; exempted from the non-keyboard-characters guard).

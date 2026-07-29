@@ -21,6 +21,8 @@ npm publish
 - The `prepublishOnly` script (see [`package.json.ts`](../../package.json.ts)) runs the full
   `node --run test` suite on every `npm publish` - including publishes that skip `npm version` and
   its `preversion` hook. It does not run on `npm pack` or `npm install`.
+- The `prepack` script runs `node --run build:lib` (tsdown) on every `npm pack` AND `npm publish`,
+  so each tarball carries a freshly built `dist/`.
 - What ships is the **generated** `package.json` (from `package.json.ts`) plus the `files`
   allowlist: npm force-includes `README.md` and `LICENSE`, and `CHANGELOG.md` is listed explicitly
   because npm does not auto-include it. [`.npmignore`](../../.npmignore) is only a redundant
@@ -33,4 +35,7 @@ npm publish
   npm pack --dry-run
   ```
 
-  Expected on this branch: `package.json`, `README.md`, `LICENSE`, `CHANGELOG.md`, `index.js`.
+  Expected on this branch: `package.json`, `README.md`, `LICENSE`, `CHANGELOG.md`, the built
+  `dist/` files (`index.js` + sourcemap, `index.d.ts` + map, `style.css` - built fresh by
+  `prepack`), and the `frontend/lib/src/` sources (so the sourcemaps resolve) - but NOT the
+  colocated `*.test.*` files (excluded by the `"!**/*.test.*"` negation in `files`).

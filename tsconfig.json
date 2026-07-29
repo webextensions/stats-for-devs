@@ -82,6 +82,7 @@
         "coverage",
         ".cache",
         "frontend",
-        "public-*" // Frontend build output (config-driven publicDirectory - see config/)
+        "public-*", // Frontend build output (config-driven publicDirectory - see config/)
+        "dist" // Library build output (tsdown - see frontend/lib/tsdown.config.ts); to be upstreamed (see docs/specs/todo/TODO-for-template-npm-package-for-react.md)
     ]
 }

@@ -10,8 +10,14 @@ const config: KnipConfig = {
         // The config tiers are loaded only via dynamic variable imports knip cannot trace
         // (frontend/build/build.ts --env config=... and backend/src/server/server.ts --config ...).
         'config/*.js',
-        // Nested per-directory ESLint config (browser/React rules for frontend/src/) - knip's
-        // eslint plugin only auto-detects the root eslint.config.js.
+        // The library barrel (the package's "." export): package.json's main/exports point at its
+        // BUILD output (dist/), which knip cannot trace back to the source, and the barrel's
+        // exports (component, hook, prop/option types) are consumed by external consumers of the
+        // published package - registering it as an entry keeps knip from flagging them.
+        'frontend/lib/src/index.ts',
+        // Nested per-directory ESLint configs (browser/React rules for frontend/lib/src/ and
+        // frontend/src/) - knip's eslint plugin only auto-detects the root eslint.config.js.
+        'frontend/lib/src/eslint.config.js',
         'frontend/src/eslint.config.js',
         // The frontend entry is referenced only from frontend/src/index.html, which knip's vite
         // plugin does not parse here (it only reads an index.html at the package root, and the
