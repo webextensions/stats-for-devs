@@ -19,6 +19,11 @@ const config: KnipConfig = {
         // frontend/src/) - knip's eslint plugin only auto-detects the root eslint.config.js.
         'frontend/lib/src/eslint.config.js',
         'frontend/src/eslint.config.js',
+        // The standalone widget entry: a tsdown entry (built into dist/widget(.min).js, reached
+        // by consumers via the "unpkg" / "jsdelivr" / exports subpaths in package.json), which
+        // knip cannot trace back to the source - registering it keeps knip from flagging the
+        // file and its exports.
+        'frontend/lib/src/widget/standalone.ts',
         // The frontend entry is referenced only from frontend/src/index.html, which knip's vite
         // plugin does not parse here (it only reads an index.html at the package root, and the
         // --env-driven vite.config.ts factory gives it no root to discover).

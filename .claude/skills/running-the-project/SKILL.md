@@ -18,15 +18,20 @@ description: Use when asked to run, start, launch, serve, or demo this project, 
   `Server (HTTP + Vite HMR) is available at:`) followed by the reachable URLs; a busy port prints
   `Error: Port 3000 is already in use (configured via server.access.url.http.port).`
 - `node --run build:dry-run` - one-shot verification build, nothing written.
-- The demo app renders the publishable library's stub `<Greeting name="Ada" />` ("Hello, Ada!"
-  plus a working counter button) via
+- The demo app renders the publishable library's stub API in three modes - light DOM
+  (`<Greeting name="Ada" />`: "Hello, Ada!" plus a working counter button), shadow DOM
+  (`ShadowDomHost` wrapping the same Greeting), and imperative
+  (`mount`/`mountInShadowDom`/`unmount` buttons) - via
   [frontend/src/App/LibraryDemo/LibraryDemo.tsx](../../../frontend/src/App/LibraryDemo/LibraryDemo.tsx),
   imported from the library source ([frontend/lib/src/](../../../frontend/lib/src/)) so edits show
   up live.
 - `node --run build:lib` - builds the publishable library itself into the git-ignored `dist/`
-  (tsdown - config: [frontend/lib/tsdown.config.ts](../../../frontend/lib/tsdown.config.ts)); also
-  runs automatically as the all-is-well `build:lib` pre-step and on `prepack`. Not needed for the
-  demo, which consumes the library from source.
+  (tsdown config array: [frontend/lib/tsdown.config.ts](../../../frontend/lib/tsdown.config.ts) -
+  the ESM library plus the standalone script-tag IIFE twins `dist/widget.js` /
+  `dist/widget.min.js`); also runs automatically as the all-is-well `build:lib` pre-step and on
+  `prepack`. Not needed for the demo, which consumes the library from source. To smoke-test the
+  built IIFE itself, load `dist/widget.js` (plus `dist/style.css` for light-DOM mounts) from any
+  plain HTML page and call `TemplateWidget.mount(...)`.
 
 ## Prerequisites
 

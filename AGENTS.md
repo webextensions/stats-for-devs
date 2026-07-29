@@ -13,26 +13,37 @@ to the shared homes that keep receiving template updates.
 
 ## Project overview
 
-`template-npm-package-for-react` - the template branch for npm packages shipping React
-component(s) and/or hook(s): `abstract-frontend-build` (a config-driven Vite (Rolldown) + React +
-TypeScript build under `frontend/`, layered environment configs in `config/`, stylelint, and a
-minimal Express server with opt-in Vite HMR under `backend/src/server/`) plus
-`abstract-npm-package` (publishable manifest, publint) plus the React package code itself under
-[frontend/lib/](frontend/lib/) (see its [README](frontend/lib/README.md)): the public barrel
-`frontend/lib/src/index.ts` re-exporting the stub API (`react/components/Greeting/` composing
-`react/hooks/useCounter/`, plus imperative `mount`/`unmount` helpers - named exports only), built
-by tsdown (`node --run build:lib`, also the all-is-well `build:lib` pre-step and `prepack`) into
-the published `dist/` (ESM bundle with react externalized + bundled `index.d.ts` + extracted
-`style.css`). `react` / `react-dom` are `peerDependencies`; the demo harness's runtime stack
-lives in the `dependenciesForDemo` variable in `package.json.ts` (shipped as devDependencies).
-The library zone has its own STRICT `frontend/lib/tsconfig.json` (`test:types:lib`) and a nested
-ESLint config re-exporting `frontend/src/eslint.config.js`; colocated `*.test.{ts,tsx}` tests run
-in the single root Vitest suite (jsdom opted in per file via the `@vitest-environment jsdom`
-pragma). The frontend app under `frontend/src/` is the development/demo harness - it renders the
-library from source via `frontend/src/App/LibraryDemo/LibraryDemo.tsx` and keeps building into
-the `public-*` folders. Directly usable as a project template. Vision, branching tree, and the
-fork/merge model: [docs/template-project/README.md](docs/template-project/README.md); the
-frontend build itself: [docs/development/frontend-build.md](docs/development/frontend-build.md).
+`template-widget` - the template branch for npm packages shipping an embeddable widget:
+`template-npm-package-for-react` (its full React-package layer - `abstract-frontend-build`'s
+config-driven Vite (Rolldown) + React + TypeScript build under `frontend/`, layered environment
+configs in `config/`, stylelint, a minimal Express server with opt-in Vite HMR under
+`backend/src/server/`, plus `abstract-npm-package`'s publishable manifest and publint) plus the
+widget layer on top. The package code lives under [frontend/lib/](frontend/lib/) (see its
+[README](frontend/lib/README.md)): the public barrel `frontend/lib/src/index.ts` re-exports the
+stub API (`react/components/Greeting/` composing `react/hooks/useCounter/`, imperative
+`mount`/`unmount` helpers, and the widget area `widget/` - a reusable `ShadowDomHost` component,
+`mountInShadowDom`/`widgetStyleSheets`, and the standalone entry `widget/standalone.ts` which is
+its own tsdown entry, NOT in the barrel - named exports only). tsdown (`node --run build:lib`,
+also the all-is-well `build:lib` pre-step and `prepack`; config array in
+`frontend/lib/tsdown.config.ts`) builds the published `dist/`: the ESM bundle with react
+externalized + bundled `index.d.ts` + extracted `style.css`, plus the standalone script-tag
+IIFE twins `widget.js` / `widget.min.js` (react bundled in, `window.TemplateWidget` from the
+config's `GLOBAL_NAME`, never auto-mounting; the `unpkg` / `jsdelivr` targets - rationale and
+gotchas: [because/widget-standalone-build.md](because/widget-standalone-build.md)). `react` /
+`react-dom` are `peerDependencies`; the demo harness's runtime stack lives in the
+`dependenciesForDemo` variable in `package.json.ts` (shipped as devDependencies). The library
+zone has its own STRICT `frontend/lib/tsconfig.json` (`test:types:lib`) and a nested ESLint
+config re-exporting `frontend/src/eslint.config.js`; colocated `*.test.{ts,tsx}` tests run in
+the single root Vitest suite (jsdom opted in per file via the `@vitest-environment jsdom`
+pragma; jsdom exercises ShadowDomHost's `<style>` fallback path, not constructable stylesheets).
+The frontend app under `frontend/src/` is the development/demo harness - it renders the library
+from source in all three modes (light, shadow, imperative) via
+`frontend/src/App/LibraryDemo/LibraryDemo.tsx` and keeps building into the `public-*` folders.
+Directly usable as a project template; a vanilla no-React "Widget - Simple" flavor is deferred
+(see [docs/specs/todo/TODO-for-template-widget.md](docs/specs/todo/TODO-for-template-widget.md)).
+Vision, branching tree, and the fork/merge model:
+[docs/template-project/README.md](docs/template-project/README.md); the frontend build itself:
+[docs/development/frontend-build.md](docs/development/frontend-build.md).
 
 ## Commands
 

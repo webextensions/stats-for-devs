@@ -4,7 +4,7 @@
         "url": "https://github.com/webextensions/template-javascript-project/issues"
     },
     "dependencies": {},
-    "description": "Template for npm packages shipping React components/hooks - tsdown-built library (ESM + bundled types + CSS Modules) with a publishable manifest verified by publint, plus a config-driven React + Vite (Rolldown) frontend build as the development/demo harness - on top of the shared JavaScript tooling baseline",
+    "description": "Template for npm packages shipping an embeddable widget - React components/hooks plus standalone script-tag/CDN bundles (IIFE, react bundled in) with opt-in Shadow DOM isolation - tsdown-built (ESM + bundled types + CSS Modules) with a publishable manifest verified by publint, plus a config-driven React + Vite (Rolldown) frontend build as the development/demo harness - on top of the shared JavaScript tooling baseline",
     "devDependencies": {
         "@babel/core": "^8.0.1",
         "@eslint-react/eslint-plugin": "^5.18.0",
@@ -87,7 +87,9 @@
     "exports": {
         ".": "./dist/index.js",
         "./package.json": "./package.json",
-        "./style.css": "./dist/style.css"
+        "./style.css": "./dist/style.css",
+        "./widget.js": "./dist/widget.js",
+        "./widget.min.js": "./dist/widget.min.js"
     },
     "files": [
         "dist/",
@@ -96,6 +98,7 @@
         "CHANGELOG.md"
     ],
     "homepage": "https://github.com/webextensions/template-javascript-project#readme",
+    "jsdelivr": "./dist/widget.min.js",
     "keywords": [
         "boilerplate",
         "component",
@@ -105,9 +108,11 @@
         "npm",
         "package",
         "react",
+        "shadow-dom",
         "starter",
         "template",
-        "vite"
+        "vite",
+        "widget"
     ],
     "license": "MIT",
     "main": "./dist/index.js",
@@ -211,9 +216,12 @@
         "vitest": "vitest run"
     },
     "sideEffects": [
-        "**/*.css"
+        "**/*.css",
+        "./dist/widget.js",
+        "./dist/widget.min.js"
     ],
     "type": "module",
     "types": "./dist/index.d.ts",
+    "unpkg": "./dist/widget.min.js",
     "version": "0.0.0"
 }

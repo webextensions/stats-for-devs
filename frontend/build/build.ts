@@ -174,7 +174,14 @@ const mainAsync = async function () {
     // correctness issues; don't fail the build on them.
     const IGNORABLE_WARNING_PATTERNS: RegExp[] = [
         /\[PLUGIN_TIMINGS\]/, // NOTE: Also ignored via `rollupOptions.checks.pluginTimings = false` in `build-config-generator.ts`
-        /chunks are larger than \d+\s*kB/i
+        /chunks are larger than \d+\s*kB/i,
+        // `vite:css` transforms `?inline` CSS imports (used by the library's shadow-DOM path,
+        // e.g. frontend/lib/src/widget/mount.tsx) into JS string modules without emitting a
+        // sourcemap for the transformation, which Rolldown reports as SOURCEMAP_BROKEN. The
+        // emitted CSS assets get their sourcemaps reconstructed by CssBuildSourcemapsPlugin
+        // regardless. REVISIT: drop this pattern once `vite:css` provides sourcemaps for
+        // `?inline` transforms.
+        /\[plugin vite:css\][\s\S]*\[SOURCEMAP_BROKEN\]/
     ];
 
     /*

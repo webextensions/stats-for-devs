@@ -60,7 +60,7 @@ const dependenciesForDemo = {
 const packageJson = {
     "name": "@webextensions/template-javascript-project",
     version, // Owned by npm (see header); derived from package.json / package-version.json, never hard-coded
-    "description": "Template for npm packages shipping React components/hooks - tsdown-built library (ESM + bundled types + CSS Modules) with a publishable manifest verified by publint, plus a config-driven React + Vite (Rolldown) frontend build as the development/demo harness - on top of the shared JavaScript tooling baseline",
+    "description": "Template for npm packages shipping an embeddable widget - React components/hooks plus standalone script-tag/CDN bundles (IIFE, react bundled in) with opt-in Shadow DOM isolation - tsdown-built (ESM + bundled types + CSS Modules) with a publishable manifest verified by publint, plus a config-driven React + Vite (Rolldown) frontend build as the development/demo harness - on top of the shared JavaScript tooling baseline",
     "author": "webextensions.org",
     "license": "MIT",
 
@@ -94,9 +94,11 @@ const packageJson = {
         "npm",
         "package",
         "react",
+        "shadow-dom",
         "starter",
         "template",
-        "vite"
+        "vite",
+        "widget"
     ],
 
     // Node floor advertised via "engines.node" (what npm shows/enforces for consumers when the
@@ -110,10 +112,12 @@ const packageJson = {
 
     "type": "module",
 
-    // Publish fields for a React component + hook library: consumers import the built ESM bundle
-    // in dist/ (produced by tsdown from frontend/lib/src/ - see frontend/lib/tsdown.config.ts),
-    // with react / react-dom supplied by the consuming project (see "peerDependencies" below). No
-    // "bin" (this branch has no CLI - see template-npm-package-for-exports-cli for that).
+    // Publish fields for a widget-shipping React library: bundler consumers import the built ESM
+    // bundle in dist/ (produced by tsdown from frontend/lib/src/ - see
+    // frontend/lib/tsdown.config.ts), with react / react-dom supplied by the consuming project
+    // (see "peerDependencies" below); script-tag / CDN consumers load the standalone IIFE
+    // (dist/widget.min.js via "unpkg" / "jsdelivr" below, react bundled in). No "bin" (this
+    // branch has no CLI - see template-npm-package-for-exports-cli for that).
     //
     // NOTE: package-cjson sorts object keys alphabetically in the generated package.json, so the
     // "." export is a plain string instead of a { "types", "default" } conditions object (the
@@ -121,14 +125,31 @@ const packageJson = {
     // rule). TypeScript resolves the types via the top-level "types" field and the
     // dist/index.d.ts sibling of the resolved dist/index.js instead.
     "sideEffects": [
-        "**/*.css" // Everything else is side-effect free (tree-shakable); the "./style.css" import must survive
+        "**/*.css", // The "./style.css" import must survive tree-shaking
+        // The standalone IIFE artifacts define a window global when evaluated; everything not
+        // listed here is side-effect free (tree-shakable)
+        "./dist/widget.js",
+        "./dist/widget.min.js"
     ],
     "main": "./dist/index.js", // Library entry point (for tooling without "exports" support)
     "module": "./dist/index.js", // ESM hint for legacy bundlers without "exports" support
     "types": "./dist/index.d.ts", // Bundled type declarations emitted by tsdown
+    // Bare CDN URLs (https://unpkg.com/<name> / https://cdn.jsdelivr.net/npm/<name>) serve the
+    // standalone widget IIFE. Keep the basename in sync with STANDALONE_BASENAME in
+    // frontend/lib/tsdown.config.ts (see docs/init/CUSTOMIZE/CUSTOMIZE-widget.md)
+    "unpkg": "./dist/widget.min.js",
+    "jsdelivr": "./dist/widget.min.js",
     "exports": {
         ".": "./dist/index.js",
         "./style.css": "./dist/style.css", // Compiled CSS Modules output; import once from the consuming app
+        // The standalone script-tag / CDN artifacts (IIFE, react bundled in; see
+        // frontend/lib/tsdown.config.ts). Loading one only defines window.TemplateWidget - it
+        // never auto-mounts. Known publint WARNING (accepted): it sniffs the IIFE content as
+        // CJS-in-an-ESM-package for these two subpaths; harmless, because the entry also
+        // assigns the global explicitly for module evaluation (see
+        // frontend/lib/src/widget/standalone.ts)
+        "./widget.js": "./dist/widget.js",
+        "./widget.min.js": "./dist/widget.min.js",
         "./package.json": "./package.json"
     },
 

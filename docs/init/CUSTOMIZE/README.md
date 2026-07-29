@@ -29,6 +29,8 @@ Work through them in this order:
   engines, and dependencies in `package.json.ts`.
 - [CUSTOMIZE-source-code-and-tests.md](./CUSTOMIZE-source-code-and-tests.md) - add your layout and
   real tests.
+- [CUSTOMIZE-widget.md](./CUSTOMIZE-widget.md) - the widget identity (window global, standalone
+  artifact names, CDN fields) and the widget layer's behavior contracts.
 - [CUSTOMIZE-frontend-build.md](./CUSTOMIZE-frontend-build.md) - app name/origins in `config/`,
   the placeholder frontend app, and the favicon.
 - [CUSTOMIZE-readme.md](./CUSTOMIZE-readme.md) - title, badges, and intro of `README.md`.

@@ -129,9 +129,13 @@ const stylelintConfig = {
         'selector-pseudo-class-no-unknown': [
             true,
             {
-                ignorePseudoClasses: [ // CSS Modules support
+                ignorePseudoClasses: [
+                    // CSS Modules support
                     'export',
-                    'global'
+                    'global',
+                    // Shadow DOM support (e.g. frontend/lib/src/widget/shadow-reset.css)
+                    'host',
+                    'host-context'
                 ]
             }
         ],

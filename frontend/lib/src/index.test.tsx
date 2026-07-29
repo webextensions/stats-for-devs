@@ -23,8 +23,11 @@ import {
 import {
     Greeting,
     mount,
+    mountInShadowDom,
+    ShadowDomHost,
     unmount,
-    useCounter
+    useCounter,
+    widgetStyleSheets
 } from './index.ts';
 
 // Testing Library's automatic cleanup only registers itself when a global afterEach exists
@@ -35,8 +38,11 @@ describe('public entry point (frontend/lib/src/index.ts)', function () {
     it('should expose the stub API as named exports', function () {
         expect(typeof Greeting).toBe('function');
         expect(typeof mount).toBe('function');
+        expect(typeof mountInShadowDom).toBe('function');
+        expect(typeof ShadowDomHost).toBe('function');
         expect(typeof unmount).toBe('function');
         expect(typeof useCounter).toBe('function');
+        expect(Array.isArray(widgetStyleSheets)).toBe(true);
     });
 
     it('should render the Greeting component exported from the barrel', function () {

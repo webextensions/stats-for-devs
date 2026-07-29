@@ -11,15 +11,17 @@ dependencies/scripts its layer introduces).
 - `homepage`, `repository.url`, `bugs.url` - point to your new repository.
 - `author` / `license` - adjust if different from the defaults.
 - Publish fields - this branch ships a publishable manifest: `publishConfig` (`"access": "public"`
-  for scoped packages), `sideEffects` (only `**/*.css` is side-effectful), `main` / `module` /
-  `types` / `exports` (pointing at the tsdown build output in `dist/`; the `"."` export stays a
-  plain string instead of a `types`/`default` conditions object because package-cjson alphabetizes
-  the generated keys - see the comment in `package.json.ts`), and the `files` allowlist (`dist/` +
-  `frontend/lib/src/`, with the `"!**/*.test.*"` negation keeping the colocated tests out;
-  `CHANGELOG.md` is listed explicitly because npm does not auto-include it;
-  [.npmignore](../../../.npmignore) is only a redundant denylist behind it). A new project points
-  them at its real entry points and updates `files` to what it ships. If your project is NOT
-  published to npm, add `"private": true` and optionally drop these fields plus the `publint`
+  for scoped packages), `sideEffects` (`**/*.css` plus the standalone widget artifacts, which
+  define a global when evaluated), `main` / `module` / `types` / `exports` (pointing at the
+  tsdown build output in `dist/`; every exports value stays a plain string instead of a
+  `types`/`default` conditions object because package-cjson alphabetizes the generated keys - see
+  the comment in `package.json.ts`), `unpkg` / `jsdelivr` (the bare-CDN-URL target - the minified
+  standalone widget IIFE; keep in sync per [CUSTOMIZE-widget.md](./CUSTOMIZE-widget.md)), and the
+  `files` allowlist (`dist/` + `frontend/lib/src/`, with the `"!**/*.test.*"` negation keeping
+  the colocated tests out; `CHANGELOG.md` is listed explicitly because npm does not auto-include
+  it; [.npmignore](../../../.npmignore) is only a redundant denylist behind it). A new project
+  points them at its real entry points and updates `files` to what it ships. If your project is
+  NOT published to npm, add `"private": true` and optionally drop these fields plus the `publint`
   script/check.
 - `peerDependencies` - `react` / `react-dom` at `">=18"` (supplied by the consuming project;
   tsdown externalizes every `dependencies` / `peerDependencies` entry automatically). Tighten the
