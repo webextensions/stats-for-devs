@@ -13,21 +13,24 @@ to the shared homes that keep receiving template updates.
 
 ## Project overview
 
-`abstract-npm-package` - the shared base branch for the npm-package template branches
-(`template-npm-package-for-exports`, `-for-exports-cli`, `-for-exports-cli-tui`,
-`template-npm-package-for-react`). It layers the npm publishing baseline on top of
-`abstract-javascript-project`: a publishable manifest (`main` / `exports` / `files` /
-`publishConfig` in `package.json.ts`), a `publint` health check, a `prepublishOnly` test gate, an
-`.npmignore` backstop, and a placeholder entry point (`index.js` + `test/index.test.js`) that the
-template branches replace wholesale. Fork projects from a `template-npm-package-*` branch, not
-from this abstract branch. Vision, branching tree, and the fork/merge model:
-[docs/template-project/README.md](docs/template-project/README.md).
+`abstract-frontend-build` - the abstract base branch carrying the frontend-build architecture for
+the frontend template branches (`template-widget`, `template-webextension`, `template-web-app`):
+a config-driven Vite (Rolldown) + React + TypeScript build under `frontend/`, layered environment
+configs in `config/`, stylelint, and a minimal Express server (opt-in Vite HMR) under
+`backend/src/server/`. Not directly usable as a project template - fork from a `template-` branch.
+Vision, branching tree, and the fork/merge model:
+[docs/template-project/README.md](docs/template-project/README.md); the frontend build itself:
+[docs/development/frontend-build.md](docs/development/frontend-build.md).
 
 ## Commands
 
 - `node --run test` - run the full check suite before every commit.
 - `node --run test:optimize-for-change` - change-aware suite for fast local iteration (git hooks
   always run the full `test`).
+- `node --run start` - Express server + watch build together (`node --run start:app:use-hmr` for
+  Vite middleware HMR instead).
+- `node --run build:dry-run` - one-shot verification build, nothing written (what the
+  `build:dry-run` health check runs).
 - `node --run housekeeping:generate-package-json` - regenerate `package.json` from
   `package.json.ts`.
 

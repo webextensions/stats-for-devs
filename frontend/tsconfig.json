@@ -1,0 +1,42 @@
+{
+    "compilerOptions": {
+        "allowImportingTsExtensions": true,
+        "noEmit": true,
+        "target": "es2024",
+        "module": "preserve",
+        "allowJs": true,
+        "jsx": "preserve",
+        "strict": false,
+        "noImplicitAny": false,
+        "moduleResolution": "bundler",
+        "paths": {
+            "*": [
+                "./node_modules/*"
+            ]
+        },
+        "typeRoots": [
+            "../node_modules/@types"
+        ],
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "incremental": true,
+        "forceConsistentCasingInFileNames": true,
+        "plugins": [
+            {
+                "name": "typescript-plugin-css-modules",
+                "options": {
+                    "customMatcher": "\\.module\\.css$"
+                }
+            }
+        ]
+    },
+    "include": [
+        "./**/*",
+        "../types/**/*"
+    ],
+    "exclude": [
+        "./src/resources/3rdparty/",
+        "node_modules"
+    ]
+}

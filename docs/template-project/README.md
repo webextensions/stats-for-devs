@@ -72,6 +72,12 @@ abstract-javascript-project
 │           * React hook(s)
 │
 └── abstract-frontend-build
+    Notes:
+        * Shared base for the frontend-build templates below; fork projects from a `template-`
+          branch, not from this abstract branch.
+        * Carries the config-driven Vite build (multi-bundle capable) with React + TypeScript
+          under `frontend/`, stylelint, and a minimal Express server (opt-in HMR) under
+          `backend/`.
     |
     ├── template-widget
     │   Notes:

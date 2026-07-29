@@ -29,6 +29,8 @@ Work through them in this order:
   engines, and dependencies in `package.json.ts`.
 - [CUSTOMIZE-source-code-and-tests.md](./CUSTOMIZE-source-code-and-tests.md) - add your layout and
   real tests.
+- [CUSTOMIZE-frontend-build.md](./CUSTOMIZE-frontend-build.md) - app name/origins in `config/`,
+  the placeholder frontend app, and the favicon.
 - [CUSTOMIZE-readme.md](./CUSTOMIZE-readme.md) - title, badges, and intro of `README.md`.
 - [CUSTOMIZE-license.md](./CUSTOMIZE-license.md) - license / copyright holder.
 - [CUSTOMIZE-community-health-files.md](./CUSTOMIZE-community-health-files.md) - `SECURITY.md` and

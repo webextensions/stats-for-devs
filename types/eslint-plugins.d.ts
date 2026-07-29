@@ -9,4 +9,11 @@ declare module 'eslint-config-ironplate/node-typescript.js' {
     // eslint-disable-next-line import-x/no-default-export
     export default config;
 }
+declare module 'eslint-config-ironplate/react-typescript.js' {
+    import type { Linter } from 'eslint';
+
+    const config: Linter.Config[];
+    // eslint-disable-next-line import-x/no-default-export
+    export default config;
+}
 declare module 'eslint-plugin-import-newlines';

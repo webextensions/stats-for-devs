@@ -1,0 +1,30 @@
+<!doctype html>
+<html data-app-version="{{appVersion}}">
+
+<head>
+    <meta charset="UTF-8">
+
+    <title>Abstract Frontend Build</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta name="theme-color" content="#777">
+
+    <style>
+        /* If most of the times, the page would have a vertical scroll, then this style should be added to the html file
+        itself to avoid FOUC */
+        body {
+            /* overflow-y: scroll; */
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    {{loadAppConfig}}
+
+    <script type="module" src="./index.tsx"></script>
+</body>
+
+</html>

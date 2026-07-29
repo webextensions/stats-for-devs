@@ -3,15 +3,14 @@
 [![CI](https://github.com/webextensions/template-javascript-project/actions/workflows/ci.yml/badge.svg)](https://github.com/webextensions/template-javascript-project/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-This is the **`abstract-npm-package`** branch - the shared base for the npm-package templates in
-this repository's family of JavaScript project templates maintained as git branches. On top of the
-`abstract-javascript-project` baseline (ESM, ESLint, Vitest, EditorConfig, `package.json` generated
-from `package.json.ts`, a health-check suite wired into git hooks, and a template-sync merge
-workflow) it adds the npm publishing baseline: a publishable manifest (`main` / `exports` /
-`files` / `publishConfig`), a `publint` health check, a `prepublishOnly` test gate, and a
-placeholder entry point (`index.js`) that the template branches (for example
-`template-npm-package-for-exports`) replace with real source. Fork projects from a
-`template-npm-package-*` branch, not from this abstract branch.
+This is the **`abstract-frontend-build`** branch - the abstract base of the frontend template
+branches (`template-widget`, `template-webextension`, `template-web-app`) in this repository's
+template family. On top of the shared `abstract-javascript-project` baseline (ESM, ESLint, Vitest,
+`package.json` generated from `package.json.ts`, a health-check suite wired into git hooks, and a
+template-sync merge workflow) it carries a config-driven Vite (Rolldown) + React + TypeScript
+frontend build under `frontend/`, layered environment configs in `config/`, stylelint, and a
+minimal Express server with opt-in HMR under `backend/` - plus a placeholder app that exercises
+the stack. It is not meant to be forked into projects directly - fork from a `template-` branch.
 
 ## Where to look
 

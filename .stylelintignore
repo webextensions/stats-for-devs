@@ -1,0 +1,3 @@
+# Third-party files (the whole vendored tree, matching the eslint / knip /
+# non-keyboard-characters exemptions)
+frontend/src/resources/3rdparty/**/*.css

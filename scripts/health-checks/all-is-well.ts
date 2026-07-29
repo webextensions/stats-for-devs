@@ -59,6 +59,27 @@ import { computeGitContentHashAsync } from './checksExecutionCaching/computeGitC
 const healthChecksDir = import.meta.dirname;
 const projectRoot = path.resolve(healthChecksDir, '..', '..');
 
+// One-shot Vite build in --dry-run mode (build.write: false): verifies the whole frontend build
+// pipeline (config loading, plugins, CSS Modules, React Compiler pass) without touching the output
+// directory and without desktop notifications (see the --dry-run handling in
+// frontend/build/build.ts). The heaviest check in the suite - launched near the end (only the
+// network-bound npm-audit-signatures follows) so the cheap fail-fast checks surface first.
+const CHECK_BUILD_DRY_RUN: HealthCheck = {
+    name: 'build:dry-run',
+    // "--optimize-for-change" runs this only when the frontend build's inputs are staged
+    // (utils/ is listed because the build imports utils/logger.ts and utils/notifier/).
+    changeDependencies: [
+        'config/',
+        'frontend/',
+        'package-lock.json',
+        'package.json',
+        'utils/'
+    ],
+    cmd: 'node',
+    args: ['--run', 'build:dry-run'],
+    errorMsg: 'Failure in the frontend build (Vite dry-run; no output written). Run "node --run build:dry-run" for details.'
+};
+
 // Fails when .claude/settings.json is not normalized: its object keys must be alphabetized and the
 // permissions.allow / permissions.deny arrays sorted + deduped (Claude Code appends "always allow"
 // approvals to the end and edits keys over time). "--optimize-for-change" runs this only when
@@ -263,6 +284,23 @@ const CHECK_PUBLINT: HealthCheck = {
     errorMsg: 'publint found package-publishing issues (main/exports/files). Run "node --run publint" for details.'
 };
 
+// Lints the frontend CSS (stylelint; config in stylelint.config.js; vendored third-party CSS is
+// excluded via .stylelintignore).
+const CHECK_STYLELINT: HealthCheck = {
+    name: 'stylelint',
+    // "--optimize-for-change" runs this only when the CSS sources or the stylelint setup changed.
+    changeDependencies: [
+        '.stylelintignore',
+        'frontend/src/',
+        'package-lock.json',
+        'package.json',
+        'stylelint.config.js'
+    ],
+    cmd: 'node',
+    args: ['--run', 'stylelint'],
+    errorMsg: 'Failure in CSS linting. Run "node --run stylelint" for details (auto-fix: "node --run stylelint:fix").'
+};
+
 // Fast parse-check (via module.stripTypeScriptTypes) of every repo JS/TS file discovered by
 // `git ls-files --cached --others --exclude-standard`, run before ESLint/Vitest so parse errors surface
 // here rather than as confusing downstream failures.
@@ -284,6 +322,23 @@ const CHECK_TYPES: HealthCheck = {
     errorMsg: 'Type check failed (tsc). Run "node --run test:types" for details.'
 };
 
+// Type check of the frontend (browser .tsx + the Vite build tooling) via its own
+// frontend/tsconfig.json (jsx + "bundler" module resolution). The root tsconfig excludes frontend/
+// entirely (see its "exclude" comment), so this is the only type coverage for that tree.
+const CHECK_TYPES_FRONTEND: HealthCheck = {
+    name: 'types:frontend',
+    // "--optimize-for-change" runs this only when the frontend or the ambient types changed
+    changeDependencies: [
+        'frontend/',
+        'package-lock.json',
+        'package.json',
+        'types/'
+    ],
+    cmd: 'node',
+    args: ['--run', 'test:types:frontend'],
+    errorMsg: 'Type check failed for the frontend (tsc --project frontend/tsconfig.json). Run "node --run test:types:frontend" for details.'
+};
+
 const CHECK_VITEST: HealthCheck = {
     name: 'vitest',
     // "--optimize-for-change" skips this check unless one of these staged paths changed (entries ending
@@ -291,6 +346,7 @@ const CHECK_VITEST: HealthCheck = {
     // Directories holding COLOCATED tests (see .claude/rules/testing.md) must be listed here too.
     changeDependencies: [
         'test/',
+        'frontend/',
         'scripts/health-checks/checks/block-non-keyboard-characters/',
         'scripts/health-checks/helpers/eslint-rules/',
         'index.js',
@@ -322,11 +378,14 @@ const healthChecks: HealthCheck[] = [
     CHECK_PUBLINT,
     CHECK_ESLINT_STAGED,
     CHECK_ESLINT_MARKDOWN,
+    CHECK_STYLELINT,
     CHECK_KNIP,
     CHECK_VITEST,
     CHECK_NPM_CI_DRY,
     CHECK_ESLINT,
     CHECK_TYPES,
+    CHECK_TYPES_FRONTEND,
+    CHECK_BUILD_DRY_RUN,
     CHECK_NPM_AUDIT_SIGNATURES
 ];
 

@@ -41,7 +41,7 @@ try {
 const packageJson = {
     "name": "@webextensions/template-javascript-project",
     version, // Owned by npm (see header); derived from package.json / package-version.json, never hard-coded
-    "description": "Abstract base template for npm packages - publishable manifest, publint, shared tooling, health checks, and a template-sync git branching workflow",
+    "description": "Abstract template branch adding a React + Vite (Rolldown) frontend build architecture - config-driven builds, stylelint, and a minimal Express server - on top of the shared JavaScript tooling baseline",
     "author": "webextensions.org",
     "license": "MIT",
 
@@ -68,11 +68,14 @@ const packageJson = {
 
     "keywords": [
         "boilerplate",
+        "frontend",
         "javascript",
         "npm",
         "package",
+        "react",
         "starter",
-        "template"
+        "template",
+        "vite"
     ],
 
     // Node floor advertised via "engines.node" (what npm shows/enforces for consumers when the
@@ -106,6 +109,20 @@ const packageJson = {
     ],
 
     "dependencies": {
+        // Frontend build baseline (owned by this abstract-frontend-build branch): the React app
+        // stack bundled into the frontend build, plus the minimal Express server and the
+        // config-layering runtime
+        "@jridgewell/gen-mapping": "^0.3.13", // CSS sourcemap merging (frontend/build/plugins/CssBuildSourcemapsPlugin)
+        "@jridgewell/trace-mapping": "^0.3.31", // CSS sourcemap merging (frontend/build/plugins/CssBuildSourcemapsPlugin)
+        "classnames": "^2.5.1", // Conditional CSS class composition
+        "compression": "^1.8.1", // Express gzip middleware (backend/src/server/server.ts)
+        "express": "^5.2.1", // Serves the built frontend: static + SPA fallback + opt-in Vite HMR middleware (backend/src/server/server.ts)
+        "extend": "^3.0.2", // Deep merge for the config/ layering, the server's config clone, and all-is-well.config.local.ts
+        "jotai": "^2.20.2", // Atomic client state for React
+        "local-ip-addresses-and-hostnames": "=0.3.0", // For development assistance: logs the reachable server URLs on startup (backend/src/server/logServerPaths.ts)
+        "react": "^19.2.8",
+        "react-dom": "^19.2.8",
+        "zustand": "^5.0.14" // App/domain state store for React (frontend/src/App/store/zustandStore.ts)
 
         /* Begin: package specific "dependencies" */
 
@@ -115,51 +132,92 @@ const packageJson = {
     },
 
     "devDependencies": {
+        "@babel/core": "^8.0.1", // Babel host for the React Compiler pass (@rolldown/plugin-babel peer; preset wired inline in frontend/build/build-config-generator.ts)
+        "@eslint-react/eslint-plugin": "^5.18.0", // Optional ironplate peer: React rules for eslint-config-ironplate/react-typescript.js (see frontend/src/eslint.config.js)
         "@eslint/js": "^10.0.1",
         "@eslint/markdown": "^8.0.3", // Markdown language support for ESLint; used by eslint.markdown.config.js (the "eslint:markdown" script)
+        "@rolldown/plugin-babel": "^0.2.3", // Runs the babel (React Compiler) pass inside the Rolldown pipeline (frontend/build/build-config-generator.ts)
         "@stylistic/eslint-plugin": "^5.10.0", // TypeScript-aware formatting rules (indent/semi/quote-props/...) for eslint.config.js
+        "@stylistic/stylelint-plugin": "^5.2.1", // Stylistic formatting rules for stylelint (see stylelint.config.js)
+        "@testing-library/dom": "^10.4.1", // Required peer of @testing-library/react
+        "@testing-library/jest-dom": "^7.0.0", // Extra DOM matchers; registered per test file via import '@testing-library/jest-dom/vitest'
+        "@testing-library/react": "^16.3.2", // React component testing (see frontend/src/App/App.test.tsx)
         "@types/extend": "^3.0.4", // Types for extend (ships none)
         "@types/node": "~24.13.3", // Node ambient types for the tsc type check (import.meta.dirname, process, node:*, NodeJS.*); pinned to 24.x to match the dev Node floor
         "@types/node-notifier": "^8.0.5", // Types for node-notifier (ships none)
+        "@types/react": "^19.2.17", // Types for react (ships none); provides the JSX namespace for the tsc frontend type check
+        "@types/react-dom": "^19.2.3", // Types for react-dom (ships none)
         "@types/semver": "^7.7.1", // Types for semver (ships none)
+        "@vitejs/plugin-react": "^6.0.4", // React fast-refresh + JSX transform for Vite; also provides reactCompilerPreset (frontend/build/build-config-generator.ts)
         "@webextensions/revisit": "^0.2.0", // Recurring-reminders tool run by the post-commit hook (see revisit.json)
         "auto-changelog": "^2.6.0", // Generates CHANGELOG.md from git history (see .auto-changelog); wired into "npm version"
+        "babel-plugin-react-compiler": "^1.0.0", // The React Compiler (loaded by reactCompilerPreset in the frontend build)
         "boxen": "^8.0.1", // Boxes terminal output
         "chalk": "^5.6.2", // Terminal string styling (used by the health-check orchestrator)
+        "commander": "^15.0.0", // CLI argument parsing for the build orchestrator (frontend/build/build.ts) and the Express server; ^15 aligns with the npm-package template branches
         "concurrently": "^10.0.4", // Runs tasks in parallel
+        "console-panel": "^1.0.4", // Vendored into frontend/src/resources/3rdparty/autoloaded/ via "copy-files-from-to" (dev overlay; loaded when frontEnd.showDevTools is enabled)
         "del": "^8.0.1", // Deletes files/folders (used by scripts/housekeeping/clean.ts)
+        "esbuild": "^0.28.1", // CSS minifier for the frontend build (cssMinify: 'esbuild' - see the REVISIT note in frontend/build/build-config-generator.ts)
         "eslint": "^10.8.0",
         "eslint-config-ironplate": "^3.0.0", // Shared ESLint base config (see eslint.config.js); the eslint-plugin-* entries below marked "ironplate peer" are its required peerDependencies
         "eslint-plugin-import-newlines": "^2.0.0",
         "eslint-plugin-import-x": "^4.17.1", // ironplate peer: import-x/* rules (no-unresolved, extensions, exports-last, no-default-export, ...)
         "eslint-plugin-n": "^18.2.2", // ironplate peer: Node.js rules (n/*)
         "eslint-plugin-promise": "^7.3.0", // ironplate peer: Promise rules (promise/*)
+        "eslint-plugin-react-hooks": "^7.1.1", // Optional ironplate peer: rules of hooks + exhaustive-deps (frontend/src/eslint.config.js)
+        "eslint-plugin-react-refresh": "^0.5.3", // Optional ironplate peer: validates components are fast-refresh safe (frontend/src/eslint.config.js)
         "eslint-plugin-simple-import-sort": "^14.0.0", // simple-import-sort/imports + /exports: deterministic import/export sorting
         "eslint-plugin-unicorn": "^72.0.0", // ironplate peer: unicorn/* rules
         "execa": "^10.0.0", // Spawns child processes for the sequential health-check run
-        "extend": "^3.0.2", // Deep merge used by all-is-well.config.local.ts to layer overrides on the base health-check config
         "globals": "^17.7.0",
         "husky": "^9.1.7", // Git hooks (see .husky/); wired via the "prepare" script
+        "jsdom": "^29.1.1", // DOM environment for browser-ish Vitest tests (per-file "@vitest-environment jsdom" pragma)
         "knip": "^6.29.0", // Finds unused files / exports / dependencies (see knip.config.ts)
         "lockfile-lint": "^5.0.0", // Validates package-lock.json (registry hosts + HTTPS)
         "lodash-es": "^4.18.1", // Utility functions (used by scripts/housekeeping/clean.ts, which deep-imports only the functions it needs)
         "node-notifier": "^10.0.1", // Desktop notification when a health check fails
         "package-cjson": "^3.0.0", // Generates package.json from package.json.ts (see scripts "housekeeping:*")
+        "postcss": "^8.5.23", // CSS parsing/serialization for the SplitMultiClassAtScopePlugin build workaround
+        "postcss-selector-parser": "^7.1.4", // Selector-level parsing for SplitMultiClassAtScopePlugin
+        "postcss-value-parser": "^4.2.0", // Value-level parsing used by the frontend build plugins
         "publint": "^0.3.22", // Lints the package for publish-time correctness (main/exports/files resolution); wired as the "publint" health check
         "semver": "^7.8.5", // Semantic-version comparison used by the node-version and npm-install health checks
         "shell-quote": "^1.10.0", // Shell-safe quoting of some commands
+        "stats.js": "=0.17.0", // Vendored into frontend/src/resources/3rdparty/autoloaded/ via "copy-files-from-to" (FPS meter dev overlay)
+        "stylelint": "^17.14.1", // CSS linter (see stylelint.config.js and the "stylelint" health check)
+        "stylelint-config-css-modules": "^4.6.0", // CSS Modules awareness for stylelint (:export / :global etc.)
+        "stylelint-config-recommended": "^18.0.0", // Baseline stylelint ruleset
         "typescript": "~6.0.3", // Powers the tsc type check (test:types); optional ironplate peer for its TypeScript configs
         "typescript-eslint": "^8.65.0", // Optional ironplate peer: bundles the TypeScript parser + plugin used by eslint-config-ironplate/node-typescript.js
+        "typescript-plugin-css-modules": "^5.2.0", // Editor/tsserver types for *.module.css imports (wired in frontend/tsconfig.json "plugins")
+        "vite": "^8.1.5", // Frontend bundler (Rolldown-based; orchestrated by frontend/build/build.ts)
         "vitest": "^4.1.10"
+    },
+
+    // npm dependency overrides (applied to the whole install tree)
+    "overrides": {
+        // Force every transitive react/react-dom requirement onto our copy - prevents a second React
+        // in the tree (which breaks hooks/context at runtime)
+        "react": "$react",
+        "react-dom": "$react-dom",
+        // stylelint-config-css-modules's declared stylelint peer range lags behind stylelint 17;
+        // pin its peer to our stylelint so npm resolves a single copy instead of erroring/duping
+        "stylelint-config-css-modules": {
+            "stylelint": "$stylelint"
+        }
     },
 
     "scripts": {
         // Fails any "npm install" early when the active Node does not satisfy .nvmrc.
         "preinstall": "./scripts/npm-run-scripts/preinstall.sh",
 
-        // Installs the Git hooks in .husky/ on "npm install". "|| true" keeps installs working in
-        // environments where husky is unavailable (e.g. CI with --omit=dev).
-        "prepare": "husky || true",
+        // On "npm install" / "npm ci": runs the steps under scripts/npm-run-scripts/prepare/
+        // (e.g. auto-creating the git-ignored config/config.development.local.js from its
+        // committed example, so fresh clones and CI pass "node --run test" with zero manual
+        // setup), then installs the Git hooks in .husky/ (tolerating environments where husky is
+        // unavailable, e.g. CI with --omit=dev).
+        "prepare": "./scripts/npm-run-scripts/prepare.sh",
 
         // One-shot workstation setup. "setup" is the umbrella - template branches / forks append
         // their own steps to it (database, certificates, ...). "setup:editor" (re)creates the
@@ -202,6 +260,19 @@ const packageJson = {
         // external URLs are ignored). Uses its own config so the main "eslint" run stays markdown-free.
         "eslint:markdown": "eslint --config eslint.markdown.config.js \"**/*.md\"",
 
+        // CSS linting (config: stylelint.config.js; vendored third-party CSS is excluded via .stylelintignore)
+        "stylelint":         "stylelint \"frontend/src/**/*.css\"",
+        "stylelint:fix":     "node --run stylelint -- --fix",
+
+        // Staged-files / changed-files variants via portable wrappers (mirror the eslint:* pairs above)
+        "stylelint:staged-files":      "./scripts/health-checks/checks/stylelint-staged-files.sh",
+        "stylelint:staged-files:fix":  "./scripts/health-checks/checks/stylelint-staged-files.sh --fix",
+        "stylelint:changed-files":     "./scripts/health-checks/checks/stylelint-changed-files.sh",
+        "stylelint:changed-files:fix": "./scripts/health-checks/checks/stylelint-changed-files.sh --fix",
+
+        // Per-rule summary output (useful when triaging many violations)
+        "stylelint:verbose": "node --run stylelint -- --formatter verbose",
+
         // Runs the test suite
         "vitest": "vitest run",
 
@@ -228,6 +299,10 @@ const packageJson = {
         // Full static type check of the .ts tooling and the shipped .js (config in tsconfig.json). Complements
         // "syntaxlint" (fast parse-only) and ESLint (syntactic, non-type-aware).
         "test:types": "tsc --pretty",
+
+        // Type check of the frontend (browser .tsx + the Vite build tooling) via frontend/tsconfig.json
+        // (jsx + "bundler" module resolution); the root tsconfig excludes frontend/ entirely
+        "test:types:frontend": "tsc --pretty --project frontend/tsconfig.json",
 
         // Lints the package for publish-time correctness (main/exports/files resolution); also run
         // as the "publint" check in all-is-well
@@ -320,7 +395,43 @@ const packageJson = {
         // Merges the template branch into main, auto-resolving the expected package.json / package-lock.json conflicts
         "template:merge-to-main":          "./scripts/branching/merge-template-to-main.sh",
         // Finds the newest template commit that merges cleanly and passes tests (local refs only - never fetches or pushes)
-        "template:find-safe-merge-commit": "./scripts/branching/find-safe-template-merge-commit.sh"
+        "template:find-safe-merge-commit": "./scripts/branching/find-safe-template-merge-commit.sh",
+
+        // Frontend build (Vite on Rolldown), driven by the config files in config/ (see
+        // docs/development/frontend-build.md). Orchestrator: frontend/build/build.ts; the plain
+        // "build" watches with the development.local config. "--bundle-index" selects the
+        // index.html bundle (the multi-bundle mechanism keeps working when child branches add more)
+        "build":                                "node --run build:development:local",
+        "build:development:local":              "node               ./frontend/build/build.ts --watch   --env config=\"./config/config.development.local.js\"  --bundle-index",
+        "build:development:local:do-not-watch": "node               ./frontend/build/build.ts           --env config=\"./config/config.development.local.js\"  --bundle-index",
+        "build:development:local:dry-run":      "node               ./frontend/build/build.ts --dry-run --env config=\"./config/config.development.local.js\"  --bundle-index",
+        "build:development:local:inspect-brk":  "node --inspect-brk ./frontend/build/build.ts --watch   --env config=\"./config/config.development.local.js\"  --bundle-index",
+        "build:do-not-watch":                   "node --run build:development:local:do-not-watch",
+        "build:dry-run":                        "node --run build:development:local:dry-run",
+        "build:inspect-brk":                    "node --run build:development:local:inspect-brk",
+        "build:production:live":                "NODE_ENV=production node ./frontend/build/build.ts     --env config=\"./config/config.production.live.js\"    --bundle-index",
+
+        // Re-vendors the third-party files listed in copy-files-from-to.cjson into
+        // frontend/src/resources/3rdparty/ (committed; exempted from the non-keyboard-characters guard).
+        // Deliberately run via npx (not a devDependency): a rarely-run housekeeping task whose
+        // output is committed and reviewed, so it does not need to weigh down the install tree.
+        "copy-files-from-to": "npx --yes --prefer-offline copy-files-from-to --when-file-exists overwrite",
+
+        // Express server (backend/src/server/server.ts): serves the built publicDirectory statically
+        // with an SPA fallback; USE_HMR=yes switches to Vite middleware mode (on-the-fly transforms +
+        // HMR - no separate build process needed)
+        "server:development:local":         "node --watch --watch-preserve-output backend/src/server/server.ts --config config/config.development.local.js",
+        "server:development:local:use-hmr": "USE_HMR=yes node --run server:development:local",
+        "server:production:live":           "NODE_ENV=production node backend/src/server/server.ts --config config/config.production.live.js",
+
+        // Dev entry points: "start" runs the Express server and the watch build together;
+        // ":use-hmr" runs only the server with Vite middleware mode instead of a separate build
+        "start":                "node --run start:app",
+        "start:app":            "concurrently \"node --run start:server\" \"node --run start:build\" --prefix \"[{time}] [{index}]\" --timestamp-format \"HH:mm:ss.SSS\"",
+        "start:app:use-hmr":    "node --run start:server:use-hmr",
+        "start:build":          "node --run build",
+        "start:server":         "node --run server:development:local",
+        "start:server:use-hmr": "node --run server:development:local:use-hmr"
     }
 };
 

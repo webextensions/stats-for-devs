@@ -154,5 +154,11 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
+# Frontend build output (config-driven publicDirectory - see config/)
+/public-*/
+
+# Local configuration files
+/config/*.local.js
+
 # Playwright files
 /.playwright-mcp/

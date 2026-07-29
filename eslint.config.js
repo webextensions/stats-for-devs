@@ -133,10 +133,11 @@ export default defineConfig([
             // eslint-config-ironplate assumes Node.js >= 20; this repo's floor is higher (see
             // "engines" in package.json), and some code relies on newer built-ins listed in
             // "ignores" because the rule flags them as experimental on the configured floor:
-            // module.stripTypeScriptTypes (scripts/health-checks/checks/check-syntax.ts) and
-            // path.matchesGlob (scripts/health-checks/checks/block-non-keyboard-characters/exempted-files.ts).
+            // module.stripTypeScriptTypes (scripts/health-checks/checks/check-syntax.ts),
+            // path.matchesGlob (scripts/health-checks/checks/block-non-keyboard-characters/exempted-files.ts) and
+            // import.meta.main (backend/src/server/server.ts).
             'n/no-unsupported-features/es-syntax': ['error', { version: '>=24.2.0' }],
-            'n/no-unsupported-features/node-builtins': ['error', { version: '>=24.2.0', ignores: ['module.stripTypeScriptTypes', 'path.matchesGlob'] }],
+            'n/no-unsupported-features/node-builtins': ['error', { version: '>=24.2.0', ignores: ['import.meta.main', 'module.stripTypeScriptTypes', 'path.matchesGlob'] }],
 
             'simple-import-sort/exports': 'error',
             'simple-import-sort/imports': 'error',

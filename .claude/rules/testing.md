@@ -1,6 +1,6 @@
 ---
 description: Vitest testing conventions and patterns
-globs: ["test/**/*.js", "test/**/*.ts", "**/*.test.js", "**/*.test.ts"]
+globs: ["test/**/*.js", "test/**/*.ts", "**/*.test.js", "**/*.test.jsx", "**/*.test.ts", "**/*.test.tsx"]
 ---
 
 # Testing Conventions
@@ -11,14 +11,15 @@ globs: ["test/**/*.js", "test/**/*.ts", "**/*.test.js", "**/*.test.ts"]
 - Run tests with `node --run vitest`
 
 ## File Placement
-- Two homes; vitest discovers both via the `**/*.test.{js,ts}` include in `vitest.config.js`:
+- Two homes; vitest discovers both via the `**/*.test.{js,jsx,ts,tsx}` include in `vitest.config.js`:
     - **Colocated** (preferred for simple, self-contained units): `{subject}.test.js` right next to
       the source file it tests (e.g. `scripts/health-checks/helpers/eslint-rules/markdown-relative-links.js`
       and its sibling `markdown-relative-links.test.js`) - keeps the code and its test together,
       simpler and more maintainable.
     - **`test/` at the project root** - for tests that benefit from grouping: integration/sanity
       suites and tests spanning multiple modules (e.g. `test/sanity.test.js`).
-- Test file naming: `{subject}.test.js` (or `.test.ts` when the test itself needs TypeScript)
+- Test file naming: `{subject}.test.js` (or `.test.ts` / `.test.tsx` when the test needs
+  TypeScript / JSX, e.g. `frontend/src/App/App.test.tsx`)
 - When colocating a test in a directory not yet listed in the vitest check's `changeDependencies`
   (`scripts/health-checks/all-is-well.ts`), add that directory - otherwise `--optimize-for-change`
   skips vitest for changes there.

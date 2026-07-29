@@ -74,10 +74,14 @@
     // type-checked on another (tsc does not read .gitignore). (The git-ignored config/*.local*.js
     // files are deliberately NOT listed here: they should stay type-checked so that errors in them
     // surface locally.)
+    //
+    // "frontend" is excluded because it needs jsx + "bundler" module resolution and has its own
+    // tsconfig (frontend/tsconfig.json, checked by "test:types:frontend").
     "exclude": [
         "node_modules",
         "coverage",
         ".cache",
+        "frontend",
         "public-*" // Frontend build output (config-driven publicDirectory - see config/)
     ]
 }

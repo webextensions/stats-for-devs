@@ -10,6 +10,8 @@ sources of truth rather than copies of them - follow a pointer to the file that 
 - **Day-to-day commands** - every command runs as `node --run <script>`; the `scripts` block in
   [package.json.ts](../package.json.ts) is the source of truth for the command list, and each
   script is documented by the comment above it.
+- [development/frontend-build.md](./development/frontend-build.md) - the Vite (Rolldown) frontend
+  build: config layering, the Express server (opt-in HMR), and CSS linting.
 - [development/health-checks.md](./development/health-checks.md) - the check suite behind
   `node --run test`: orchestrator, flags, configuration, and the git hooks that run it.
 - [development/releasing.md](./development/releasing.md) - the `npm version` release flow,

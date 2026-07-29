@@ -7,6 +7,16 @@ const config: KnipConfig = {
     // comment above). Populate these only when a fork needs to add entry points, ignore files/exports,
     // or mark a dependency as intentionally unused.
     entry: [
+        // The config tiers are loaded only via dynamic variable imports knip cannot trace
+        // (frontend/build/build.ts --env config=... and backend/src/server/server.ts --config ...).
+        'config/*.js',
+        // Nested per-directory ESLint config (browser/React rules for frontend/src/) - knip's
+        // eslint plugin only auto-detects the root eslint.config.js.
+        'frontend/src/eslint.config.js',
+        // The frontend entry is referenced only from frontend/src/index.html, which knip's vite
+        // plugin does not parse here (it only reads an index.html at the package root, and the
+        // --env-driven vite.config.ts factory gives it no root to discover).
+        'frontend/src/index.tsx',
         // package-cjson loads package.json.ts to generate package.json (knip has no plugin for it,
         // and nothing imports the file - "main"/"exports" anchor index.js, not this source file).
         'package.json.ts',
@@ -19,15 +29,23 @@ const config: KnipConfig = {
     ],
 
     ignore: [
+        // Vendored third-party files (refreshed via "node --run copy-files-from-to")
+        'frontend/src/resources/3rdparty/**',
         // Machine-local all-is-well config (git-ignored, usually absent): loaded only via a dynamic
         // variable import knip cannot trace, so when present it would be flagged as an unused file.
-        'scripts/health-checks/all-is-well.config.local.ts',
-        // Desktop-notification helper kept for later use (e.g. hooks or scripts that want to
-        // notify); currently has no importer, so keep knip from flagging it.
-        'utils/notifier/**'
+        'scripts/health-checks/all-is-well.config.local.ts'
     ],
 
     ignoreDependencies: [
+        // Vendor source for copy-files-from-to.cjson (never imported from code; its files are
+        // copied into frontend/src/resources/3rdparty/ and loaded at runtime by
+        // frontend/src/appUtils/devOverlays/loadDevOverlays.ts)
+        'console-panel',
+        // Invoked from scripts/npm-run-scripts/prepare.sh (the "prepare" npm script) - knip's
+        // npm-scripts plugin cannot see binaries used inside referenced shell scripts.
+        'husky',
+        // Vendor source for copy-files-from-to.cjson (see the console-panel note above)
+        'stats.js'
     ]
 };
 
