@@ -213,7 +213,7 @@ const packageJson = {
         "auto-changelog": "^2.6.0", // Generates CHANGELOG.md from git history (see .auto-changelog); wired into "npm version"
         "babel-plugin-react-compiler": "^1.0.0", // The React Compiler (loaded by reactCompilerPreset in the frontend build)
         "boxen": "^8.0.1", // Boxes terminal output
-        "chalk": "^5.6.2", // Terminal string styling (used by the health-check orchestrator)
+        "chalk": "^6.0.0", // Terminal string styling (used by the health-check orchestrator)
         "commander": "^15.0.0", // CLI argument parsing for the build orchestrator (frontend/build/build.ts) and the Express server; ^15 aligns with the npm-package template branches
         "concurrently": "^10.0.4", // Runs tasks in parallel
         "console-panel": "^1.0.4", // Vendored into frontend/src/resources/3rdparty/autoloaded/ via "copy-files-from-to" (dev overlay; loaded when frontEnd.showDevTools is enabled)
@@ -230,7 +230,7 @@ const packageJson = {
         "eslint-plugin-simple-import-sort": "^14.0.0", // simple-import-sort/imports + /exports: deterministic import/export sorting
         "eslint-plugin-unicorn": "^72.0.0", // ironplate peer: unicorn/* rules
         "execa": "^10.0.0", // Spawns child processes for the sequential health-check run
-        "globals": "^17.7.0",
+        "globals": "^17.8.0",
         "husky": "^9.1.7", // Git hooks (see .husky/); wired via the "prepare" script
         "jsdom": "^29.1.1", // DOM environment for browser-ish Vitest tests (per-file "@vitest-environment jsdom" pragma)
         "knip": "^6.29.0", // Finds unused files / exports / dependencies (see knip.config.ts)
