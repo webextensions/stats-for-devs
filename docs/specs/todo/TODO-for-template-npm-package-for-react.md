@@ -17,9 +17,9 @@
   deletions.
 * Future merges from `abstract-frontend-build` will conflict on the dependency blocks in
   `package.json.ts`: that family keeps the demo/dev harness's runtime stack (react, express,
-  jotai, ...) in `dependencies`, while this branch moved it into the `dependenciesForDemo`
-  variable (shipped as devDependencies) and moved `react` / `react-dom` to `peerDependencies` +
-  dev copies - keep this branch's side.
+  jotai, ...) in `dependencies`, while this branch moved it into the `dependenciesForApp` /
+  `dependenciesForServer` categories (mapped to devDependencies) and moved `react` / `react-dom`
+  to `peerDependencies` + dev copies - keep this branch's side.
 * Consider enabling `isolatedDeclarations` in
   [frontend/lib/tsconfig.json](../../../frontend/lib/tsconfig.json) for faster tsdown declaration
   emits (requires explicit types on every export; tsdown currently falls back to the TypeScript

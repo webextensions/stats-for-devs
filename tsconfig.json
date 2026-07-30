@@ -74,15 +74,14 @@
     // type-checked on another (tsc does not read .gitignore). (The git-ignored config/*.local*.js
     // files are deliberately NOT listed here: they should stay type-checked so that errors in them
     // surface locally.)
-    //
-    // "frontend" is excluded because it needs jsx + "bundler" module resolution and has its own
-    // tsconfig (frontend/tsconfig.json, checked by "test:types:frontend").
     "exclude": [
-        "node_modules",
-        "coverage",
         ".cache",
-        "frontend",
+        "coverage",
+        "dist", // Library build output of the npm-package template branches
+        "frontend", // Needs jsx + "bundler" module resolution; has its own tsconfig (frontend/tsconfig.json, checked by "test:types:frontend")
+        "node_modules",
         "public-*", // Frontend build output (config-driven publicDirectory - see config/)
-        "dist" // Library build output (tsdown - see frontend/lib/tsdown.config.ts); to be upstreamed (see docs/specs/todo/TODO-for-template-npm-package-for-react.md)
+        "temp", // Scratch/temporary files (git-ignored family-wide)
+        "tmp" // Scratch/temporary files (git-ignored family-wide)
     ]
 }

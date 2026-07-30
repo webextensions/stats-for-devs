@@ -20,11 +20,13 @@ export default defineConfig([
     // should stay linted so that errors in them surface locally - see the import-x/no-unresolved
     // override at the end of this file.)
     globalIgnores([
-        'node_modules/',
-        'coverage/',
         '.cache/',
+        'coverage/',
+        'dist/', // Library build output of the npm-package template branches
+        'node_modules/',
         'public-*/', // Frontend build output (config-driven publicDirectory - see config/); ESLint does not read .gitignore
-        'dist/' // Library build output (tsdown - see frontend/lib/tsdown.config.ts); to be upstreamed (see docs/specs/todo/TODO-for-template-npm-package-for-react.md)
+        'temp/', // Scratch/temporary files (git-ignored family-wide)
+        'tmp/' // Scratch/temporary files (git-ignored family-wide)
     ]),
 
     // Shared base config (core + Node.js + TypeScript rules; the TypeScript parser comes bundled,

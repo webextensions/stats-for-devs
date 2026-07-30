@@ -15,6 +15,16 @@
 // in the first place, so a malformed package.json makes package.json.ts itself fail to load
 // (ERR_INVALID_PACKAGE_CONFIG) before the try/catch can run.
 //
+// Dependency declaration format: npm's three fields ("dependencies" / "devDependencies" /
+// "peerDependencies") are too coarse for the template-branch family - the same package lands in
+// different npm fields on different branches (e.g. react: "dependencies" on a web app,
+// "peerDependencies" on a React component package, "devDependencies" where it only powers a demo).
+// So dependencies are declared in semantic category objects (dependenciesFor*), named by the
+// SUBSYSTEM that imports them - never by the npm field they land in, which is branch-relative -
+// so a package's category is identical on every branch and template merges stay conflict-free;
+// the branch-owned dependencyCategoriesMapping decides which npm field each category lands in.
+// Each category also has a {category}_overrides object; they merge into the final "overrides".
+//
 // "package-cjson" detects this file and treats the default export below as the contents of "package.json".
 // Loading requires Node.js >= 24.2.0 (for package-cjson@^3.0.0).
 //
@@ -28,6 +38,8 @@
 /* eslint-disable @stylistic/quotes -- double-quoted strings below, to stay visually aligned with the generated package.json */
 /* eslint-disable import-x/no-default-export */
 
+import { createDependencyCollectors } from './utils/package-json-utils/package-json-utils.ts';
+
 // Prefer the version from package.json; fall back to package-version.json if package.json cannot be
 // imported (absent / not yet generated - see header). Top-level await resolves "version" before the
 // default export object is built; package-cjson awaits this module, then reads its default export.
@@ -38,35 +50,15 @@ try {
     version = (await import('./package-version.json', { with: { type: 'json' } })).default.version;
 }
 
-// Runtime stack of the demo/dev harness ONLY (the config-driven frontend build under
-// frontend/build/ + frontend/src/ and the minimal Express server under backend/) - inherited from
-// the abstract-frontend-build branch, where these live in "dependencies" because that family
-// DEPLOYS the app. This branch publishes a LIBRARY instead: nothing here is imported by
-// frontend/lib/src/, so none of it may reach consumers as a transitive dependency. Merged into
-// "devDependencies" below; "dependencies" holds only the library's real runtime deps (currently
-// none - react / react-dom are "peerDependencies").
-const dependenciesForDemo = {
-    "@jridgewell/gen-mapping": "^0.3.13", // CSS sourcemap merging (frontend/build/plugins/CssBuildSourcemapsPlugin)
-    "@jridgewell/trace-mapping": "^0.3.31", // CSS sourcemap merging (frontend/build/plugins/CssBuildSourcemapsPlugin)
-    "classnames": "^2.5.1", // Conditional CSS class composition
-    "compression": "^1.8.1", // Express gzip middleware (backend/src/server/server.ts)
-    "express": "^5.2.1", // Serves the built frontend: static + SPA fallback + opt-in Vite HMR middleware (backend/src/server/server.ts)
-    "extend": "^3.0.2", // Deep merge for the config/ layering, the server's config clone, and all-is-well.config.local.ts
-    "jotai": "^2.20.2", // Atomic client state for React
-    "local-ip-addresses-and-hostnames": "=0.3.0", // For development assistance: logs the reachable server URLs on startup (backend/src/server/logServerPaths.ts)
-    "zustand": "^5.0.14" // App/domain state store for React (frontend/src/App/store/zustandStore.ts)
-};
-
-const packageJson = {
+const core = {
     "name": "@webextensions/template-javascript-project",
     version, // Owned by npm (see header); derived from package.json / package-version.json, never hard-coded
     "description": "Template for npm packages shipping an embeddable widget - React components/hooks plus standalone script-tag/CDN bundles (IIFE, react bundled in) with opt-in Shadow DOM isolation - tsdown-built (ESM + bundled types + CSS Modules) with a publishable manifest verified by publint, plus a config-driven React + Vite (Rolldown) frontend build as the development/demo harness - on top of the shared JavaScript tooling baseline",
     "author": "webextensions.org",
     "license": "MIT",
 
-    // This branch carries the publishable-manifest baseline for the npm-package template family:
-    // no "private" flag, plus the publish fields ("publishConfig" here; "main" / "exports" /
-    // "files" below). Non-published forks add "private": true back (see
+    // Publishable-manifest baseline: no "private" flag, plus the publish fields ("publishConfig"
+    // here; "main" / "exports" / "files" below). Non-published forks add "private": true back (see
     // docs/init/CUSTOMIZE/CUSTOMIZE-package-json.md). The "npm version" version/tag lifecycle
     // (see the scripts below) stays wired regardless.
     //
@@ -115,7 +107,7 @@ const packageJson = {
     // Publish fields for a widget-shipping React library: bundler consumers import the built ESM
     // bundle in dist/ (produced by tsdown from frontend/lib/src/ - see
     // frontend/lib/tsdown.config.ts), with react / react-dom supplied by the consuming project
-    // (see "peerDependencies" below); script-tag / CDN consumers load the standalone IIFE
+    // (see dependenciesForPeer below); script-tag / CDN consumers load the standalone IIFE
     // (dist/widget.min.js via "unpkg" / "jsdelivr" below, react bundled in). No "bin" (this
     // branch has no CLI - see template-npm-package-for-exports-cli for that).
     //
@@ -165,111 +157,365 @@ const packageJson = {
         "frontend/lib/src/",
         "!**/*.test.*",
         "CHANGELOG.md"
-    ],
+    ]
+};
 
-    // Runtime deps of the PUBLISHED library only (installed by every consumer). The demo/dev
-    // harness's runtime stack lives in dependenciesForDemo (see above) and ships as
-    // devDependencies instead.
-    "dependencies": {
-        /* Begin: package specific "dependencies" */
+// Runtime dependencies of the PUBLISHED package - what the code shipped to consumers
+// (frontend/lib/src/, built into dist/) imports. Installed by every consumer, so keep this
+// minimal (react / react-dom are supplied by the consumer instead - see dependenciesForPeer).
+const dependenciesForPackage = {
+    /* Begin: Project originated "dependenciesForPackage" */
 
-        // TODO: Add package specific "dependencies" here
+    // No project originated "dependenciesForPackage" yet
 
-        /* End: package specific "dependencies" */
-    },
+    /* End: Project originated "dependenciesForPackage" */
 
-    // Supplied by the consuming project, not bundled: tsdown externalizes every "dependencies" /
-    // "peerDependencies" entry by default, so the dist/ bundle imports react from the consumer's
-    // own copy. ">=18" because the library only relies on React 18+ features (hooks, createRoot,
-    // the automatic JSX runtime); development and tests run against the dev copies below.
-    "peerDependencies": {
-        "react": ">=18",
-        "react-dom": ">=18" // Needed by the mount()/unmount() helpers (react-dom/client's createRoot)
-    },
+    /* Begin: Template originated "dependenciesForPackage" */
 
-    "devDependencies": {
-        // Demo/dev harness runtime stack (see the dependenciesForDemo declaration above)
-        ...dependenciesForDemo,
+    // No template originated "dependenciesForPackage" yet
 
-        "@babel/core": "^8.0.1", // Babel host for the React Compiler pass (@rolldown/plugin-babel peer; preset wired inline in frontend/build/build-config-generator.ts)
-        "@eslint-react/eslint-plugin": "^5.18.0", // Optional ironplate peer: React rules for eslint-config-ironplate/react-typescript.js (see frontend/src/eslint.config.js)
-        "@eslint/js": "^10.0.1",
-        "@eslint/markdown": "^8.0.3", // Markdown language support for ESLint; used by eslint.markdown.config.js (the "eslint:markdown" script)
-        "@rolldown/plugin-babel": "^0.2.3", // Runs the babel (React Compiler) pass inside the Rolldown pipeline (frontend/build/build-config-generator.ts)
-        "@stylistic/eslint-plugin": "^5.10.0", // TypeScript-aware formatting rules (indent/semi/quote-props/...) for eslint.config.js
-        "@stylistic/stylelint-plugin": "^5.2.1", // Stylistic formatting rules for stylelint (see stylelint.config.js)
-        "@testing-library/dom": "^10.4.1", // Required peer of @testing-library/react
-        "@testing-library/jest-dom": "^7.0.0", // Extra DOM matchers; registered per test file via import '@testing-library/jest-dom/vitest'
-        "@testing-library/react": "^16.3.2", // React component testing (see frontend/src/App/App.test.tsx and the frontend/lib/src/ tests)
-        "@tsdown/css": "^0.22.14", // CSS (incl. CSS Modules) support for tsdown (auto-detected when installed; extracts dist/style.css)
-        "@types/extend": "^3.0.4", // Types for extend (ships none)
-        "@types/node": "~24.13.3", // Node ambient types for the tsc type check (import.meta.dirname, process, node:*, NodeJS.*); pinned to 24.x to match the dev Node floor
-        "@types/node-notifier": "^8.0.5", // Types for node-notifier (ships none)
-        "@types/react": "^19.2.17", // Types for react (ships none); provides the JSX namespace for the tsc frontend type check
-        "@types/react-dom": "^19.2.3", // Types for react-dom (ships none)
-        "@types/semver": "^7.7.1", // Types for semver (ships none)
-        "@vitejs/plugin-react": "^6.0.4", // React fast-refresh + JSX transform for Vite; also provides reactCompilerPreset (frontend/build/build-config-generator.ts)
-        "@webextensions/revisit": "^0.2.0", // Recurring-reminders tool run by the post-commit hook (see revisit.json)
-        "auto-changelog": "^2.6.0", // Generates CHANGELOG.md from git history (see .auto-changelog); wired into "npm version"
-        "babel-plugin-react-compiler": "^1.0.0", // The React Compiler (loaded by reactCompilerPreset in the frontend build)
-        "boxen": "^8.0.1", // Boxes terminal output
-        "chalk": "^6.0.0", // Terminal string styling (used by the health-check orchestrator)
-        "commander": "^15.0.0", // CLI argument parsing for the build orchestrator (frontend/build/build.ts) and the Express server; ^15 aligns with the npm-package template branches
-        "concurrently": "^10.0.4", // Runs tasks in parallel
-        "console-panel": "^1.0.4", // Vendored into frontend/src/resources/3rdparty/autoloaded/ via "copy-files-from-to" (dev overlay; loaded when frontEnd.showDevTools is enabled)
-        "del": "^8.0.1", // Deletes files/folders (used by scripts/housekeeping/clean.ts)
-        "esbuild": "^0.28.1", // CSS minifier for the frontend build (cssMinify: 'esbuild' - see the REVISIT note in frontend/build/build-config-generator.ts)
-        "eslint": "^10.8.0",
-        "eslint-config-ironplate": "^3.0.0", // Shared ESLint base config (see eslint.config.js); the eslint-plugin-* entries below marked "ironplate peer" are its required peerDependencies
-        "eslint-plugin-import-newlines": "^2.0.0",
-        "eslint-plugin-import-x": "^4.17.1", // ironplate peer: import-x/* rules (no-unresolved, extensions, exports-last, no-default-export, ...)
-        "eslint-plugin-n": "^18.2.2", // ironplate peer: Node.js rules (n/*)
-        "eslint-plugin-promise": "^7.3.0", // ironplate peer: Promise rules (promise/*)
-        "eslint-plugin-react-hooks": "^7.1.1", // Optional ironplate peer: rules of hooks + exhaustive-deps (frontend/src/eslint.config.js)
-        "eslint-plugin-react-refresh": "^0.5.3", // Optional ironplate peer: validates components are fast-refresh safe (frontend/src/eslint.config.js)
-        "eslint-plugin-simple-import-sort": "^14.0.0", // simple-import-sort/imports + /exports: deterministic import/export sorting
-        "eslint-plugin-unicorn": "^72.0.0", // ironplate peer: unicorn/* rules
-        "execa": "^10.0.0", // Spawns child processes for the sequential health-check run
-        "globals": "^17.8.0",
-        "husky": "^9.1.7", // Git hooks (see .husky/); wired via the "prepare" script
-        "jsdom": "^29.1.1", // DOM environment for browser-ish Vitest tests (per-file "@vitest-environment jsdom" pragma)
-        "knip": "^6.29.0", // Finds unused files / exports / dependencies (see knip.config.ts)
-        "lockfile-lint": "^5.0.0", // Validates package-lock.json (registry hosts + HTTPS)
-        "lodash-es": "^4.18.1", // Utility functions (used by scripts/housekeeping/clean.ts, which deep-imports only the functions it needs)
-        "node-notifier": "^10.0.1", // Desktop notification when a health check fails
-        "package-cjson": "^3.0.0", // Generates package.json from package.json.ts (see scripts "housekeeping:*")
-        "postcss": "^8.5.23", // CSS parsing/serialization for the SplitMultiClassAtScopePlugin build workaround
-        "postcss-selector-parser": "^7.1.4", // Selector-level parsing for SplitMultiClassAtScopePlugin
-        "postcss-value-parser": "^4.2.0", // Value-level parsing used by the frontend build plugins
-        "publint": "^0.3.22", // Lints the package for publish-time correctness (main/exports/files resolution); wired as the "publint" health check
-        "react": "^19.2.8", // Dev copy for the demo + tests; consumers supply their own (see "peerDependencies")
-        "react-dom": "^19.2.8", // Dev copy for the demo + tests; consumers supply their own (see "peerDependencies")
-        "semver": "^7.8.5", // Semantic-version comparison used by the node-version and npm-install health checks
-        "shell-quote": "^1.10.0", // Shell-safe quoting of some commands
-        "stats.js": "=0.17.0", // Vendored into frontend/src/resources/3rdparty/autoloaded/ via "copy-files-from-to" (FPS meter dev overlay)
-        "stylelint": "^17.14.1", // CSS linter (see stylelint.config.js and the "stylelint" health check)
-        "stylelint-config-css-modules": "^4.6.0", // CSS Modules awareness for stylelint (:export / :global etc.)
-        "stylelint-config-recommended": "^18.0.0", // Baseline stylelint ruleset
-        "tsdown": "^0.22.14", // Library bundler (Rolldown-based): builds frontend/lib/src/index.ts into the dist/ ESM bundle + bundled .d.ts + extracted CSS (see frontend/lib/tsdown.config.ts)
-        "typescript": "~6.0.3", // Powers the tsc type check (test:types); optional ironplate peer for its TypeScript configs
-        "typescript-eslint": "^8.65.0", // Optional ironplate peer: bundles the TypeScript parser + plugin used by eslint-config-ironplate/node-typescript.js
-        "typescript-plugin-css-modules": "^5.2.0", // Editor/tsserver types for *.module.css imports (wired in frontend/tsconfig.json "plugins")
-        "vite": "^8.1.5", // Frontend bundler (Rolldown-based; orchestrated by frontend/build/build.ts)
-        "vitest": "^4.1.10"
-    },
+    /* End: Template originated "dependenciesForPackage" */
+};
 
-    // npm dependency overrides (applied to the whole install tree)
-    "overrides": {
-        // Force every transitive react/react-dom requirement onto our copy - prevents a second React
-        // in the tree (which breaks hooks/context at runtime)
-        "react": "$react",
-        "react-dom": "$react-dom",
-        // stylelint-config-css-modules's declared stylelint peer range lags behind stylelint 17;
-        // pin its peer to our stylelint so npm resolves a single copy instead of erroring/duping
-        "stylelint-config-css-modules": {
-            "stylelint": "$stylelint"
-        }
-    },
+const dependenciesForPackage_overrides = {
+    /* Begin: Project originated "dependenciesForPackage_overrides" */
+
+    // No project originated "dependenciesForPackage_overrides" yet
+
+    /* End: Project originated "dependenciesForPackage_overrides" */
+
+    /* Begin: Template originated "dependenciesForPackage_overrides" */
+
+    // No template originated "dependenciesForPackage_overrides" yet
+
+    /* End: Template originated "dependenciesForPackage_overrides" */
+};
+
+// Dependencies imported by the frontend app under frontend/src/ (React plus the client state
+// stack). dependencyCategoriesMapping below decides the npm field: "dependencies" on branches
+// that DEPLOY the app, "devDependencies" where the app is only a development/demo harness - the
+// membership stays identical either way.
+const dependenciesForApp = {
+    /* Begin: Project originated "dependenciesForApp" */
+
+    // No project originated "dependenciesForApp" yet
+
+    /* End: Project originated "dependenciesForApp" */
+
+    /* Begin: Template originated "dependenciesForApp" */
+
+    "classnames": "^2.5.1",
+    "jotai": "^2.20.2",
+    "react": "^19.2.8", // Dev copy; consumers supply their own (see dependenciesForPeer)
+    "react-dom": "^19.2.8", // Dev copy; consumers supply their own (see dependenciesForPeer)
+    "zustand": "^5.0.14"
+
+    /* End: Template originated "dependenciesForApp" */
+};
+
+const dependenciesForApp_overrides = {
+    /* Begin: Project originated "dependenciesForApp_overrides" */
+
+    // No project originated "dependenciesForApp_overrides" yet
+
+    /* End: Project originated "dependenciesForApp_overrides" */
+
+    /* Begin: Template originated "dependenciesForApp_overrides" */
+
+    // Force every transitive react/react-dom requirement onto our copy - prevents a second React
+    // in the tree (which breaks hooks/context at runtime)
+    "react": "$react",
+    "react-dom": "$react-dom"
+
+    /* End: Template originated "dependenciesForApp_overrides" */
+};
+
+// Dependencies imported by the build toolchain: the config-driven demo-app build under
+// frontend/build/ (Vite) and the publishable library build (tsdown), run locally and in CI.
+const dependenciesForBuild = {
+    /* Begin: Project originated "dependenciesForBuild" */
+
+    // No project originated "dependenciesForBuild" yet
+
+    /* End: Project originated "dependenciesForBuild" */
+
+    /* Begin: Template originated "dependenciesForBuild" */
+
+    "@babel/core": "^8.0.1", // @rolldown/plugin-babel peer; hosts the React Compiler pass
+    "@jridgewell/gen-mapping": "^0.3.13",
+    "@jridgewell/trace-mapping": "^0.3.31",
+    "@rolldown/plugin-babel": "^0.2.3",
+    "@tsdown/css": "^0.22.14", // Auto-detected by tsdown when installed; extracts dist/style.css
+    "@vitejs/plugin-react": "^6.0.4", // Also provides reactCompilerPreset
+    "babel-plugin-react-compiler": "^1.0.0",
+    "commander": "^15.0.0", // Also declared in dependenciesForServer
+    "esbuild": "^0.28.1", // CSS minifier for the frontend build (cssMinify: 'esbuild' - see the REVISIT note in frontend/build/build-config-generator.ts)
+    "postcss": "^8.5.23", // For the SplitMultiClassAtScopePlugin build workaround
+    "postcss-selector-parser": "^7.1.4",
+    "postcss-value-parser": "^4.2.0",
+    "tsdown": "^0.22.14",
+    "vite": "^8.1.5"
+
+    /* End: Template originated "dependenciesForBuild" */
+};
+
+const dependenciesForBuild_overrides = {
+    /* Begin: Project originated "dependenciesForBuild_overrides" */
+
+    // No project originated "dependenciesForBuild_overrides" yet
+
+    /* End: Project originated "dependenciesForBuild_overrides" */
+
+    /* Begin: Template originated "dependenciesForBuild_overrides" */
+
+    // No template originated "dependenciesForBuild_overrides" yet
+
+    /* End: Template originated "dependenciesForBuild_overrides" */
+};
+
+// Dependencies imported by the Express server under backend/src/server/ and the config/ layering
+// it loads. dependencyCategoriesMapping below decides the npm field: "dependencies" on branches
+// that DEPLOY the server, "devDependencies" where it only serves development - the membership
+// stays identical either way.
+const dependenciesForServer = {
+    /* Begin: Project originated "dependenciesForServer" */
+
+    // No project originated "dependenciesForServer" yet
+
+    /* End: Project originated "dependenciesForServer" */
+
+    /* Begin: Template originated "dependenciesForServer" */
+
+    "commander": "^15.0.0", // Also declared in dependenciesForBuild
+    "compression": "^1.8.1",
+    "express": "^5.2.1",
+    "extend": "^3.0.2", // Also declared in dependenciesForDev
+    "local-ip-addresses-and-hostnames": "=0.3.0"
+
+    /* End: Template originated "dependenciesForServer" */
+};
+
+const dependenciesForServer_overrides = {
+    /* Begin: Project originated "dependenciesForServer_overrides" */
+
+    // No project originated "dependenciesForServer_overrides" yet
+
+    /* End: Project originated "dependenciesForServer_overrides" */
+
+    /* Begin: Template originated "dependenciesForServer_overrides" */
+
+    // No template originated "dependenciesForServer_overrides" yet
+
+    /* End: Template originated "dependenciesForServer_overrides" */
+};
+
+// Dependencies useful only in the local dev / CI setup: the lint, type-check, test, health-check,
+// and release toolchain, plus the sources of the vendored dev overlays (re-vendored via
+// "copy-files-from-to").
+const dependenciesForDev = {
+    /* Begin: Project originated "dependenciesForDev" */
+
+    // No project originated "dependenciesForDev" yet
+
+    /* End: Project originated "dependenciesForDev" */
+
+    /* Begin: Template originated "dependenciesForDev" */
+
+    "@eslint-react/eslint-plugin": "^5.18.0",
+    "@eslint/js": "^10.0.1",
+    "@eslint/markdown": "^8.0.3",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "@stylistic/stylelint-plugin": "^5.2.1",
+    "@testing-library/dom": "^10.4.1", // Required peer of @testing-library/react
+    "@testing-library/jest-dom": "^7.0.0", // Registered per test file via import '@testing-library/jest-dom/vitest'
+    "@testing-library/react": "^16.3.2",
+    "@types/extend": "^3.0.4",
+    "@types/node": "~24.13.3", // Pinned to 24.x to match the dev Node floor
+    "@types/node-notifier": "^8.0.5",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@types/semver": "^7.7.1",
+    "@webextensions/revisit": "^0.2.0", // Recurring-reminders tool run by the post-commit hook (see revisit.json)
+    "auto-changelog": "^2.6.0",
+    "boxen": "^8.0.1",
+    "chalk": "^6.0.0",
+    "concurrently": "^10.0.4",
+    "console-panel": "^1.0.4", // Vendored into frontend/src/resources/3rdparty/autoloaded/ via "copy-files-from-to"
+    "del": "^8.0.1",
+    "eslint": "^10.8.0",
+    "eslint-config-ironplate": "^3.0.0", // The entries below marked "ironplate peer" are its required peerDependencies
+    "eslint-plugin-import-newlines": "^2.0.0",
+    "eslint-plugin-import-x": "^4.17.1", // ironplate peer
+    "eslint-plugin-n": "^18.2.2", // ironplate peer
+    "eslint-plugin-promise": "^7.3.0", // ironplate peer
+    "eslint-plugin-react-hooks": "^7.1.1", // Optional ironplate peer
+    "eslint-plugin-react-refresh": "^0.5.3", // Optional ironplate peer
+    "eslint-plugin-simple-import-sort": "^14.0.0",
+    "eslint-plugin-unicorn": "^72.0.0", // ironplate peer
+    "execa": "^10.0.0",
+    "extend": "^3.0.2", // Also declared in dependenciesForServer
+    "globals": "^17.8.0",
+    "husky": "^9.1.7",
+    "jsdom": "^29.1.1", // Opted into per test file via the "@vitest-environment jsdom" pragma
+    "knip": "^6.29.0",
+    "lockfile-lint": "^5.0.0",
+    "lodash-es": "^4.18.1",
+    "node-notifier": "^10.0.1",
+    "package-cjson": "^3.0.0",
+    "publint": "^0.3.22",
+    "semver": "^7.8.5",
+    "shell-quote": "^1.10.0",
+    "stats.js": "=0.17.0", // Vendored into frontend/src/resources/3rdparty/autoloaded/ via "copy-files-from-to"
+    "stylelint": "^17.14.1",
+    "stylelint-config-css-modules": "^4.6.0",
+    "stylelint-config-recommended": "^18.0.0",
+    "typescript": "~6.0.3", // Optional ironplate peer for its TypeScript configs
+    "typescript-eslint": "^8.65.0", // Optional ironplate peer
+    "typescript-plugin-css-modules": "^5.2.0", // Editor/tsserver types for *.module.css imports (wired in frontend/tsconfig.json "plugins")
+    "vitest": "^4.1.10"
+
+    /* End: Template originated "dependenciesForDev" */
+};
+
+const dependenciesForDev_overrides = {
+    /* Begin: Project originated "dependenciesForDev_overrides" */
+
+    // No project originated "dependenciesForDev_overrides" yet
+
+    /* End: Project originated "dependenciesForDev_overrides" */
+
+    /* Begin: Template originated "dependenciesForDev_overrides" */
+
+    // stylelint-config-css-modules's declared stylelint peer range lags behind stylelint 17;
+    // pin its peer to our stylelint so npm resolves a single copy instead of erroring/duping
+    "stylelint-config-css-modules": {
+        "stylelint": "$stylelint"
+    }
+
+    /* End: Template originated "dependenciesForDev_overrides" */
+};
+
+// Supplied by the consuming project, not bundled: tsdown externalizes every "dependencies" /
+// "peerDependencies" entry by default, so the dist/ bundle imports react from the consumer's
+// own copy. ">=18" because the library only relies on React 18+ features (hooks, createRoot,
+// the automatic JSX runtime); development and tests run against the dev copies in
+// dependenciesForApp.
+const dependenciesForPeer = {
+    /* Begin: Project originated "dependenciesForPeer" */
+
+    // No project originated "dependenciesForPeer" yet
+
+    /* End: Project originated "dependenciesForPeer" */
+
+    /* Begin: Template originated "dependenciesForPeer" */
+
+    "react": ">=18",
+    "react-dom": ">=18" // Needed by the mount()/unmount() helpers (react-dom/client's createRoot)
+
+    /* End: Template originated "dependenciesForPeer" */
+};
+
+const dependenciesForPeer_overrides = {
+    /* Begin: Project originated "dependenciesForPeer_overrides" */
+
+    // No project originated "dependenciesForPeer_overrides" yet
+
+    /* End: Project originated "dependenciesForPeer_overrides" */
+
+    /* Begin: Template originated "dependenciesForPeer_overrides" */
+
+    // No template originated "dependenciesForPeer_overrides" yet
+
+    /* End: Template originated "dependenciesForPeer_overrides" */
+};
+
+// Per-peer metadata ("peerDependenciesMeta") - only meaningful for packages listed in
+// dependenciesForPeer. Emitted into the manifest only when non-empty. The main use case is
+// marking a peer as optional so npm does not warn/install when the consumer omits it, e.g. on a
+// widget branch whose script-tag/IIFE consumers do not need react:
+//     "react": { "optional": true }
+const dependenciesForPeer_meta = {
+    /* Begin: Project originated "dependenciesForPeer_meta" */
+
+    // No project originated "dependenciesForPeer_meta" yet
+
+    /* End: Project originated "dependenciesForPeer_meta" */
+
+    /* Begin: Template originated "dependenciesForPeer_meta" */
+
+    // No template originated "dependenciesForPeer_meta" yet
+
+    /* End: Template originated "dependenciesForPeer_meta" */
+};
+
+// The category order (here and throughout this file) is deliberate, not alphabetical:
+// package -> app -> build -> server -> dev -> peer.
+const dependencyCategories = {
+    dependenciesForPackage,
+    dependenciesForApp,
+    dependenciesForBuild,
+    dependenciesForServer,
+    dependenciesForDev,
+    dependenciesForPeer
+};
+
+// Category -> npm field mapping for THIS branch. This is the branch-owned knob: the categories are
+// named by the subsystem that imports them, so other template branches keep the exact same
+// category membership and change only this object (e.g. a web-app branch maps dependenciesForApp /
+// dependenciesForServer to "dependencies" because it deploys the app).
+const dependencyCategoriesMapping = {
+    dependenciesForPackage: "dependencies",
+    dependenciesForApp:     "devDependencies",
+    dependenciesForBuild:   "devDependencies",
+    dependenciesForServer:  "devDependencies",
+    dependenciesForDev:     "devDependencies",
+    dependenciesForPeer:    "peerDependencies"
+} as const;
+
+// The per-category override objects, in the same deliberate order as dependencyCategories.
+const dependencyCategoriesOverrides = {
+    dependenciesForPackage: dependenciesForPackage_overrides,
+    dependenciesForApp: dependenciesForApp_overrides,
+    dependenciesForBuild: dependenciesForBuild_overrides,
+    dependenciesForServer: dependenciesForServer_overrides,
+    dependenciesForDev: dependenciesForDev_overrides,
+    dependenciesForPeer: dependenciesForPeer_overrides
+};
+
+// Validates the category declarations above (same category names across the three objects; every
+// mapping value a real npm field; no conflicting duplicate package specs across categories; a
+// package in only one {category}_overrides object) and returns the merge helpers - a violation
+// throws here and fails the module load. See utils/package-json-utils/package-json-utils.ts for the
+// exact rules.
+const { collectDependenciesFor, collectOverrides } = createDependencyCollectors({
+    dependencyCategories,
+    dependencyCategoriesMapping,
+    dependencyCategoriesOverrides
+});
+
+// Merged once each, so the "omitted while empty" spreads below can test them before emitting.
+const mergedPeerDependencies = collectDependenciesFor('peerDependencies');
+const mergedOverrides = collectOverrides();
+
+const packageJson = {
+    ...core,
+
+    // The three npm fields are computed from the dependenciesFor* categories via
+    // dependencyCategoriesMapping (see the declarations above). "dependencies" /
+    // "devDependencies" are emitted even while empty (they are the slots a fork fills - see
+    // docs/init/CUSTOMIZE/CUSTOMIZE-package-json.md); the peer / overrides fields below are
+    // omitted instead, so a branch that declares none keeps them out of its manifest entirely.
+    "dependencies": collectDependenciesFor('dependencies'),
+    "devDependencies": collectDependenciesFor('devDependencies'),
+    ...(Object.keys(mergedPeerDependencies).length > 0 && { "peerDependencies": mergedPeerDependencies }),
+    // Peer metadata (see dependenciesForPeer_meta above)
+    ...(Object.keys(dependenciesForPeer_meta).length > 0 && { "peerDependenciesMeta": dependenciesForPeer_meta }),
+
+    // npm dependency overrides (applied to the whole install tree; root-only - they never affect
+    // consumers of the published package). Merged from the per-category {category}_overrides
+    // objects above; a package may appear in only one of them (enforced by
+    // assertDependencyDeclarationsConsistent).
+    ...(Object.keys(mergedOverrides).length > 0 && { "overrides": mergedOverrides }),
 
     "scripts": {
         // Fails any "npm install" early when the active Node does not satisfy .nvmrc.
@@ -286,8 +532,9 @@ const packageJson = {
         // their own steps to it (database, certificates, ...). "setup:editor" (re)creates the
         // .vscode/soft-links/node symlink that .vscode/settings.json points "eslint.runtime" and the
         // integrated-terminal PATH at; re-run it after switching Node versions ("nvm use").
-        // "setup:git-exclude" seeds this clone's .git/info/exclude from
-        // docs/template-project/git-info-exclude.example (idempotent, append-only).
+        // "setup:git-exclude" seeds this clone's .git/info/exclude (the secondary home, for
+        // machine-local personal ignore patterns only - shared patterns live in the committed
+        // .gitignore) from docs/template-project/git-info-exclude.example (idempotent, append-only).
         "setup": [
             "node --run setup:editor",
             "node --run setup:git-exclude"
@@ -404,7 +651,7 @@ const packageJson = {
         "block-non-keyboard-characters:detect-all": "./scripts/health-checks/checks/block-non-keyboard-characters/detect-all-characters.ts",
 
         // Verifies file status expectations (e.g. read-only paths) declared in
-        // scripts/health-checks/checks/status-of-files.config.ts (empty fill-in slot on this base branch);
+        // scripts/health-checks/checks/status-of-files.config.ts (a fill-in slot, empty by default);
         // ":ensure" applies the remediations (chmod a-w).
         "status-of-files":        "./scripts/health-checks/checks/check-status-of-files.ts --return-exit-code",
         "status-of-files:ensure": "./scripts/health-checks/checks/ensure-status-of-files.ts",

@@ -23,10 +23,11 @@ dependencies/scripts its layer introduces).
   points them at its real entry points and updates `files` to what it ships. If your project is
   NOT published to npm, add `"private": true` and optionally drop these fields plus the `publint`
   script/check.
-- `peerDependencies` - `react` / `react-dom` at `">=18"` (supplied by the consuming project;
-  tsdown externalizes every `dependencies` / `peerDependencies` entry automatically). Tighten the
-  ranges to what your package actually supports, and drop `react-dom` if nothing needs it anymore
-  (e.g. after removing the `mount()`/`unmount()` helpers).
+- `peerDependencies` - declared in the `dependenciesForPeer` category: `react` / `react-dom` at
+  `">=18"` (supplied by the consuming project; tsdown externalizes every `dependencies` /
+  `peerDependencies` entry automatically). Tighten the ranges to what your package actually
+  supports, and drop `react-dom` if nothing needs it anymore (e.g. after removing the
+  `mount()`/`unmount()` helpers).
 - `engines.node` - the advertised Node floor (consumer-facing when the manifest is published); the
   inline note on the value line in `package.json.ts` states this branch's derivation (here the
   support-policy floor: the lowest still-maintained Node LTS line, since no runtime dependency
@@ -34,9 +35,10 @@ dependencies/scripts its layer introduces).
   dev/tooling floor: you still develop and run the checks on the pinned Node in
   [.nvmrc](../../../.nvmrc) (CI matrix per
   [.github/workflows/ci.yml](../../../.github/workflows/ci.yml)).
-- `dependencies` - add your LIBRARY's runtime dependencies (installed by every consumer) inside
-  the marked block. The demo/dev harness's runtime stack deliberately lives in the
-  `dependenciesForDemo` variable instead (merged into `devDependencies` - see its comment in
+- `dependencies` - add your LIBRARY's runtime dependencies (installed by every consumer) to the
+  `dependenciesForPackage` category's Project originated block. The demo/dev harness's runtime
+  stack deliberately lives in the `dependenciesForApp` / `dependenciesForServer` categories instead
+  (mapped to `devDependencies` via `dependencyCategoriesMapping` - see the comments in
   `package.json.ts`), so consumers of the published package do not install it transitively.
 
 Then regenerate the manifest:

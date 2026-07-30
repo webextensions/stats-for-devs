@@ -31,7 +31,8 @@ IIFE twins `widget.js` / `widget.min.js` (react bundled in, `window.TemplateWidg
 config's `GLOBAL_NAME`, never auto-mounting; the `unpkg` / `jsdelivr` targets - rationale and
 gotchas: [because/widget-standalone-build.md](because/widget-standalone-build.md)). `react` /
 `react-dom` are `peerDependencies`; the demo harness's runtime stack lives in the
-`dependenciesForDemo` variable in `package.json.ts` (shipped as devDependencies). The library
+`dependenciesForApp` / `dependenciesForServer` categories in `package.json.ts` (mapped to
+devDependencies via `dependencyCategoriesMapping`). The library
 zone has its own STRICT `frontend/lib/tsconfig.json` (`test:types:lib`) and a nested ESLint
 config re-exporting `frontend/src/eslint.config.js`; colocated `*.test.{ts,tsx}` tests run in
 the single root Vitest suite (jsdom opted in per file via the `@vitest-environment jsdom`
