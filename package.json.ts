@@ -246,7 +246,7 @@ const dependenciesForBuild = {
     "@jridgewell/trace-mapping": "^0.3.31",
     "@rolldown/plugin-babel": "^0.2.3",
     "@tsdown/css": "^0.22.14", // Auto-detected by tsdown when installed; extracts dist/style.css
-    "@vitejs/plugin-react": "^6.0.4", // Also provides reactCompilerPreset
+    "@vitejs/plugin-react": "^6.0.5", // Also provides reactCompilerPreset
     "babel-plugin-react-compiler": "^1.0.0",
     "commander": "^15.0.0", // Also declared in dependenciesForServer
     "esbuild": "^0.28.1", // CSS minifier for the frontend build (cssMinify: 'esbuild' - see the REVISIT note in frontend/build/build-config-generator.ts)
@@ -321,7 +321,7 @@ const dependenciesForDev = {
 
     /* Begin: Template originated "dependenciesForDev" */
 
-    "@eslint-react/eslint-plugin": "^5.18.0",
+    "@eslint-react/eslint-plugin": "^5.18.1",
     "@eslint/js": "^10.0.1",
     "@eslint/markdown": "^8.0.3",
     "@stylistic/eslint-plugin": "^5.10.0",
@@ -332,8 +332,8 @@ const dependenciesForDev = {
     "@types/extend": "^3.0.4",
     "@types/node": "~24.13.3", // Pinned to 24.x to match the dev Node floor
     "@types/node-notifier": "^8.0.5",
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "@types/semver": "^7.7.1",
     "@webextensions/revisit": "^0.2.0", // Recurring-reminders tool run by the post-commit hook (see revisit.json)
     "auto-changelog": "^2.6.0",
@@ -352,12 +352,12 @@ const dependenciesForDev = {
     "eslint-plugin-react-refresh": "^0.5.3", // Optional ironplate peer
     "eslint-plugin-simple-import-sort": "^14.0.0",
     "eslint-plugin-unicorn": "^72.0.0", // ironplate peer
-    "execa": "^10.0.0",
+    "execa": "^10.0.1",
     "extend": "^3.0.2", // Also declared in dependenciesForServer
     "globals": "^17.8.0",
     "husky": "^9.1.7",
-    "jsdom": "^29.1.1", // Opted into per test file via the "@vitest-environment jsdom" pragma
-    "knip": "^6.29.0",
+    "jsdom": "^30.0.1", // Opted into per test file via the "@vitest-environment jsdom" pragma
+    "knip": "^6.31.0",
     "lockfile-lint": "^5.0.0",
     "lodash-es": "^4.18.1",
     "node-notifier": "^10.0.1",
@@ -712,10 +712,16 @@ const packageJson = {
 
         // Template-sync workflow (see docs/template-project/template-sync.md)
 
-        // Merges the template branch into main, auto-resolving the expected package.json / package-lock.json conflicts
-        "template:merge-to-main":          "./scripts/branching/merge-template-to-main.sh",
+        // Merges the template branch into main, auto-resolving the expected package.json / package-lock.json
+        // conflicts, then pushes. An AI run composed via extra args must bring its own consent flags, e.g.
+        // `node --run template:merge-to-main -- --resolve-conflict-with-ai --allow-ai-commit --allow-ai-push`
+        "template:merge-to-main":          "./scripts/branching/merge-source-to-target.sh --source template --target main --push",
         // Finds the newest template commit that merges cleanly and passes tests (local refs only - never fetches or pushes)
         "template:find-safe-merge-commit": "./scripts/branching/find-safe-template-merge-commit.sh",
+        // Flattens every local template-* branch onto its existing "<branch>-flat" mirror via branching:flatten,
+        // then verifies them; pass -- --create-branches to also create missing mirrors (local refs only -
+        // never fetches or pushes)
+        "template:flatten-branches":       "./scripts/branching/flatten-template-prefixed-branches.sh",
 
         // Frontend build (Vite on Rolldown), driven by the config files in config/ (see
         // docs/development/frontend-build.md). Orchestrator: frontend/build/build.ts; the plain
