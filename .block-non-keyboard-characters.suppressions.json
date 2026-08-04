@@ -1,0 +1,19 @@
+{
+    "baseline": {
+        "docs/template-project/README.md": {
+            "─": 16
+        }
+    },
+    "exemptions": [
+        {
+            "pattern": "CHANGELOG.md",
+            "reason": "generated from git history by auto-changelog; its punctuation is out of guard scope",
+            "skipInCensus": false
+        },
+        {
+            "pattern": "frontend/src/resources/3rdparty/**",
+            "reason": "vendored third-party files (refreshed via \"node --run copy-files-from-to\"); their punctuation is out of guard scope",
+            "skipInCensus": true
+        }
+    ]
+}

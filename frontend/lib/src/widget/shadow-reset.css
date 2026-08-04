@@ -1,0 +1,14 @@
+/*
+Baseline isolation for content rendered through ShadowDomHost: ":host" targets the host element
+from inside its shadow root, and "all: initial" cuts off every inheritable host-page style
+(fonts, colors, line-height, direction overrides, ...), so the widget looks the same on any page.
+Imported only as compiled text (import './shadow-reset.css?inline') and applied inside the shadow
+root - it is deliberately NOT part of dist/style.css, which styles the light-DOM consumption
+modes.
+*/
+
+:host {
+    all: initial;
+    display: block;
+    font-family: system-ui, sans-serif;
+}

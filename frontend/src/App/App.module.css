@@ -1,0 +1,23 @@
+.app {
+    padding: 20px;
+}
+
+.centeredColumn {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.title {
+    margin: 0;
+}
+
+/* Multi-class @scope prelude - exercises SplitMultiClassAtScopePlugin in the real build (it splits
+   the prelude into single-class @scope rules so the CSS Modules processor can resolve the scoped
+   class names; see frontend/build/plugins/SplitMultiClassAtScopePlugin) */
+@scope (.app, .centeredColumn) {
+    :scope a {
+        color: #1976d2;
+    }
+}

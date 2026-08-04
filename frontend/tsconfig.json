@@ -1,0 +1,43 @@
+{
+    "compilerOptions": {
+        "allowImportingTsExtensions": true,
+        "noEmit": true,
+        "target": "es2024",
+        "module": "preserve",
+        "allowJs": true,
+        "jsx": "preserve",
+        "strict": false,
+        "noImplicitAny": false,
+        "moduleResolution": "bundler",
+        "paths": {
+            "*": [
+                "./node_modules/*"
+            ]
+        },
+        "typeRoots": [
+            "../node_modules/@types"
+        ],
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "incremental": true,
+        "forceConsistentCasingInFileNames": true,
+        "plugins": [
+            {
+                "name": "typescript-plugin-css-modules",
+                "options": {
+                    "customMatcher": "\\.module\\.css$"
+                }
+            }
+        ]
+    },
+    "include": [
+        "./**/*",
+        "../types/**/*"
+    ],
+    "exclude": [
+        "./lib", // The publishable library zone - covered by its own STRICT ./lib/tsconfig.json (the "test:types:lib" script)
+        "./src/resources/3rdparty/",
+        "node_modules"
+    ]
+}
