@@ -24,7 +24,7 @@
 * Revisit [frontend/lib/src/widget/scopeCssModuleText.ts](../../../frontend/lib/src/widget/scopeCssModuleText.ts)
   when `@tsdown/css` learns to compile CSS modules for `?inline` imports - the helper (and its
   dual-import call site in `widget/mount.tsx`) can then be deleted (context:
-  [because/widget-standalone-build.md](../../../because/widget-standalone-build.md)).
+  [docs/because/widget-standalone-build.md](../../because/widget-standalone-build.md)).
 * Upstream candidates for `abstract-javascript-project` (then merge down), noted while porting
   from the npm-package-template reference repo: GitHub issue templates
   (`.github/ISSUE_TEMPLATE/bug_report.yml` / `feature_request.yml` / `config.yml`), a

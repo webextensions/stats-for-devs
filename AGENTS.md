@@ -30,7 +30,7 @@ also the all-is-well `build:lib` pre-step and `prepack`; config array in
 externalized + bundled `index.d.ts` + extracted `style.css`, plus the standalone script-tag
 IIFE twins `widget.js` / `widget.min.js` (react bundled in, `window.StatsForDevs` from the
 config's `GLOBAL_NAME`, never auto-mounting; the `unpkg` / `jsdelivr` targets - rationale and
-gotchas: [because/widget-standalone-build.md](because/widget-standalone-build.md)). `react` /
+gotchas: [docs/because/widget-standalone-build.md](docs/because/widget-standalone-build.md)). `react` /
 `react-dom` are `peerDependencies`; the demo harness's runtime stack lives in the
 `dependenciesForApp` / `dependenciesForServer` categories in `package.json.ts` (mapped to
 devDependencies via `dependencyCategoriesMapping`). The library

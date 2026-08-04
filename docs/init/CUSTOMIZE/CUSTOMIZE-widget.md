@@ -36,4 +36,4 @@ Behavior contracts the template ships (keep, adapt, or consciously drop):
   keep them and only replace what renders inside (the Greeting composition in
   `widget/mount.tsx`, including its `?inline` imports and the `widgetStyleSheets` list). Why the
   `scopeCssModuleText` rewrite exists:
-  [because/widget-standalone-build.md](../../../because/widget-standalone-build.md).
+  [docs/because/widget-standalone-build.md](../../because/widget-standalone-build.md).

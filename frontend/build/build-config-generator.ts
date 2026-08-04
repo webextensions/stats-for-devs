@@ -222,7 +222,7 @@ const buildConfigGenerator = function (generatorOptions: any = {}, frontEndConfi
             // NOTE: In HMR mode (`node --run start:app:use-hmr`), Vite's client injects CSS into
             // <head> at runtime, so the production "assets at end of body" layout is not
             // reproduced there - handle any resulting specificity differences in the CSS itself
-            // (see because/frontend-build/hmr-runtime-styles-stay-in-head.md).
+            // (see docs/because/frontend-build/hmr-runtime-styles-stay-in-head.md).
 
             // Plugin to handle node: prefixed imports (safety net for npm packages)
             {

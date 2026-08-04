@@ -4,10 +4,10 @@
 
 The `template-npm-package-for-react` branch builds its publishable `dist/` (ESM bundle + bundled
 `index.d.ts` + extracted `style.css`) with [tsdown](https://tsdown.dev/) (see
-[frontend/lib/tsdown.config.ts](../frontend/lib/tsdown.config.ts), run by `node --run build:lib`),
+[frontend/lib/tsdown.config.ts](../../frontend/lib/tsdown.config.ts), run by `node --run build:lib`),
 while the demo app under `frontend/src/` is built by the family's config-driven Vite (Rolldown)
-build ([frontend/build/](../frontend/build/) -> `public-*/`) and the component tests run through
-the single root Vitest config ([vitest.config.js](../vitest.config.js); DOM-needing test files opt
+build ([frontend/build/](../../frontend/build/) -> `public-*/`) and the component tests run through
+the single root Vitest config ([vitest.config.js](../../vitest.config.js); DOM-needing test files opt
 into jsdom via the `@vitest-environment jsdom` pragma).
 
 ## Why
@@ -30,13 +30,13 @@ into jsdom via the `@vitest-environment jsdom` pragma).
 ## Invariants
 
 - tsdown's `exports`-field auto-generation must stay OFF: `package.json` is generated from
-  [package.json.ts](../package.json.ts) and guarded by the `pkg-json-sync` check; a tool writing
+  [package.json.ts](../../package.json.ts) and guarded by the `pkg-json-sync` check; a tool writing
   into `package.json` would fight the generator.
 - The `"."` entry in the `exports` map stays a plain string (with a top-level `types` field)
   because package-cjson alphabetizes generated keys - a `{ "types", "default" }` conditions
   object would be re-sorted to `default`-first and trip publint's types-condition-must-be-first.
 - The `build:lib` health check runs as a sequential PRE-STEP in
-  [scripts/health-checks/all-is-well.ts](../scripts/health-checks/all-is-well.ts) and is never
+  [scripts/health-checks/all-is-well.ts](../../scripts/health-checks/all-is-well.ts) and is never
   cached: `dist/` is git-ignored, so it is invisible to the checks-execution content hash, and
   `publint` needs the real artifacts in place before it runs.
 
