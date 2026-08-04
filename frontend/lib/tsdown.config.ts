@@ -41,7 +41,7 @@ import {
 
 // The window global the standalone IIFE defines, and the dist/ artifact basename
 // (dist/<STANDALONE_BASENAME>.js / dist/<STANDALONE_BASENAME>.min.js)
-const GLOBAL_NAME = 'TemplateWidget';
+const GLOBAL_NAME = 'StatsForDevs';
 const STANDALONE_BASENAME = 'widget';
 
 const libraryConfig: UserConfig = {

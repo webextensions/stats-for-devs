@@ -13,7 +13,8 @@ to the shared homes that keep receiving template updates.
 
 ## Project overview
 
-`template-widget` - the template branch for npm packages shipping an embeddable widget:
+`stats-for-devs` - an embeddable widget for developer stats (functionality under development),
+forked from the `template-widget` template branch (npm packages shipping an embeddable widget):
 `template-npm-package-for-react` (its full React-package layer - `abstract-frontend-build`'s
 config-driven Vite (Rolldown) + React + TypeScript build under `frontend/`, layered environment
 configs in `config/`, stylelint, a minimal Express server with opt-in Vite HMR under
@@ -27,7 +28,7 @@ its own tsdown entry, NOT in the barrel - named exports only). tsdown (`node --r
 also the all-is-well `build:lib` pre-step and `prepack`; config array in
 `frontend/lib/tsdown.config.ts`) builds the published `dist/`: the ESM bundle with react
 externalized + bundled `index.d.ts` + extracted `style.css`, plus the standalone script-tag
-IIFE twins `widget.js` / `widget.min.js` (react bundled in, `window.TemplateWidget` from the
+IIFE twins `widget.js` / `widget.min.js` (react bundled in, `window.StatsForDevs` from the
 config's `GLOBAL_NAME`, never auto-mounting; the `unpkg` / `jsdelivr` targets - rationale and
 gotchas: [because/widget-standalone-build.md](because/widget-standalone-build.md)). `react` /
 `react-dom` are `peerDependencies`; the demo harness's runtime stack lives in the
@@ -40,8 +41,8 @@ pragma; jsdom exercises ShadowDomHost's `<style>` fallback path, not constructab
 The frontend app under `frontend/src/` is the development/demo harness - it renders the library
 from source in all three modes (light, shadow, imperative) via
 `frontend/src/App/LibraryDemo/LibraryDemo.tsx` and keeps building into the `public-*` folders.
-Directly usable as a project template; a vanilla no-React "Widget - Simple" flavor is deferred
-(see [docs/specs/todo/TODO-for-template-widget.md](docs/specs/todo/TODO-for-template-widget.md)).
+The stub API is still the template's; replacing it with the real stats-for-devs widget is tracked
+in [docs/specs/todo/TODO.md](docs/specs/todo/TODO.md).
 Vision, branching tree, and the fork/merge model:
 [docs/template-project/README.md](docs/template-project/README.md); the frontend build itself:
 [docs/development/frontend-build.md](docs/development/frontend-build.md).

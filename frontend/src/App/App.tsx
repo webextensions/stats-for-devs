@@ -31,7 +31,7 @@ const DemoContent = function () {
 
     return (
         <div className={classNames(app, centeredColumn)}>
-            <h1 className={title}>Abstract Frontend Build</h1>
+            <h1 className={title}>Stats for Devs</h1>
 
             <p>Replace this demo with your application.</p>
 

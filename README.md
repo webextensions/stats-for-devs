@@ -1,30 +1,30 @@
-# template-javascript-project
+# stats-for-devs
 
-[![CI](https://github.com/webextensions/template-javascript-project/actions/workflows/ci.yml/badge.svg)](https://github.com/webextensions/template-javascript-project/actions/workflows/ci.yml)
+[![CI](https://github.com/webextensions/stats-for-devs/actions/workflows/ci.yml/badge.svg)](https://github.com/webextensions/stats-for-devs/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-This is the **`template-widget`** branch - the template for npm packages shipping an embeddable
-widget, building on `template-npm-package-for-react` in this repository's template family. On top
-of that branch's React-package layer (the publishable library under
-[frontend/lib/](./frontend/lib/) - a stub `Greeting` component composing a stub `useCounter` hook
-plus imperative `mount()`/`unmount()` helpers, built by tsdown into the published `dist/`, with
-the config-driven Vite (Rolldown) + React + TypeScript demo harness under `frontend/`) it adds
-the widget layer: standalone script-tag/CDN bundles (`dist/widget.js` / `dist/widget.min.js` -
-IIFE, `react` bundled in, reachable via the `unpkg` / `jsdelivr` manifest fields), and opt-in
-Shadow DOM isolation via a reusable `ShadowDomHost` component and a `mountInShadowDom()` twin of
-`mount()` (constructable stylesheets with a `<style>` fallback, `:host { all: initial }` reset).
-Loading the standalone script only defines the `TemplateWidget` global - it never auto-mounts.
-Forks replace the stub API with their real widget. Fork from this branch to start a widget npm
-package (a vanilla, no-React "Widget - Simple" flavor is deferred - see
-[docs/specs/todo/TODO-for-template-widget.md](./docs/specs/todo/TODO-for-template-widget.md)).
+Stats for devs - an embeddable widget (functionality under development). Forked from the
+**`template-widget`** branch of
+[template-javascript-project](https://github.com/webextensions/template-javascript-project), it
+ships a publishable React library under [frontend/lib/](./frontend/lib/) (currently the
+template's stub `Greeting` component composing a stub `useCounter` hook plus imperative
+`mount()`/`unmount()` helpers, built by tsdown into the published `dist/`, with the config-driven
+Vite (Rolldown) + React + TypeScript demo harness under `frontend/`) and the widget layer:
+standalone script-tag/CDN bundles (`dist/widget.js` / `dist/widget.min.js` - IIFE, `react`
+bundled in, reachable via the `unpkg` / `jsdelivr` manifest fields), and opt-in Shadow DOM
+isolation via a reusable `ShadowDomHost` component and a `mountInShadowDom()` twin of `mount()`
+(constructable stylesheets with a `<style>` fallback, `:host { all: initial }` reset). Loading
+the standalone script only defines the `StatsForDevs` global - it never auto-mounts. The stub
+API will be replaced with the real stats-for-devs widget (see
+[docs/specs/todo/TODO.md](./docs/specs/todo/TODO.md)).
 
 ## Usage
 
-In a React app (replace the stub API with your package's real one):
+In a React app (the stub API, until the real one lands):
 
 ```jsx
-import { Greeting, useCounter } from '@webextensions/template-javascript-project';
-import '@webextensions/template-javascript-project/style.css';
+import { Greeting, useCounter } from 'stats-for-devs';
+import 'stats-for-devs/style.css';
 
 <Greeting name="Ada" />; // Renders: "Hello, Ada!" plus a counter button
 ```
@@ -33,7 +33,7 @@ In a non-React host page with a bundler, via the imperative helpers (`react` / `
 come from your project - they are `peerDependencies`):
 
 ```js
-import { mount, unmount } from '@webextensions/template-javascript-project';
+import { mount, unmount } from 'stats-for-devs';
 
 mount(document.getElementById('app'), { name: 'Ada' });
 ```
@@ -42,10 +42,10 @@ On any web page via a script tag / CDN - no build step, no npm install (`react` 
 the standalone artifact):
 
 ```html
-<link rel="stylesheet" href="https://unpkg.com/@webextensions/template-javascript-project/dist/style.css" />
-<script src="https://unpkg.com/@webextensions/template-javascript-project"></script>
+<link rel="stylesheet" href="https://unpkg.com/stats-for-devs/dist/style.css" />
+<script src="https://unpkg.com/stats-for-devs"></script>
 <script>
-    TemplateWidget.mount(document.getElementById('app'), { name: 'Ada' });
+    StatsForDevs.mount(document.getElementById('app'), { name: 'Ada' });
 </script>
 ```
 
@@ -53,13 +53,13 @@ Isolated from the host page's CSS via Shadow DOM (no stylesheet link needed - th
 carries its styles inside the shadow root):
 
 ```js
-TemplateWidget.mountInShadowDom(document.getElementById('app'), { name: 'Ada' });
+StatsForDevs.mountInShadowDom(document.getElementById('app'), { name: 'Ada' });
 ```
 
 Or, inside your own React tree:
 
 ```jsx
-import { Greeting, ShadowDomHost, widgetStyleSheets } from '@webextensions/template-javascript-project';
+import { Greeting, ShadowDomHost, widgetStyleSheets } from 'stats-for-devs';
 
 <ShadowDomHost styleSheets={widgetStyleSheets}>
     <Greeting name="Ada" />

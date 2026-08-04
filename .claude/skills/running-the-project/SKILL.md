@@ -31,7 +31,7 @@ description: Use when asked to run, start, launch, serve, or demo this project, 
   `dist/widget.min.js`); also runs automatically as the all-is-well `build:lib` pre-step and on
   `prepack`. Not needed for the demo, which consumes the library from source. To smoke-test the
   built IIFE itself, load `dist/widget.js` (plus `dist/style.css` for light-DOM mounts) from any
-  plain HTML page and call `TemplateWidget.mount(...)`.
+  plain HTML page and call `StatsForDevs.mount(...)`.
 
 ## Prerequisites
 

@@ -51,9 +51,9 @@ try {
 }
 
 const core = {
-    "name": "@webextensions/template-javascript-project",
+    "name": "stats-for-devs",
     version, // Owned by npm (see header); derived from package.json / package-version.json, never hard-coded
-    "description": "Template for npm packages shipping an embeddable widget - React components/hooks plus standalone script-tag/CDN bundles (IIFE, react bundled in) with opt-in Shadow DOM isolation - tsdown-built (ESM + bundled types + CSS Modules) with a publishable manifest verified by publint, plus a config-driven React + Vite (Rolldown) frontend build as the development/demo harness - on top of the shared JavaScript tooling baseline",
+    "description": "Stats for devs - embeddable widget (functionality under development)",
     "author": "webextensions.org",
     "license": "MIT",
 
@@ -68,28 +68,18 @@ const core = {
         "access": "public"
     },
 
-    "homepage": "https://github.com/webextensions/template-javascript-project#readme",
+    "homepage": "https://github.com/webextensions/stats-for-devs#readme",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/webextensions/template-javascript-project.git"
+        "url": "git+https://github.com/webextensions/stats-for-devs.git"
     },
     "bugs": {
-        "url": "https://github.com/webextensions/template-javascript-project/issues"
+        "url": "https://github.com/webextensions/stats-for-devs/issues"
     },
 
     "keywords": [
-        "boilerplate",
-        "component",
-        "frontend",
-        "hooks",
-        "javascript",
-        "npm",
-        "package",
         "react",
-        "shadow-dom",
-        "starter",
-        "template",
-        "vite",
+        "stats",
         "widget"
     ],
 
@@ -135,7 +125,7 @@ const core = {
         ".": "./dist/index.js",
         "./style.css": "./dist/style.css", // Compiled CSS Modules output; import once from the consuming app
         // The standalone script-tag / CDN artifacts (IIFE, react bundled in; see
-        // frontend/lib/tsdown.config.ts). Loading one only defines window.TemplateWidget - it
+        // frontend/lib/tsdown.config.ts). Loading one only defines window.StatsForDevs - it
         // never auto-mounts. Known publint WARNING (accepted): it sniffs the IIFE content as
         // CJS-in-an-ESM-package for these two subpaths; harmless, because the entry also
         // assigns the global explicitly for module evaluation (see

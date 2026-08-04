@@ -4,9 +4,9 @@
 
 import { PORT_NUMBER_HTTP } from './constants.js';
 
-export const applicationName = 'Abstract Frontend Build';
+export const applicationName = 'Stats for Devs';
 
-export const appHostnameDevelopment = 'abstract-frontend-build.webextensions.org.localhost';
+export const appHostnameDevelopment = 'stats-for-devs.webextensions.org.localhost';
 // The following variable is prefixed with `tentative_` to indicate that the correct values for its purpose are
 // computed based on some other variables and concept of single-source-of-truth is not being followed here. So, ensure
 // that the configuration files are in sync with this tentative value.
@@ -19,5 +19,5 @@ export const PREFERRED_HOSTNAMES_FOR_LOCAL_DEVELOPMENT = [
     'localhost'
 ];
 
-const appHostnameLive = 'abstract-frontend-build.webextensions.org';
+const appHostnameLive = 'stats-for-devs.webextensions.org';
 export const appOriginLive = `https://${appHostnameLive}`;

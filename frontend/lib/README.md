@@ -44,7 +44,7 @@ re-exported from the same barrel.
       `dist/style.css` (the package's `./style.css` export).
     - Standalone passes: `dist/widget.js` (unminified, development react) and
       `dist/widget.min.js` (minified, production react) - IIFE bundles of `src/widget/standalone.ts`
-      with react bundled in, defining `window.TemplateWidget` (from the config's `GLOBAL_NAME`)
+      with react bundled in, defining `window.StatsForDevs` (from the config's `GLOBAL_NAME`)
       and never auto-mounting.
   Runs automatically on `prepack` and as the `build:lib` pre-step of `node --run test` (publint
   validates the real artifacts). Why tsdown:
@@ -66,7 +66,7 @@ re-exported from the same barrel.
 - Bundler consumers import the built `dist/` via the package name (and its stylesheet via
   `<package-name>/style.css`); `react` / `react-dom` are `peerDependencies`. Script-tag / CDN
   consumers load `dist/widget.min.js` (the `unpkg` / `jsdelivr` manifest target; react bundled
-  in) and call `TemplateWidget.mount(...)` / `TemplateWidget.mountInShadowDom(...)` - shadow
+  in) and call `StatsForDevs.mount(...)` / `StatsForDevs.mountInShadowDom(...)` - shadow
   mounts carry their styles inside the shadow root, light mounts still need the `style.css`
   link. The manifest fields live in [package.json.ts](../../package.json.ts); usage snippets in
   the root [README.md](../../README.md).
