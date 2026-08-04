@@ -53,7 +53,7 @@ try {
 const core = {
     "name": "stats-for-devs",
     version, // Owned by npm (see header); derived from package.json / package-version.json, never hard-coded
-    "description": "Stats for devs - embeddable widget (functionality under development)",
+    "description": "A floating, draggable dev HUD (YouTube-nerd-stats style) with live viewport, breakpoint, responsiveness, mobile-input, performance and interaction metrics - drop it into any web page",
     "author": "webextensions.org",
     "license": "MIT",
 
@@ -78,8 +78,30 @@ const core = {
     },
 
     "keywords": [
+        "breakpoint",
+        "debug",
+        "debugging",
+        "dev",
+        "dev-tools",
+        "devtools",
+        "dpr",
+        "drop-in",
+        "dvh",
+        "hud",
+        "lvh",
+        "metrics",
+        "mobile",
+        "monitor",
+        "overlay",
+        "panel",
+        "performance",
         "react",
+        "responsive",
+        "safe-area",
         "stats",
+        "stats-for-devs",
+        "svh",
+        "viewport",
         "widget"
     ],
 
@@ -108,8 +130,9 @@ const core = {
     // dist/index.d.ts sibling of the resolved dist/index.js instead.
     "sideEffects": [
         "**/*.css", // The "./style.css" import must survive tree-shaking
-        // The standalone IIFE artifacts define a window global when evaluated; everything not
-        // listed here is side-effect free (tree-shakable)
+        "./dist/auto.js", // Importing "stats-for-devs/auto" mounts the HUD - a pure side effect
+        // The standalone IIFE artifacts define a window global (and auto-mount) when evaluated;
+        // everything not listed here is side-effect free (tree-shakable)
         "./dist/widget.js",
         "./dist/widget.min.js"
     ],
@@ -123,10 +146,15 @@ const core = {
     "jsdelivr": "./dist/widget.min.js",
     "exports": {
         ".": "./dist/index.js",
+        // Side-effect entry: importing it mounts the HUD (renders nothing until shown). Plain
+        // string for the same key-sort reason as "."; TypeScript resolves the adjacent
+        // dist/auto.d.ts
+        "./auto": "./dist/auto.js",
         "./style.css": "./dist/style.css", // Compiled CSS Modules output; import once from the consuming app
         // The standalone script-tag / CDN artifacts (IIFE, react bundled in; see
-        // frontend/lib/tsdown.config.ts). Loading one only defines window.StatsForDevs - it
-        // never auto-mounts. Known publint WARNING (accepted): it sniffs the IIFE content as
+        // frontend/lib/tsdown.config.ts). Loading one defines window.statsForDevs, injects the
+        // widget styles and auto-mounts (deferred to DOMContentLoaded; renders nothing until
+        // shown). Known publint WARNING (accepted): it sniffs the IIFE content as
         // CJS-in-an-ESM-package for these two subpaths; harmless, because the entry also
         // assigns the global explicitly for module evaluation (see
         // frontend/lib/src/widget/standalone.ts)
@@ -137,12 +165,14 @@ const core = {
 
     // Allowlist of files to publish (default-deny). "dist/" is the built package (tsdown output,
     // built fresh by "prepack"); "frontend/lib/src/" ships too so the sourcemaps in dist/ resolve
-    // and the source is browsable on the registry CDNs; the "!**/*.test.*" negation keeps the
-    // colocated tests (any depth, any test extension) out of the tarball. npm always also includes
-    // package.json, README and LICENSE; CHANGELOG.md is listed explicitly because npm does NOT
-    // auto-include it. .npmignore is kept as a redundant denylist; this allowlist is the primary
-    // control over the tarball contents.
+    // and the source is browsable on the registry CDNs; "demo/" ships the file://-capable drop-in
+    // demo page the README links to; the "!**/*.test.*" negation keeps the colocated tests (any
+    // depth, any test extension) out of the tarball. npm always also includes package.json,
+    // README and LICENSE; CHANGELOG.md is listed explicitly because npm does NOT auto-include it.
+    // .npmignore is kept as a redundant denylist; this allowlist is the primary control over the
+    // tarball contents.
     "files": [
+        "demo/",
         "dist/",
         "frontend/lib/src/",
         "!**/*.test.*",
@@ -156,7 +186,12 @@ const core = {
 const dependenciesForPackage = {
     /* Begin: Project originated "dependenciesForPackage" */
 
-    // No project originated "dependenciesForPackage" yet
+    // Also in the template originated "dependenciesForApp" with the identical spec - when a
+    // package resolves into both "dependencies" and "devDependencies", the collector emits it
+    // under "dependencies" only (see utils/package-json-utils/package-json-utils.ts)
+    "classnames": "^2.5.1",
+    "react-draggable": "^4.5.0", // Drag support for the HUD panel (docking / repositioning)
+    "use-local-storage-state": "^19.5.0" // Persists the HUD settings ("statsForDevs.settings")
 
     /* End: Project originated "dependenciesForPackage" */
 

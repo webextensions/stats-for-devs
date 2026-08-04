@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 
 import babel from '@rolldown/plugin-babel';
@@ -153,8 +154,21 @@ const buildConfigGenerator = function (generatorOptions: any = {}, frontEndConfi
             devSourcemap: cssSourcemapVite !== false,
 
             modules: {
-                // Auto-detect .module.css files (Vite default behavior matches this)
-                generateScopedName: '[name]__[local]--[hash:base64:5]'
+                /* Begin: APP-CUSTOMIZATIONS */
+                // The published widget's class names are hash-free documented API (".sfd-" +
+                // local name - see frontend/lib/tsdown.config.ts), and the demo harness compiles
+                // the library from SOURCE (frontend/src/App/LibraryDemo/), so the harness must
+                // produce identical names for frontend/lib/src/ modules. App-owned modules keep
+                // a hashed, collision-proof shape (the hash need not match Vite's built-in
+                // pattern - nothing asserts those names).
+                generateScopedName(name: string, filename: string, css: string) {
+                    if (filename.split(path.sep).join('/').includes('/frontend/lib/src/')) {
+                        return `sfd-${name}`;
+                    }
+                    const hash = createHash('sha256').update(filename + css).digest('base64url').slice(0, 5);
+                    return `${path.basename(filename).replace(/\.module\.css.*$/, '')}__${name}--${hash}`;
+                }
+                /* End: APP-CUSTOMIZATIONS */
                 // localsConvention is intentionally omitted to preserve PascalCase class names
             }
         },

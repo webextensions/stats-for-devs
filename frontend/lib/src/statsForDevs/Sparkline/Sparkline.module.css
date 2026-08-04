@@ -1,0 +1,9 @@
+.Sparkline {
+    display: block;
+}
+
+.line {
+    stroke: rgb(120 220 160);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+}

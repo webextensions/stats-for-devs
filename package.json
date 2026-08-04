@@ -3,8 +3,12 @@
     "bugs": {
         "url": "https://github.com/webextensions/stats-for-devs/issues"
     },
-    "dependencies": {},
-    "description": "Stats for devs - embeddable widget (functionality under development)",
+    "dependencies": {
+        "classnames": "^2.5.1",
+        "react-draggable": "^4.5.0",
+        "use-local-storage-state": "^19.5.0"
+    },
+    "description": "A floating, draggable dev HUD (YouTube-nerd-stats style) with live viewport, breakpoint, responsiveness, mobile-input, performance and interaction metrics - drop it into any web page",
     "devDependencies": {
         "@babel/core": "^8.0.1",
         "@eslint-react/eslint-plugin": "^5.18.1",
@@ -31,7 +35,6 @@
         "babel-plugin-react-compiler": "^1.0.0",
         "boxen": "^8.0.1",
         "chalk": "^6.0.0",
-        "classnames": "^2.5.1",
         "commander": "^15.0.0",
         "compression": "^1.8.1",
         "concurrently": "^10.0.4",
@@ -86,12 +89,14 @@
     },
     "exports": {
         ".": "./dist/index.js",
+        "./auto": "./dist/auto.js",
         "./package.json": "./package.json",
         "./style.css": "./dist/style.css",
         "./widget.js": "./dist/widget.js",
         "./widget.min.js": "./dist/widget.min.js"
     },
     "files": [
+        "demo/",
         "dist/",
         "frontend/lib/src/",
         "!**/*.test.*",
@@ -100,8 +105,30 @@
     "homepage": "https://github.com/webextensions/stats-for-devs#readme",
     "jsdelivr": "./dist/widget.min.js",
     "keywords": [
+        "breakpoint",
+        "debug",
+        "debugging",
+        "dev",
+        "dev-tools",
+        "devtools",
+        "dpr",
+        "drop-in",
+        "dvh",
+        "hud",
+        "lvh",
+        "metrics",
+        "mobile",
+        "monitor",
+        "overlay",
+        "panel",
+        "performance",
         "react",
+        "responsive",
+        "safe-area",
         "stats",
+        "stats-for-devs",
+        "svh",
+        "viewport",
         "widget"
     ],
     "license": "MIT",
@@ -209,6 +236,7 @@
     },
     "sideEffects": [
         "**/*.css",
+        "./dist/auto.js",
         "./dist/widget.js",
         "./dist/widget.min.js"
     ],

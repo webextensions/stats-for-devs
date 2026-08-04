@@ -1,0 +1,274 @@
+/*
+ * Deliberately theme-INDEPENDENT styling: a fixed dark translucent chrome that stays readable on any page
+ * and does not restyle while the developer changes the theme / spacing / font-size preferences that this
+ * overlay itself reports. See docs/because/theme-independent-styling.md for the full rationale.
+ */
+
+.StatsForDevs {
+    position: fixed;
+    z-index: 2147483630;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-width: 170px;
+    max-width: 92vw;
+    max-height: 70vh;
+
+    /* No right padding on the panel so the scrolling `.body` reaches the right edge and its scrollbar sits
+       in the corner. The header and body re-add their own right padding for content breathing room. */
+    padding: 6px 0 8px 8px;
+
+    /* The panel itself never scrolls - only `.body` does - so the header stays pinned. `hidden` (not
+       `visible`) is also required for the `resize: both` grabber to render. */
+    overflow: hidden;
+    color: rgb(235 235 235);
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+    font-size: calc(11px * var(--overlayFontScale, 1));
+    line-height: 1.45;
+    background: rgb(15 17 22 / 0.9);
+    border: 1px solid rgb(255 255 255 / 0.14);
+    border-radius: 8px;
+    box-shadow: 0 6px 24px rgb(0 0 0 / 0.4);
+    backdrop-filter: blur(2px);
+}
+
+/*
+ * Custom resize grabber. Native CSS `resize: both` is mouse-only (it does not respond to touch), so the
+ * overlay uses a pointer-event handle instead - large enough to be an easy touch target. `touch-action:
+ * none` stops the browser from scrolling/zooming the page while resizing on a touch device.
+ */
+.resizeHandle {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    width: 22px;
+    height: 22px;
+    cursor: nwse-resize;
+    touch-action: none;
+}
+
+.resizeHandle::after {
+    position: absolute;
+    right: 3px;
+    bottom: 3px;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid rgb(255 255 255 / 0.45);
+    border-bottom: 2px solid rgb(255 255 255 / 0.45);
+    border-bottom-right-radius: 3px;
+    content: "";
+}
+
+.pill {
+    position: fixed;
+    z-index: 2147483630;
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 6px 14px;
+    color: rgb(235 235 235);
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", monospace;
+    font-size: calc(11px * var(--overlayFontScale, 1));
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    background: rgb(15 17 22 / 0.9);
+    border: 1px solid rgb(255 255 255 / 0.14);
+    border-radius: 999px;
+    box-shadow: 0 6px 24px rgb(0 0 0 / 0.4);
+    touch-action: none;
+}
+
+.cornerBottomLeft {
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    left: calc(8px + env(safe-area-inset-left, 0px));
+}
+
+.cornerBottomRight {
+    right: calc(8px + env(safe-area-inset-right, 0px));
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+}
+
+.cornerTopLeft {
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    left: calc(8px + env(safe-area-inset-left, 0px));
+}
+
+.cornerTopRight {
+    top: calc(8px + env(safe-area-inset-top, 0px));
+    right: calc(8px + env(safe-area-inset-right, 0px));
+}
+
+.titleRow {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 4px;
+    align-items: center;
+    margin-bottom: 4px;
+    padding-right: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+}
+
+.grip {
+    display: inline-flex;
+    align-items: center;
+    font-size: calc(14px * var(--overlayFontScale, 1));
+    color: rgb(160 160 170);
+    cursor: grab;
+    touch-action: none;
+}
+
+.title {
+    flex: 1;
+    overflow: hidden;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.headerButtons {
+    display: inline-flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.iconButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    font-size: calc(14px * var(--overlayFontScale, 1));
+    color: rgb(200 200 210);
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+}
+
+.iconButton:hover {
+    color: rgb(255 255 255);
+    background: rgb(255 255 255 / 0.12);
+}
+
+.iconButtonActive {
+    color: rgb(120 200 255);
+    background: rgb(120 200 255 / 0.15);
+}
+
+.body {
+    display: flex;
+    flex: 1 1 auto;
+
+    /* `min-height: 0` lets the flex child shrink below its content size so it can scroll instead of pushing
+       the panel taller; only this region scrolls while the header stays pinned. */
+    min-height: 0;
+    flex-direction: column;
+    gap: 6px;
+
+    /* Small gap so row content does not touch / sit under the vertical scrollbar (classic on desktop,
+       overlay on mobile). */
+    padding-right: 6px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/*
+ * Dark scrollbar to match the HUD. Applied to the scroll container ONLY when the platform uses persistent
+ * (space-occupying) scrollbars - see `hasPersistentScrollbar()`. Overlay-scrollbar platforms (Android,
+ * default macOS) never get this class, so their native auto-hiding scrollbar is left untouched.
+ */
+.customScrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 255 255 / 0.25) transparent;
+}
+
+.customScrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.customScrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.customScrollbar::-webkit-scrollbar-thumb {
+    background: rgb(255 255 255 / 0.22);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+    border-radius: 999px;
+}
+
+.customScrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgb(255 255 255 / 0.4);
+    background-clip: padding-box;
+}
+
+.groupSection {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.groupHeader {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+    padding: 3px 0;
+    font-size: calc(9px * var(--overlayFontScale, 1));
+    font-weight: 700;
+    color: rgb(120 200 255);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    user-select: none;
+}
+
+.groupHeader:hover {
+    color: rgb(170 220 255);
+}
+
+.groupHeaderCaret {
+    flex: 0 0 auto;
+    font-size: calc(14px * var(--overlayFontScale, 1));
+    color: rgb(120 200 255);
+    transition: transform 0.12s ease;
+}
+
+.caretCollapsed {
+    transform: rotate(-90deg);
+}
+
+.row {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.labelCell {
+    color: rgb(165 170 180);
+    white-space: nowrap;
+}
+
+.valueCell {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    min-width: 0;
+    text-align: right;
+}
+
+.valueText {
+    overflow-wrap: anywhere;
+    color: rgb(245 245 245);
+}
+
+.danger .valueText {
+    font-weight: 700;
+    color: rgb(255 120 120);
+}

@@ -10,6 +10,9 @@ const config: KnipConfig = {
         // The config tiers are loaded only via dynamic variable imports knip cannot trace
         // (frontend/build/build.ts --env config=... and backend/src/server/server.ts --config ...).
         'config/*.js',
+        // The "stats-for-devs/auto" side-effect entry: a tsdown entry (built into dist/auto.js,
+        // the "./auto" export in package.json), which knip cannot trace back to the source.
+        'frontend/lib/src/auto.ts',
         // The library barrel (the package's "." export): package.json's main/exports point at its
         // BUILD output (dist/), which knip cannot trace back to the source, and the barrel's
         // exports (component, hook, prop/option types) are consumed by external consumers of the

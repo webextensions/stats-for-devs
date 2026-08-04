@@ -13,36 +13,51 @@ to the shared homes that keep receiving template updates.
 
 ## Project overview
 
-`stats-for-devs` - an embeddable widget for developer stats (functionality under development),
-forked from the `template-widget` template branch (npm packages shipping an embeddable widget):
-`template-npm-package-for-react` (its full React-package layer - `abstract-frontend-build`'s
-config-driven Vite (Rolldown) + React + TypeScript build under `frontend/`, layered environment
-configs in `config/`, stylelint, a minimal Express server with opt-in Vite HMR under
-`backend/src/server/`, plus `abstract-npm-package`'s publishable manifest and publint) plus the
-widget layer on top. The package code lives under [frontend/lib/](frontend/lib/) (see its
-[README](frontend/lib/README.md)): the public barrel `frontend/lib/src/index.ts` re-exports the
-stub API (`react/components/Greeting/` composing `react/hooks/useCounter/`, imperative
-`mount`/`unmount` helpers, and the widget area `widget/` - a reusable `ShadowDomHost` component,
-`mountInShadowDom`/`widgetStyleSheets`, and the standalone entry `widget/standalone.ts` which is
-its own tsdown entry, NOT in the barrel - named exports only). tsdown (`node --run build:lib`,
-also the all-is-well `build:lib` pre-step and `prepack`; config array in
-`frontend/lib/tsdown.config.ts`) builds the published `dist/`: the ESM bundle with react
-externalized + bundled `index.d.ts` + extracted `style.css`, plus the standalone script-tag
-IIFE twins `widget.js` / `widget.min.js` (react bundled in, `window.StatsForDevs` from the
-config's `GLOBAL_NAME`, never auto-mounting; the `unpkg` / `jsdelivr` targets - rationale and
-gotchas: [docs/because/widget-standalone-build.md](docs/because/widget-standalone-build.md)). `react` /
-`react-dom` are `peerDependencies`; the demo harness's runtime stack lives in the
-`dependenciesForApp` / `dependenciesForServer` categories in `package.json.ts` (mapped to
-devDependencies via `dependencyCategoriesMapping`). The library
-zone has its own STRICT `frontend/lib/tsconfig.json` (`test:types:lib`) and a nested ESLint
-config re-exporting `frontend/src/eslint.config.js`; colocated `*.test.{ts,tsx}` tests run in
-the single root Vitest suite (jsdom opted in per file via the `@vitest-environment jsdom`
-pragma; jsdom exercises ShadowDomHost's `<style>` fallback path, not constructable stylesheets).
+`stats-for-devs` - a floating, draggable dev HUD ("stats for nerds" style) showing live
+viewport, breakpoint, responsiveness, mobile-input, performance and interaction metrics, plus
+optional visual page aids. Forked from the `template-widget` template branch (npm packages
+shipping an embeddable widget): `template-npm-package-for-react` (its full React-package layer -
+`abstract-frontend-build`'s config-driven Vite (Rolldown) + React + TypeScript build under
+`frontend/`, layered environment configs in `config/`, stylelint, a minimal Express server with
+opt-in Vite HMR under `backend/src/server/`, plus `abstract-npm-package`'s publishable manifest
+and publint) plus the widget layer on top. The package code lives under
+[frontend/lib/](frontend/lib/) (see its [README](frontend/lib/README.md) for the layout): the
+widget area `src/statsForDevs/` (overlay components, the 28-metric registry, trackers, settings,
+visibility store, visual aids), the side-effect-free public barrel `src/index.ts` (named exports
+only; `mountStatsForDevs`/`unmountStatsForDevs`, `StatsForDevsRoot`, the visibility store, the
+window API installer, registry introspection, the settings model), the `src/auto.ts` side-effect
+entry (the `./auto` export - importing it mounts), and `src/widget/standalone.ts` (own tsdown
+entry, NOT in the barrel). tsdown (`node --run build:lib`, also the all-is-well `build:lib`
+pre-step and `prepack`; config array in `frontend/lib/tsdown.config.ts`) builds the published
+`dist/`: ESM bundles with react + the runtime deps externalized + bundled `index.d.ts` /
+`auto.d.ts` + extracted `style.css`, plus the standalone script-tag IIFE twins `widget.js` /
+`widget.min.js` (everything bundled in, `window.statsForDevs` from the config's `GLOBAL_NAME`,
+styles self-injected, auto-mounts on DOMContentLoaded but renders nothing until shown; the
+`unpkg` / `jsdelivr` targets - rationale and gotchas:
+[docs/because/widget-standalone-build.md](docs/because/widget-standalone-build.md)). `react` / `react-dom`
+are `peerDependencies`; `classnames` / `react-draggable` / `use-local-storage-state` are the
+runtime `dependencies`; the demo harness's stack lives in the `dependenciesForApp` /
+`dependenciesForServer` categories in `package.json.ts` (mapped to devDependencies via
+`dependencyCategoriesMapping`).
+Load-bearing invariants (details:
+[docs/because/self-contained-decoupling.md](docs/because/self-contained-decoupling.md)): the public
+surface consumers script against is stable - localStorage keys `statsForDevs.shown` /
+`statsForDevs.settings`, the `?statsForDevs=yes` URL param, `#stats-for-devs-root`,
+`#sfd-drag-handle`, the hash-free `sfd-` class prefix (kept identical across tsdown / Vite /
+vitest via a shared `generateScopedName` - see the tsdown config header) and the
+`window.statsForDevs` API; the overlay component is never re-exported from the barrel (it would
+collapse the `React.lazy` boundary); no `import.meta.env` / `process.env` in library source
+(host build info arrives via `mountStatsForDevs({ buildInfo })`); the barrel stays
+side-effect-free and SSR-import-safe.
+The library zone has its own STRICT `frontend/lib/tsconfig.json` (`test:types:lib`) and a nested
+ESLint config re-exporting `frontend/src/eslint.config.js`; colocated `*.test.{ts,tsx}` tests
+run in the single root Vitest suite (jsdom opted in per file via the `@vitest-environment jsdom`
+pragma; jsdom lacks `ResizeObserver` / `PerformanceObserver` / `visualViewport`, so unit tests
+stop at the mount/visibility/settings contracts and the overlay is smoke-tested via
+[demo/demo.html](demo/demo.html), which works over `file://`).
 The frontend app under `frontend/src/` is the development/demo harness - it renders the library
-from source in all three modes (light, shadow, imperative) via
+from source (in-tree `StatsForDevsRoot` + imperative self-mount) via
 `frontend/src/App/LibraryDemo/LibraryDemo.tsx` and keeps building into the `public-*` folders.
-The stub API is still the template's; replacing it with the real stats-for-devs widget is tracked
-in [docs/specs/todo/TODO.md](docs/specs/todo/TODO.md).
 Vision, branching tree, and the fork/merge model:
 [docs/template-project/README.md](docs/template-project/README.md); the frontend build itself:
 [docs/development/frontend-build.md](docs/development/frontend-build.md).

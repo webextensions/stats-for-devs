@@ -35,7 +35,7 @@ const DemoContent = function () {
 
             <p>Replace this demo with your application.</p>
 
-            {/* The publishable library's stub component (see LibraryDemo/LibraryDemo.tsx) */}
+            {/* The publishable library's dev HUD (see LibraryDemo/LibraryDemo.tsx) */}
             <LibraryDemo />
 
             <button

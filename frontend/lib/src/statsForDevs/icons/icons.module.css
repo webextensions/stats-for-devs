@@ -1,0 +1,11 @@
+/* Matches the box @mui/icons-material rendered with fontSize="inherit": a 1em square that
+   inherits the current text color, so the surrounding inline-flex hosts keep sizing the glyphs
+   via their font-size (see StatsForDevs.module.css). */
+.icon {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 1em;
+    height: 1em;
+    fill: currentColor;
+    user-select: none;
+}

@@ -3,18 +3,54 @@
 // react-dom stay external and resolve from the consuming project (see "peerDependencies" in
 // package.json.ts). Named exports only - no default export.
 //
-// The React-specific code lives under ./react/ (components/, hooks/, mount.tsx); the widget
-// layer lives under ./widget/ (ShadowDomHost, mountInShadowDom, plus the standalone script-tag
-// entry standalone.ts, which is its own tsdown entry and deliberately NOT re-exported here);
-// future areas can join as ./<area>/ siblings and be re-exported from this same barrel. Widen
-// the re-exports as you add modules; forks replace the stub API (Greeting / useCounter / mount)
-// with their package's real one (see docs/init/CUSTOMIZE/CUSTOMIZE-source-code-and-tests.md).
+// This module is deliberately side-effect free: importing it mounts nothing and touches no DOM,
+// so it is safe under SSR and for consumers that only want the visibility store or the metric
+// registry. To mount by import alone, use the `stats-for-devs/auto` entry (./auto.ts) instead;
+// the standalone script-tag entry (./widget/standalone.ts) is its own tsdown entry and
+// deliberately NOT re-exported here.
+//
+// The blank lines between the export groups are load-bearing: `simple-import-sort` sorts within
+// a group, so they are what keeps each comment attached to the exports it describes.
 
-export type { GreetingProps } from './react/components/Greeting/Greeting.tsx';
-export { Greeting } from './react/components/Greeting/Greeting.tsx';
-export type { UseCounterOptions } from './react/hooks/useCounter/useCounter.ts';
-export { useCounter } from './react/hooks/useCounter/useCounter.ts';
-export { mount, unmount } from './react/mount.tsx';
-export { mountInShadowDom, widgetStyleSheets } from './widget/mount.tsx';
-export type { ShadowDomHostProps } from './widget/ShadowDomHost.tsx';
-export { ShadowDomHost } from './widget/ShadowDomHost.tsx';
+// Mounting - the usual entry point.
+export type { StatsForDevsOptions } from './statsForDevs/mount.tsx';
+export { mountStatsForDevs, unmountStatsForDevs } from './statsForDevs/mount.tsx';
+
+// For React hosts that would rather render the HUD inside their own tree than let it self-mount. It is
+// show-gated and keeps the `React.lazy` boundary, so it costs nothing until the overlay is shown.
+//
+// The overlay component itself (`StatsForDevs`) is deliberately NOT re-exported here. Doing so makes it a
+// static import of this entry, which collapses the lazy boundary and pulls the whole overlay chunk into every
+// consumer's eager payload - the exact cost this package is built to avoid. (Rolldown says so out loud:
+// "INEFFECTIVE_DYNAMIC_IMPORT ... also statically imported by src/index.ts".)
+export { StatsForDevsRoot } from './statsForDevs/StatsForDevsRoot.tsx';
+
+// Show / hide, for driving the overlay from your own UI. `subscribe` is the framework-agnostic observer;
+// `useStatsForDevsShown` is the React adapter.
+export {
+    getShown,
+    setShown,
+    subscribe,
+    toggleShown,
+    useStatsForDevsShown
+} from './statsForDevs/visibility.ts';
+
+// The `window.statsForDevs` console controls. `mountStatsForDevs()` installs these already; this is exposed
+// for hosts that render `<StatsForDevsRoot />` themselves and still want the console API.
+export type { StatsForDevsWindowApi } from './statsForDevs/windowApi.ts';
+export { installStatsForDevsWindowApi } from './statsForDevs/windowApi.ts';
+
+// Metric registry introspection, plus `setBuildInfo` for updating the `Build` metric after mount.
+export type { MetricGroup, StatMetric } from './statsForDevs/metrics.ts';
+export { getAllMetricIds, getAllMetrics, setBuildInfo } from './statsForDevs/metrics.ts';
+
+// The settings model. Settings are normally edited inside the overlay itself (header gear); these are here so
+// a host can read the persisted shape or seed its own defaults.
+export type {
+    DockedCorner,
+    InspectMode,
+    StatsForDevsSettings,
+    UpdateRate,
+    VisualAids
+} from './statsForDevs/settings.ts';
+export { DEFAULT_SETTINGS, normalizeSettings } from './statsForDevs/settings.ts';

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+
+    <!--
+        This page opens straight from the filesystem - no server, no build step, no install. That is the whole
+        point of the drop-in build, and this demo exists to prove it:
+            $ node --run build:lib
+            then open demo/demo.html in a browser
+
+        To view the live demo, go to:
+        https://raw.githack.com/webextensions/stats-for-devs/main/demo/demo.html
+    -->
+
+    <head>
+        <meta charset="utf-8" />
+        <title>stats-for-devs demo</title>
+
+        <!-- `viewport-fit=cover` so the safe-area-inset metrics report real values on a notched phone -->
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+        <!-- Required: the whole of stats-for-devs. Styles are injected by the JS - there is nothing to link.
+             (widget.js is the unminified build, readable for debugging; CDN users load widget.min.js.) -->
+        <script src="../dist/widget.js"></script>
+
+        <style>
+            :root { color-scheme: light dark; }
+
+            body {
+                font-family: system-ui, sans-serif;
+                line-height: 1.5;
+                margin: 0;
+                padding: 1.5rem;
+                padding-bottom: 4rem;
+            }
+
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1.1rem; margin-top: 2rem; }
+            p, li { max-width: 65ch; }
+            code { background: rgb(127 127 127 / 20%); border-radius: 3px; padding: 0.1em 0.35em; }
+
+            .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0; }
+            .actions button { font: inherit; padding: 0.5rem 0.9rem; }
+
+            /* Deliberately mixed tap-target sizes, to give the 44px tap-target aid something to flag. */
+            .tapTargets { display: flex; align-items: center; gap: 0.75rem; }
+            .tapTargets .tooSmall { font: inherit; height: 24px; width: 24px; padding: 0; }
+            .tapTargets .bigEnough { font: inherit; height: 48px; width: 48px; padding: 0; }
+
+            /* Reacts at the same breakpoints the overlay reports, so `Breakpoint` can be cross-checked. */
+            .breakpointGrid {
+                display: grid;
+                gap: 0.5rem;
+                grid-template-columns: repeat(1, 1fr);
+            }
+            .breakpointGrid > div { background: rgb(127 127 127 / 20%); padding: 0.75rem; text-align: center; }
+            @media (width >= 640px)  { .breakpointGrid { grid-template-columns: repeat(2, 1fr); } }
+            @media (width >= 768px)  { .breakpointGrid { grid-template-columns: repeat(3, 1fr); } }
+            @media (width >= 1024px) { .breakpointGrid { grid-template-columns: repeat(4, 1fr); } }
+            @media (width >= 1280px) { .breakpointGrid { grid-template-columns: repeat(5, 1fr); } }
+            @media (width >= 1536px) { .breakpointGrid { grid-template-columns: repeat(6, 1fr); } }
+
+            /* Shows the current breakpoint independently, to compare against the overlay's readout. */
+            .breakpointLabel::after { content: 'base'; font-weight: bold; }
+            @media (width >= 640px)  { .breakpointLabel::after { content: 'sm'; } }
+            @media (width >= 768px)  { .breakpointLabel::after { content: 'md'; } }
+            @media (width >= 1024px) { .breakpointLabel::after { content: 'lg'; } }
+            @media (width >= 1280px) { .breakpointLabel::after { content: 'xl'; } }
+            @media (width >= 1536px) { .breakpointLabel::after { content: '2xl'; } }
+
+            /* For the dvh / svh / lvh and URL-bar-delta metrics on a real phone. */
+            .fullHeight {
+                align-items: center;
+                background: rgb(127 127 127 / 12%);
+                display: flex;
+                height: 100dvh;
+                justify-content: center;
+            }
+
+            .filler { opacity: 0.6; }
+        </style>
+    </head>
+
+    <body>
+        <h1>stats-for-devs demo</h1>
+
+        <p>
+            The overlay is already loaded on this page. Show it with the buttons below, from the console via
+            <code>statsForDevs.show()</code>, or by adding <code>?statsForDevs=yes</code> to the URL. Its
+            settings live behind the gear icon in its own header.
+        </p>
+
+        <div class="actions">
+            <button type="button" onclick="statsForDevs.show()">show()</button>
+            <button type="button" onclick="statsForDevs.hide()">hide()</button>
+            <button type="button" onclick="statsForDevs.toggle()">toggle()</button>
+            <button type="button" onclick="alert('isShown(): ' + statsForDevs.isShown())">isShown()</button>
+            <button type="button" onclick="statsForDevs.setBuildInfo('demo page')">setBuildInfo('demo page')</button>
+        </div>
+
+        <h2>Breakpoints and responsiveness</h2>
+        <p>
+            This page's own breakpoint is <span class="breakpointLabel"></span> - it should match the overlay's
+            <code>Breakpoint</code> metric. Resize the window and watch both change together.
+        </p>
+        <div class="breakpointGrid">
+            <div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div>
+        </div>
+
+        <h2>Tap targets</h2>
+        <p>
+            Enable <em>Tap-target checker (44px)</em> in the overlay's settings. The small button should be
+            flagged; the large one should not.
+        </p>
+        <div class="tapTargets">
+            <button type="button" class="tooSmall" title="24px - too small">S</button>
+            <button type="button" class="bigEnough" title="48px - fine">L</button>
+        </div>
+
+        <h2>Mobile input</h2>
+        <p>Focus this field on a phone to watch the virtual-keyboard and viewport metrics react.</p>
+        <p><label>Type here: <input type="text" placeholder="focus me" /></label></p>
+
+        <h2>Performance</h2>
+        <p>
+            Enable the <em>Performance</em> metrics (and try setting a threshold on them, so they turn red).
+            <code>JS heap</code> is Chromium-only.
+        </p>
+        <div class="actions">
+            <button type="button" onclick="burnMs(200)">Burn 200 ms (long task)</button>
+            <button type="button" onclick="allocateMb(50)">Allocate 50 MB (heap)</button>
+            <button type="button" onclick="addNodes(2000)">Add 2000 DOM nodes</button>
+        </div>
+        <div id="nodeSink"></div>
+
+        <h2>Scrolling</h2>
+        <p>Scroll this page to exercise the scroll position, velocity and direction metrics.</p>
+
+        <div class="fullHeight">
+            <span>A <code>100dvh</code> block - compare <code>dvh</code> / <code>svh</code> / <code>lvh</code> on a phone.</span>
+        </div>
+
+        <p class="filler">Filler paragraph, so there is plenty to scroll through.</p>
+        <p class="filler">Filler paragraph, so there is plenty to scroll through.</p>
+        <p class="filler">Filler paragraph, so there is plenty to scroll through.</p>
+        <p class="filler">Filler paragraph, so there is plenty to scroll through.</p>
+        <p class="filler">Filler paragraph, so there is plenty to scroll through.</p>
+        <p class="filler">Filler paragraph, so there is plenty to scroll through.</p>
+        <p class="filler">Filler paragraph, so there is plenty to scroll through.</p>
+        <p class="filler">Filler paragraph, so there is plenty to scroll through.</p>
+
+        <h2>Inspect mode</h2>
+        <p>
+            Set <em>Inspect mode</em> to <code>live</code> in the settings, then hover this
+            <strong><em><span>deliberately nested markup</span></em></strong> and watch the hovered-element
+            readout.
+        </p>
+
+        <script>
+            const burnMs = function (ms) {
+                const end = performance.now() + ms;
+                while (performance.now() < end) { /* block the main thread on purpose */ }
+            };
+
+            // Kept on `window` so the allocation is not immediately collectable.
+            window.heapBallast = [];
+            const allocateMb = function (mb) {
+                window.heapBallast.push(new Uint8Array(mb * 1024 * 1024));
+            };
+
+            const addNodes = function (count) {
+                const sink = document.getElementById('nodeSink');
+                const fragment = document.createDocumentFragment();
+                for (let i = 0; i < count; i++) {
+                    fragment.append(document.createElement('span'));
+                }
+                sink.append(fragment);
+            };
+        </script>
+    </body>
+
+</html>

@@ -1,0 +1,143 @@
+/*
+ * Settings view rendered INSIDE the dark, theme-independent overlay (toggled by the header gear). Controls
+ * are native elements styled for the dark HUD - light text, dark inputs, accent-colored checkboxes/ranges -
+ * so they do not depend on the host page's theme. Font size inherits the overlay's
+ * `--overlayFontScale`-scaled size.
+ */
+
+.StatsForDevsSettings {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: rgb(235 235 235);
+}
+
+.backButton {
+    display: inline-flex;
+    gap: 2px;
+    align-items: center;
+    align-self: flex-start;
+    padding: 3px 8px 3px 4px;
+    color: rgb(200 200 210);
+    font: inherit;
+    cursor: pointer;
+    background: rgb(255 255 255 / 0.08);
+    border: 1px solid rgb(255 255 255 / 0.16);
+    border-radius: 999px;
+}
+
+.backButton:hover {
+    color: rgb(255 255 255);
+    background: rgb(255 255 255 / 0.16);
+}
+
+.presetRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.presetButton {
+    padding: 2px 8px;
+    color: rgb(210 210 220);
+    font: inherit;
+    cursor: pointer;
+    background: rgb(255 255 255 / 0.08);
+    border: 1px solid rgb(255 255 255 / 0.16);
+    border-radius: 4px;
+}
+
+.presetButton:hover {
+    color: rgb(255 255 255);
+    background: rgb(255 255 255 / 0.16);
+}
+
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.groupTitle {
+    margin-top: 4px;
+    font-size: calc(9px * var(--overlayFontScale, 1));
+    font-weight: 700;
+    color: rgb(120 200 255);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.checkRow {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    cursor: pointer;
+}
+
+.checkRowDisabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.checkbox {
+    width: 13px;
+    height: 13px;
+    margin: 0;
+    accent-color: rgb(120 200 255);
+}
+
+.sliderRow {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0 2px;
+}
+
+.sliderHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sliderValue {
+    font-variant-numeric: tabular-nums;
+    color: rgb(165 170 180);
+}
+
+.range {
+    width: 100%;
+    margin: 0;
+    accent-color: rgb(120 200 255);
+}
+
+.controlRow {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.controlLabel {
+    flex: 1;
+    color: rgb(210 210 220);
+}
+
+.control {
+    min-width: 110px;
+    padding: 2px 4px;
+    color: rgb(235 235 235);
+    font: inherit;
+    background: rgb(36 40 48);
+    border: 1px solid rgb(255 255 255 / 0.2);
+    border-radius: 4px;
+}
+
+.numberInput {
+    width: 90px;
+    padding: 2px 4px;
+    color: rgb(235 235 235);
+    font: inherit;
+    background: rgb(36 40 48);
+    border: 1px solid rgb(255 255 255 / 0.2);
+    border-radius: 4px;
+}

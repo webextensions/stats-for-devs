@@ -1,68 +1,56 @@
-// Demos the publishable library (frontend/lib/) inside this dev/demo harness app, covering its
-// three consumption modes - all via the public barrel, but through a relative SOURCE import (not
-// the built dist/), so the dev build and HMR pick up library edits instantly without a rebuild:
+// Demos the publishable library (frontend/lib/) inside this dev/demo harness app - all via the
+// public barrel, but through a relative SOURCE import (not the built dist/), so the dev build and
+// HMR pick up library edits instantly without a rebuild:
 //
-// - Light DOM (React tree): renders the stub Greeting the way a React consumer's component tree
-//   would; its CSS Modules come along with the import (published consumers import
-//   '<package-name>' and its stylesheet via '<package-name>/style.css' instead).
-// - Shadow DOM (React tree): the same Greeting isolated inside a ShadowDomHost - host-page CSS
-//   does not reach it (note the widget's own baseline styling from widgetStyleSheets).
-// - Imperative: mount()/mountInShadowDom()/unmount() driven by buttons against a plain target
-//   element, the way a non-React host page (or the standalone script-tag artifact, which wraps
-//   these same functions - see frontend/lib/src/widget/standalone.ts) would call them.
+// - In-tree: <StatsForDevsRoot /> rendered inside this React tree, the way a React consumer
+//   would; show/hide/toggle drive the shared visibility store.
+// - Imperative self-mount: mountStatsForDevs()/unmountStatsForDevs() the way a non-React host
+//   would call them - the HUD creates its own container + React root outside this tree. The
+//   buildInfo option is demoed here because only the HOST may read import.meta.env (the library
+//   source never does - see docs/because/self-contained-decoupling.md).
 //
-// Replace/remove together with the stub library API (see
-// docs/init/CUSTOMIZE/CUSTOMIZE-source-code-and-tests.md).
-
-import { useRef } from 'react';
+// Both share ONE visibility store and ONE settings blob, so mounting both while shown renders two
+// identical overlapping overlays - which is itself a demonstration of the self-contained
+// decoupling. The standalone script-tag artifact (dist/widget.js) wraps these same functions -
+// see frontend/lib/src/widget/standalone.ts and demo/demo.html at the repo root.
 
 import {
-    Greeting,
-    mount,
-    mountInShadowDom,
-    ShadowDomHost,
-    unmount,
-    widgetStyleSheets
+    mountStatsForDevs,
+    setShown,
+    StatsForDevsRoot,
+    toggleShown,
+    unmountStatsForDevs
 } from '../../../lib/src/index.ts';
 
 const LibraryDemo = function () {
-    const imperativeTargetRef = useRef<HTMLDivElement>(null);
-
     const handleMountClick = function () {
-        if (imperativeTargetRef.current) {
-            mount(imperativeTargetRef.current, { name: 'Imperative' });
-        }
-    };
-    const handleMountInShadowDomClick = function () {
-        if (imperativeTargetRef.current) {
-            mountInShadowDom(imperativeTargetRef.current, { name: 'Imperative shadow' });
-        }
-    };
-    const handleUnmountClick = function () {
-        if (imperativeTargetRef.current) {
-            unmount(imperativeTargetRef.current);
-        }
+        mountStatsForDevs({
+            buildInfo: () => `${import.meta.env.DEV ? 'dev' : 'prod'}${import.meta.hot ? ' HMR' : ''}`
+        });
     };
 
     return (
         <div>
-            <h2>Library demo - light DOM</h2>
-            <Greeting name="Ada" />
-
-            <h2>Library demo - shadow DOM</h2>
-            <ShadowDomHost styleSheets={widgetStyleSheets}>
-                <Greeting name="Grace" />
-            </ShadowDomHost>
-
-            <h2>Library demo - imperative mount</h2>
+            <h2>stats-for-devs - in-tree (StatsForDevsRoot)</h2>
+            <StatsForDevsRoot />
             <p>
-                <button type="button" onClick={handleMountClick}>Mount</button>
+                <button type="button" onClick={() => setShown(true)}>Show</button>
                 {' '}
-                <button type="button" onClick={handleMountInShadowDomClick}>Mount in shadow DOM</button>
+                <button type="button" onClick={() => setShown(false)}>Hide</button>
                 {' '}
-                <button type="button" onClick={handleUnmountClick}>Unmount</button>
+                <button type="button" onClick={() => toggleShown()}>Toggle</button>
             </p>
-            <div ref={imperativeTargetRef} />
+
+            <h2>stats-for-devs - imperative self-mount</h2>
+            <p>
+                <button type="button" onClick={handleMountClick}>mountStatsForDevs()</button>
+                {' '}
+                <button type="button" onClick={() => unmountStatsForDevs()}>unmountStatsForDevs()</button>
+            </p>
+            <p>
+                Also try the console (<code>statsForDevs.toggle()</code>) or the{' '}
+                <code>?statsForDevs=yes</code> URL param. Settings persist in localStorage.
+            </p>
         </div>
     );
 };
