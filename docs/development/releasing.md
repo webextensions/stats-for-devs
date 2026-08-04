@@ -29,6 +29,14 @@ npm publish
   denylist behind that allowlist.
 - `node --run publint` lints the manifest for publish-time correctness (`main` / `exports` /
   `files` resolution); it also runs as the `publint` check in the `all-is-well` suite.
+- The `prepack` / `postpack` pair (see [`package.json.ts`](../../package.json.ts),
+  [`prepack.sh`](../../scripts/npm-run-scripts/prepack.sh) and
+  [`postpack.sh`](../../scripts/npm-run-scripts/postpack.sh)) strips dev-only install-family
+  scripts (`preinstall`) from the packed manifest and restores the generated files afterwards, so
+  consumers get a manifest with no install scripts. The `prepack-strip` check in the `all-is-well`
+  suite guards the strip list. If a pack aborts between `prepack` and `postpack`, the stripped
+  `package.json` stays on disk and the `pkg-json-sync` check fails until
+  `node --run housekeeping:generate-package-json` is re-run (the next `prepack` also self-heals).
 - Preview the exact tarball contents before publishing:
 
   ```sh
@@ -39,3 +47,12 @@ npm publish
   `dist/` files (`index.js` + sourcemap, `index.d.ts` + map, `style.css` - built fresh by
   `prepack`), and the `frontend/lib/src/` sources (so the sourcemaps resolve) - but NOT the
   colocated `*.test.*` files (excluded by the `"!**/*.test.*"` negation in `files`).
+- Verify the packed manifest end-to-end (the `--dry-run` preview lists files only; a real pack also
+  exercises `prepack` / `postpack`):
+
+  ```sh
+  npm pack
+  tar -xOzf ./<name>-<version>.tgz package/package.json | grep -E '"(pre|post)?install"' # expect no output
+  rm ./<name>-<version>.tgz
+  git status # expect a clean tree (postpack restored the generated files)
+  ```

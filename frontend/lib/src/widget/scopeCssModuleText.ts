@@ -9,7 +9,7 @@
 // class-name map (the module's ordinary import), it swaps ".local" selectors for ".scoped".
 // Under Vite the already-compiled selectors match no map key, so the rewrite is a no-op - safe
 // in both environments. Revisit if @tsdown/css learns to compile modules for "?inline" (see
-// because/widget-standalone-build.md and docs/specs/todo/TODO-for-template-widget.md).
+// docs/because/widget-standalone-build.md and docs/specs/todo/TODO-for-template-widget.md).
 //
 // Scope note: this rewrites class SELECTORS only (".name" tokens). Class names appearing inside
 // strings or url() values would be rewritten too if they collide with a map key - keep such

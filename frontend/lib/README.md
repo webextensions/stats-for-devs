@@ -48,9 +48,9 @@ re-exported from the same barrel.
       and never auto-mounting.
   Runs automatically on `prepack` and as the `build:lib` pre-step of `node --run test` (publint
   validates the real artifacts). Why tsdown:
-  [because/react-template-build-tooling.md](../../because/react-template-build-tooling.md); the
+  [docs/because/react-template-build-tooling.md](../../docs/because/react-template-build-tooling.md); the
   standalone/shadow specifics (incl. the `?inline` raw-text gotcha):
-  [because/widget-standalone-build.md](../../because/widget-standalone-build.md).
+  [docs/because/widget-standalone-build.md](../../docs/because/widget-standalone-build.md).
 - `node --run test:types:lib` - strict type check of this zone via [tsconfig.json](./tsconfig.json)
   (the demo-app zone's [../tsconfig.json](../tsconfig.json) excludes `./lib` and stays relaxed).
 - Tests are colocated `*.test.{ts,tsx}` files discovered by the single root Vitest suite; each

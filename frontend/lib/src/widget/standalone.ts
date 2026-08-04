@@ -1,7 +1,7 @@
 // Standalone (script-tag / CDN) entry - the extra tsdown passes bundle this into dist/widget.js
 // and dist/widget.min.js as an IIFE with react / react-dom bundled in (see
 // frontend/lib/tsdown.config.ts, where the global name and artifact basename live, and
-// because/widget-standalone-build.md for the rationale). Loading the script only DEFINES the
+// docs/because/widget-standalone-build.md for the rationale). Loading the script only DEFINES the
 // global (window.TemplateWidget) and never auto-mounts; the consumer calls
 // TemplateWidget.mount(el, props) or TemplateWidget.mountInShadowDom(el, props) explicitly.
 // Light-DOM mounts still need the dist/style.css <link>; mountInShadowDom carries its styles

@@ -13,7 +13,7 @@
 //   target in package.json.ts). react / react-dom are bundled IN via noExternal, and
 //   process.env.NODE_ENV is compiled away (a plain browser page has no "process"). Loading the
 //   script only defines the window global named by GLOBAL_NAME below; it never auto-mounts.
-//   Rationale: because/widget-standalone-build.md.
+//   Rationale: docs/because/widget-standalone-build.md.
 //
 // Forks: GLOBAL_NAME and STANDALONE_BASENAME below are the single place to rename the standalone
 // identity - keep the "exports" / "unpkg" / "jsdelivr" paths in package.json.ts in sync (see

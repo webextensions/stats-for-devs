@@ -4,10 +4,10 @@
 
 The `template-widget` branch adds two script-tag/CDN artifacts to the library build:
 `dist/widget.js` (unminified, development react) and `dist/widget.min.js` (minified, production
-react) - IIFE bundles of [frontend/lib/src/widget/standalone.ts](../frontend/lib/src/widget/standalone.ts)
+react) - IIFE bundles of [frontend/lib/src/widget/standalone.ts](../../frontend/lib/src/widget/standalone.ts)
 with `react` / `react-dom` bundled in, defining `window.TemplateWidget` and never auto-mounting.
 They are passes 2 and 3 of the config ARRAY in
-[frontend/lib/tsdown.config.ts](../frontend/lib/tsdown.config.ts) (pass 1 is the unchanged ESM
+[frontend/lib/tsdown.config.ts](../../frontend/lib/tsdown.config.ts) (pass 1 is the unchanged ESM
 library build - see [react-template-build-tooling.md](./react-template-build-tooling.md) for why
 tsdown at all).
 
@@ -24,7 +24,7 @@ tsdown at all).
 - **Two twins with NODE_ENV baked**: a plain browser page has no `process`, so the literal must
   be compiled away; `widget.js` keeps development react for readable debugging, `widget.min.js`
   is the production CDN target (the `unpkg` / `jsdelivr` fields in
-  [package.json.ts](../package.json.ts)).
+  [package.json.ts](../../package.json.ts)).
 - **The global defines twice, on purpose**: tsdown's `globalName` IIFE wrapper covers classic
   `<script src>` loads, and `standalone.ts` ALSO assigns `globalThis.TemplateWidget` explicitly -
   because the `"./widget.js"` exports subpath can be evaluated as a MODULE (a bundler side-effect
@@ -43,7 +43,7 @@ The shadow-DOM path needs a CSS Module's compiled text to apply inside the shado
 inlines the COMPILED text for `*.module.css?inline`, but `@tsdown/css` (which builds the
 published artifacts) deliberately skips CSS-module compilation for `?inline` ids and inlines the
 RAW text - its selectors would not match the scoped class names the component renders.
-[frontend/lib/src/widget/scopeCssModuleText.ts](../frontend/lib/src/widget/scopeCssModuleText.ts)
+[frontend/lib/src/widget/scopeCssModuleText.ts](../../frontend/lib/src/widget/scopeCssModuleText.ts)
 bridges this at runtime: given the raw text and the class-name map (the module's ordinary
 import), it rewrites `.local` selectors to `.scoped` - and degrades to a no-op under Vite, where
 the text arrives already compiled. Do not "simplify" the dual import + rewrite away without
@@ -55,9 +55,9 @@ checking `@tsdown/css`'s `?inline` behavior first.
   `dts: false`.
 - `GLOBAL_NAME` / `STANDALONE_BASENAME` in the tsdown config, the global property assigned in
   `standalone.ts`, and the `exports` / `unpkg` / `jsdelivr` paths in `package.json.ts` must stay
-  in sync (fork checklist: [docs/init/CUSTOMIZE/CUSTOMIZE-widget.md](../docs/init/CUSTOMIZE/CUSTOMIZE-widget.md)).
+  in sync (fork checklist: [docs/init/CUSTOMIZE/CUSTOMIZE-widget.md](../init/CUSTOMIZE/CUSTOMIZE-widget.md)).
 - `standalone.ts` stays out of the barrel (it is side-effectful; the barrel must remain
-  tree-shakable) and is registered as a knip entry in [knip.config.ts](../knip.config.ts).
+  tree-shakable) and is registered as a knip entry in [knip.config.ts](../../knip.config.ts).
 - The standalone artifacts are listed in `sideEffects` in `package.json.ts` (they assign a
   global when evaluated).
 
