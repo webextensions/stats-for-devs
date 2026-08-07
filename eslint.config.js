@@ -188,7 +188,7 @@ export default defineConfig([
     },
 
     // Local config files (git-ignored, machine-specific - see the NOTE above the ignores list):
-    // their sibling imports (./app-customizations.js, ./config.*._.js, ./constants.js) exist only on
+    // their sibling imports (./project-customizations.js, ./config.*._.js, ./constants.js) exist only on
     // the web-app-family branches, so the rule is turned off for them here instead of via per-line
     // disables (which would be flagged as unused disable directives on the branches where the
     // imports resolve).

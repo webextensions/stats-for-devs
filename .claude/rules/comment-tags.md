@@ -19,9 +19,9 @@ variants - so annotations stay greppable:
 - `SIMPLE-UNOPTIMIZED-CODE` - deliberately simple implementation; optimize only when it matters
 - `TODO` - pending work
 
-## APP-CUSTOMIZATIONS
+## PROJECT-CUSTOMIZATIONS
 
-A `BEGIN: APP-CUSTOMIZATIONS` / `END: APP-CUSTOMIZATIONS` comment pair fences fork-specific edits
+A `BEGIN: PROJECT-CUSTOMIZATIONS` / `END: PROJECT-CUSTOMIZATIONS` comment pair fences fork-specific edits
 inside otherwise-shared files. On template merges the fenced block is expected to conflict - keep
 the fork's side; everything outside the fences takes the template's updates.
 

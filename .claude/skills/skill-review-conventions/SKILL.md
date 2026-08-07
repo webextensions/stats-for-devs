@@ -1,5 +1,5 @@
 ---
-name: reviewing-conventions
+name: skill-review-conventions
 description: Review code files for adherence to this project's conventions and coding standards
 argument-hint: [file-or-directory-path]
 disable-model-invocation: true

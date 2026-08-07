@@ -1,6 +1,6 @@
 ---
 description: TypeScript pitfalls observed in first-pass code generation - stale references, unused symbols, escape hatches
-globs: ["**/*.cts", "**/*.mts", "**/*.ts"]
+paths: ["**/*.cjs", "**/*.cts", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.mts", "**/*.ts", "**/*.tsx"]
 ---
 
 # TypeScript Gotchas - Avoid First-Pass Type Errors

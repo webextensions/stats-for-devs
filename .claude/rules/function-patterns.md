@@ -1,6 +1,6 @@
 ---
 description: Function structure, parameter destructuring, and async conventions
-globs: ["**/*.ts", "**/*.tsx", "**/*.js"]
+paths: ["**/*.cjs", "**/*.cts", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.mts", "**/*.ts", "**/*.tsx"]
 ---
 
 # Function Patterns

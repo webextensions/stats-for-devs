@@ -290,6 +290,7 @@ const dependenciesForServer = {
     "compression": "^1.8.1",
     "express": "^5.2.1",
     "extend": "^3.0.2", // Also declared in dependenciesForDev
+    "get-port": "^7.2.0", // Dynamic port pick for the HTTP server (HTTP_PORT_DYNAMIC=yes)
     "local-ip-addresses-and-hostnames": "=0.3.0"
 
     /* End: Template originated "dependenciesForServer" */
@@ -334,7 +335,7 @@ const dependenciesForDev = {
     "@types/node-notifier": "^8.0.5",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@types/semver": "^7.7.1",
+    "@types/semver": "^7.8.0",
     "@webextensions/revisit": "^0.2.0", // Recurring-reminders tool run by the post-commit hook (see revisit.json)
     "auto-changelog": "^2.6.0",
     "boxen": "^8.0.1",
@@ -354,7 +355,7 @@ const dependenciesForDev = {
     "eslint-plugin-unicorn": "^72.0.0", // ironplate peer
     "execa": "^10.0.1",
     "extend": "^3.0.2", // Also declared in dependenciesForServer
-    "globals": "^17.8.0",
+    "globals": "^17.9.0",
     "husky": "^9.1.7",
     "jsdom": "^30.0.1", // Opted into per test file via the "@vitest-environment jsdom" pragma
     "knip": "^6.31.0",
@@ -370,7 +371,7 @@ const dependenciesForDev = {
     "stylelint-config-css-modules": "^4.6.0",
     "stylelint-config-recommended": "^18.0.0",
     "typescript": "~6.0.3", // Optional ironplate peer for its TypeScript configs
-    "typescript-eslint": "^8.65.0", // Optional ironplate peer
+    "typescript-eslint": "^8.66.0", // Optional ironplate peer
     "typescript-plugin-css-modules": "^5.2.0", // Editor/tsserver types for *.module.css imports (wired in frontend/tsconfig.json "plugins")
     "vitest": "^4.1.10"
 
@@ -535,10 +536,16 @@ const packageJson = {
         // "setup:git-exclude" seeds this clone's .git/info/exclude (the secondary home, for
         // machine-local personal ignore patterns only - shared patterns live in the committed
         // .gitignore) from docs/template-project/git-info-exclude.example (idempotent, append-only).
+        // "setup:ai" installs the language server that coding agents drive through LSP (Claude Code
+        // spawns "typescript-language-server --stdio"); without it those tools silently do nothing,
+        // which scripts/health-checks/checks/check-lsp-server.ts detects. A global install lands in
+        // the ACTIVE Node version's bin directory, so re-run it after switching Node ("nvm use").
         "setup": [
             "node --run setup:editor",
-            "node --run setup:git-exclude"
+            "node --run setup:git-exclude",
+            "node --run setup:ai"
         ].join(" && "),
+        "setup:ai":          "npm install -g typescript-language-server",
         "setup:editor":      "./.vscode/soft-links/setup.sh",
         "setup:git-exclude": "./scripts/housekeeping/setup-git-info-exclude.sh",
 
@@ -760,19 +767,24 @@ const packageJson = {
 
         // Express server (backend/src/server/server.ts): serves the built publicDirectory statically
         // with an SPA fallback; USE_HMR=yes switches to Vite middleware mode (on-the-fly transforms +
-        // HMR - no separate build process needed)
-        "server:development:local":         "node --watch --watch-preserve-output backend/src/server/server.ts --config config/config.development.local.js",
-        "server:development:local:use-hmr": "USE_HMR=yes node --run server:development:local",
-        "server:production:live":           "NODE_ENV=production node backend/src/server/server.ts --config config/config.production.live.js",
+        // HMR - no separate build process needed); HTTP_PORT_DYNAMIC=yes picks the next free port
+        // when the configured one is busy
+        "server:development:local":                   "node --watch --watch-preserve-output backend/src/server/server.ts --config config/config.development.local.js",
+        "server:development:local:http-port-dynamic": "HTTP_PORT_DYNAMIC=yes node --run server:development:local",
+        "server:development:local:use-hmr":           "USE_HMR=yes node --run server:development:local",
+        "server:production:live":                     "NODE_ENV=production node backend/src/server/server.ts --config config/config.production.live.js",
 
         // Dev entry points: "start" runs the Express server and the watch build together;
-        // ":use-hmr" runs only the server with Vite middleware mode instead of a separate build
-        "start":                "node --run start:app",
-        "start:app":            "concurrently \"node --run start:server\" \"node --run start:build\" --prefix \"[{time}] [{index}]\" --timestamp-format \"HH:mm:ss.SSS\"",
-        "start:app:use-hmr":    "node --run start:server:use-hmr",
-        "start:build":          "node --run build",
-        "start:server":         "node --run server:development:local",
-        "start:server:use-hmr": "node --run server:development:local:use-hmr"
+        // ":use-hmr" runs only the server with Vite middleware mode instead of a separate build;
+        // ":http-port-dynamic" runs the same as "start" but with a dynamically picked port
+        "start":                          "node --run start:app",
+        "start:app":                      "concurrently \"node --run start:server\" \"node --run start:build\" --prefix \"[{time}] [{index}]\" --timestamp-format \"HH:mm:ss.SSS\"",
+        "start:app:http-port-dynamic":    "concurrently \"node --run start:server:http-port-dynamic\" \"node --run start:build\" --prefix \"[{time}] [{index}]\" --timestamp-format \"HH:mm:ss.SSS\"",
+        "start:app:use-hmr":              "node --run start:server:use-hmr",
+        "start:build":                    "node --run build",
+        "start:server":                   "node --run server:development:local",
+        "start:server:http-port-dynamic": "node --run server:development:local:http-port-dynamic",
+        "start:server:use-hmr":           "node --run server:development:local:use-hmr"
     }
 };
 

@@ -49,11 +49,17 @@ Build output lands in the config-driven `publicDirectory` (`public-development-l
   fallback and cache headers tuned for the `ensure-freshness` / content-hash output patterns.
 - `node --run start:app:use-hmr` - server only, with Vite mounted in middleware mode
   (`USE_HMR=yes`): on-the-fly transforms + hot module replacement, no separate build process.
+- `node --run start:app:http-port-dynamic` - like `start`, but with `HTTP_PORT_DYNAMIC=yes` the
+  server picks the next free port from the configured one upward (via `get-port`) instead of
+  failing when it is busy - the startup log shows the port actually chosen.
 - On startup the server logs every reachable URL (local IPs + `/etc/hosts` hostnames, via
   `local-ip-addresses-and-hostnames`, with `PREFERRED_HOSTNAMES_FOR_LOCAL_DEVELOPMENT` from
-  [config/app-customizations.js](../../config/app-customizations.js) listed first); when
+  [config/project-customizations.js](../../config/project-customizations.js) listed first); when
   `server.nonProductionDevTools.flagNotifyServerPathsOnLaunch` is enabled (development tiers) it
   also raises a desktop notification with the same list.
+- When the server fails to start (e.g. the configured port is already in use) and
+  `server.nonProductionDevTools.flagNotifyServerStartupErrors` is enabled (development tiers), the
+  error is also raised as a desktop notification alongside the terminal log.
 
 ## Dev overlays
 

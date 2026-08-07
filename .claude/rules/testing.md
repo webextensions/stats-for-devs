@@ -1,6 +1,6 @@
 ---
 description: Vitest testing conventions and patterns
-globs: ["test/**/*.js", "test/**/*.ts", "**/*.test.js", "**/*.test.jsx", "**/*.test.ts", "**/*.test.tsx"]
+paths: ["test/**/*.js", "test/**/*.ts", "**/*.test.js", "**/*.test.jsx", "**/*.test.ts", "**/*.test.tsx"]
 ---
 
 # Testing Conventions

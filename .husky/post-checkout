@@ -6,17 +6,37 @@ cd ../               # Change directory to project's root folder
 # Warn-only orientation checks after a checkout (no "set -e", so every line runs even if an earlier
 # one reports drift; git ignores the post-checkout exit code anyway). Useful here because merging the
 # "template" branch into "main" routinely changes package.json / package-lock.json and may need an
-# "npm install" or "nvm use".
+# "npm install", an "nvm use", or a "node --run setup:ai".
 
 ./scripts/utils/print-current-hash.sh
 
-# Warn-only ("--exit-with-code-0"): nudge "nvm use" if Node does not satisfy .nvmrc
-./scripts/health-checks/checks/check-node-version.ts --exit-with-code-0
+# git passes "1" for a branch checkout and "0" for a path-limited one ("git checkout -- <path>"). Only
+# a branch checkout can change what these checks report, so gate them: it also keeps the checks quiet
+# during conflict resolution, where "git checkout --ours -- package.json" would otherwise print
+# out-of-sync noise for every resolved file (see .claude/commands/cmd-merge-base-branches.md).
+if [ "$3" = "1" ]; then
 
-# Warn if the generated files drifted from package.json.ts on this branch
-node --run test:compare-package-json-with-source
+    # Warn-only ("--exit-with-code-0"): nudge "nvm use" if Node does not satisfy .nvmrc
+    ./scripts/health-checks/checks/check-node-version.ts --exit-with-code-0
 
-node --run test:compare-package-version-with-source
+    # Warn if the generated files drifted from package.json.ts on this branch
+    node --run test:compare-package-json-with-source
 
-# Warn-only ("--exit-with-code-0"): nudge "npm install" if installed top-level versions no longer satisfy package.json
-./scripts/health-checks/checks/check-npm-install-status.ts --exit-with-code-0
+    node --run test:compare-package-version-with-source
+
+    # Warn-only ("--exit-with-code-0"): nudge "npm install" if installed top-level versions no longer satisfy package.json
+    ./scripts/health-checks/checks/check-npm-install-status.ts --exit-with-code-0
+
+    # Warn-only ("--exit-with-code-0"): nudge "node --run setup:ai" if typescript-language-server - the
+    # binary Claude Code's LSP tool spawns - cannot be run. Text-only on purpose: no "--notify" here,
+    # because a merge cascade performs dozens of checkouts and would stack a desktop popup per checkout
+    # (the SessionStart hook is the one place that notifies).
+    ./scripts/health-checks/checks/check-lsp-server.ts --exit-with-code-0
+
+    # Warn-only ("--exit-with-code-0"): nudge a codegraph reinstall when this clone has a built
+    # .codegraph/ index but the "codegraph" binary - which .mcp.json spawns as the MCP server -
+    # cannot be run. Silent in unindexed clones (indexing is the user's decision). Text-only on
+    # purpose, like the check-lsp-server line above.
+    ./scripts/health-checks/checks/check-codegraph.ts --exit-with-code-0
+
+fi

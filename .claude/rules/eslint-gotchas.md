@@ -1,6 +1,6 @@
 ---
 description: Non-autofixable ESLint rules that commonly trip up first-pass code generation
-globs: ["**/*.cjs", "**/*.cts", "**/*.js", "**/*.mjs", "**/*.mts", "**/*.ts"]
+paths: ["**/*.cjs", "**/*.cts", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.mts", "**/*.ts", "**/*.tsx"]
 ---
 
 # ESLint Gotchas - Get These Right on First Pass

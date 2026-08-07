@@ -1,9 +1,9 @@
 ---
-name: updating-ignore-rules
-description: Use when about to add, remove, or change entries in .gitignore, .git/info/exclude / docs/template-project/git-info-exclude.example, the .cursorignore file, the eslint.config.js / eslint.markdown.config.js globalIgnores lists, the tsconfig.json exclude list, or any similar ignore/exclude list, while on an abstract- or template- branch of this repository.
+name: skill-update-ignore-rules
+description: Use when about to add, remove, or change entries in .gitignore, .git/info/exclude / docs/template-project/git-info-exclude.example, the .cursorignore file, the eslint.config.js / eslint.markdown.config.js globalIgnores lists, the tsconfig.json exclude list, or any similar ignore/exclude list, while on an abstract- or template- branch of this repository; also when adding a placeholder file to keep an otherwise-empty directory in git.
 ---
 
-# Updating Ignore Rules
+# Update Ignore Rules
 
 ## Overview - one primary home, one escape hatch
 
@@ -32,13 +32,25 @@ still surface via lint / type-check.
 ## Per-directory tracked .gitignore
 
 To ignore a directory's contents while keeping the directory present in the repo, use a tracked `.gitignore` inside
-that directory (the pattern `template-web-app` uses for `app-data/database/*/.gitignore` with `*` + `!/.gitignore`,
-and for `config/encryption/keys/.gitignore`). These structure-keeping tracked files live on the branch that has the
-directory; the root `.gitignore` additionally carries the blanket pattern (e.g. `/app-data/`) so leftovers stay
-invisible on every other branch.
+that directory with `*` + `!/.gitignore` (the pattern `.codegraph/.gitignore` uses). Such a file lives on the branch
+that has the directory. Where the root `.gitignore` already carries a blanket pattern for that directory (e.g.
+`/app-data/`, which keeps every branch's leftovers invisible), the nested file has nothing left to ignore - use
+`.gitkeep` instead, per the section below.
 
 The same mechanism covers a single generated file next to tracked ones: `.vscode/soft-links/.gitignore` ignores only
 the generated `node` symlink while keeping its `setup.sh` tracked.
+
+## Keeping an empty directory: .gitkeep, not an empty .gitignore
+
+When a directory must exist in git but has nothing to ignore, commit an empty `.gitkeep` - either because it never
+had anything to ignore (`docs/specs/implemented/.gitkeep`) or because the root `.gitignore` already covers its
+contents (the web-app family's `app-data/database/*/.gitkeep`). An empty `.gitignore` keeps the directory too, but
+reads as a forgotten ignore list. The `*` + `!/.gitignore` form above is for ignoring a directory's CONTENTS while
+keeping the directory; `.gitkeep` is for a directory that ignores nothing.
+
+A directory that already tracks files of its own needs no placeholder at all - `config/encryption/keys/` on the
+web-app family is kept present by its tracked `*.documented.runtime.*.pem` pair, so the root `.gitignore` lines above
+are its only guard.
 
 ## Decision
 

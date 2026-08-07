@@ -1,5 +1,5 @@
 ---
-name: update-npm-packages
+name: skill-update-npm-packages
 description: Update npm dependency versions via package.json.ts (the source of truth) - survey, batch patch/minor via the bulk script, majors one at a time with changelog analysis, then a full lockfile recreate and health-check run.
 argument-hint: [optional package names and/or tier: patch|minor|major]
 disable-model-invocation: true

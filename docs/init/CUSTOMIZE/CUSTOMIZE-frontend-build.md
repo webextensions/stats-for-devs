@@ -5,7 +5,7 @@ Applies to: new project, and template branches that customize the frontend basel
 The `abstract-frontend-build` layer ships a working placeholder frontend (build + server) -
 adapt it to your application:
 
-- Update the values in [config/app-customizations.js](../../../config/app-customizations.js)
+- Update the values in [config/project-customizations.js](../../../config/project-customizations.js)
   (application name, development hostname, live origin,
   `PREFERRED_HOSTNAMES_FOR_LOCAL_DEVELOPMENT` - the entries listed first among the reachable URLs
   the server logs/notifies on startup) and, if needed, the port in

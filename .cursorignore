@@ -2,13 +2,10 @@
 
 # Auto-generated directories
 dist
-public-*
+/public-*/
 
-# Database directories
-app-data/database/postgresql
-app-data/database/postgresql-backups
-app-data/database/sqlite
-app-data/database/sqlite-backups
+# Application data (databases etc.)
+/app-data/database/
 
 # Secrets files
 **/*.secrets.*
@@ -37,10 +34,15 @@ backup
 *.backup.temp
 *.bak
 
+# Cache and dependency directories
+.cache
+node_modules
+
 # Log directories and files
 logs
 *.log
 
 # Temporary directories and files
 temp
+tmp
 *.tmp

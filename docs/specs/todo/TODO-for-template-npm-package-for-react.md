@@ -10,7 +10,7 @@
   (then merge down) so the shared lists converge again: `dist/` in the `eslint.config.js`
   `globalIgnores` and `dist` in the root `tsconfig.json` `exclude`. They were added here with
   explicit approval despite the root-only model (policy:
-  [.claude/skills/updating-ignore-rules/SKILL.md](../../../.claude/skills/updating-ignore-rules/SKILL.md));
+  [.claude/skills/skill-update-ignore-rules/SKILL.md](../../../.claude/skills/skill-update-ignore-rules/SKILL.md));
   until upstreamed, template merges may conflict on these two lists.
 * Future merges from `abstract-npm-package` will hit modify/delete conflicts on `index.js` and
   `test/index.test.js` (this branch replaced them with the `frontend/lib/` layout) - keep the

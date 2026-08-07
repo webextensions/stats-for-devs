@@ -1,6 +1,6 @@
 ---
 description: Alphabetical sorting convention for unordered lists in code and configuration
-globs: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.cjs", "**/*.json"]
+paths: ["**/*.cjs", "**/*.cts", "**/*.js", "**/*.json", "**/*.jsx", "**/*.mjs", "**/*.mts", "**/*.ts", "**/*.tsx"]
 ---
 
 # Alphabetical Sorting

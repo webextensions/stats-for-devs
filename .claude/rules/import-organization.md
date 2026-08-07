@@ -1,6 +1,6 @@
 ---
 description: Import formatting and ordering conventions - file extensions, destructured members, group order
-globs: ["**/*.cjs", "**/*.cts", "**/*.js", "**/*.mjs", "**/*.mts", "**/*.ts"]
+paths: ["**/*.cjs", "**/*.cts", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.mts", "**/*.ts", "**/*.tsx"]
 ---
 
 # Import Organization

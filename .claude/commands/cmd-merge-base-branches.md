@@ -62,7 +62,7 @@ update. This is opt-in and decided ONCE, before any git operation, so the cascad
     - `Yes - full session incl. majors` - majors handled one at a time.
 - On "No", nothing else in this section applies and the cascade behaves as if this section did not exist.
 - The update work itself follows
-  [.claude/skills/update-npm-packages/SKILL.md](../skills/update-npm-packages/SKILL.md) exactly - READ that file and
+  [.claude/skills/skill-update-npm-packages/SKILL.md](../skills/skill-update-npm-packages/SKILL.md) exactly - READ that file and
   follow it; it is `disable-model-invocation: true`, so it is read as a file rather than invoked through the Skill
   tool. Pass the chosen tier through as that skill's `$ARGUMENTS`. Do not restate its workflow here.
 - Scope: every branch in the run, INCLUDING the root base branch that receives no incoming merge (today
@@ -214,13 +214,13 @@ and is never an error.
 - Shared-in-structure but branch-populated files conflict routinely and want a merge of entries, not a side-pick:
     - Fill-in-slot configs (`knip.config.ts`, `scripts/health-checks/checks/status-of-files.config.ts`,
       `all-is-well.config.ts`): keep BOTH sides - the base's structural changes plus the child's filled-in slots.
-    - `.claude/skills/running-the-project/SKILL.md` is branch-aware by design: keep the child's replaced sections,
+    - `.claude/skills/skill-run-the-project/SKILL.md` is branch-aware by design: keep the child's replaced sections,
       take the base's updates outside them.
-    - Blocks fenced by `BEGIN: APP-CUSTOMIZATIONS` / `END: APP-CUSTOMIZATIONS`
+    - Blocks fenced by `BEGIN: PROJECT-CUSTOMIZATIONS` / `END: PROJECT-CUSTOMIZATIONS`
       ([.claude/rules/comment-tags.md](../rules/comment-tags.md)): resolve per hunk - the child's side inside the
       fences, the base's side outside.
 - Ignore lists (`.gitignore`, the `globalIgnores` arrays, the `tsconfig.json` `exclude` list, `.cursorignore` - the
-  full set in [.claude/skills/updating-ignore-rules/SKILL.md](../skills/updating-ignore-rules/SKILL.md)): shared
+  full set in [.claude/skills/skill-update-ignore-rules/SKILL.md](../skills/skill-update-ignore-rules/SKILL.md)): shared
   patterns are owned by the root base branch and flow down by merge, so resolve these toward the BASE side - the
   opposite default from fork-owned files.
 - Any other (shared) file: understand both sides' intent (`git log` / `git show` of the relevant commits, the whole
@@ -275,7 +275,7 @@ ONE follow-up commit created by you.
       conventions): `AGENTS.md`, `.claude/rules/`, skills, `docs/` - unfixed drift misleads future agent runs and
       raises their error rate.
     - Branch-owned content needing branch-specific adaptation: branch-owned skills (for example
-      `.claude/skills/running-the-project/` - what "running the project" means differs per branch), and fork-owned
+      `.claude/skills/skill-run-the-project/` - what "running the project" means differs per branch), and fork-owned
       docs and checklists per
       [docs/template-project/file-conventions.md](../../docs/template-project/file-conventions.md) (`README.md` /
       `AGENTS.md` wording, `docs/init/CUSTOMIZE/` style checklists, branch-specific docs).

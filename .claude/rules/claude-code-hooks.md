@@ -1,6 +1,6 @@
 ---
 description: Layout, naming, and wiring conventions for Claude Code hook scripts
-globs: [".claude/hooks/**", ".claude/settings.json"]
+paths: [".claude/hooks/**", ".claude/settings.json"]
 ---
 
 # Claude Code Hooks - Layout and Conventions
@@ -20,6 +20,8 @@ short pointers that invoke those scripts. Do **not** inline multi-statement shel
     PostToolUse/
       <descriptive-kebab-case-name>.sh
     UserPromptSubmit/
+      <descriptive-kebab-case-name>.sh
+    SessionStart/
       <descriptive-kebab-case-name>.sh
     Stop/
       <descriptive-kebab-case-name>.sh
@@ -94,8 +96,8 @@ Conventions:
   `settings.json` is lost if the script doesn't explain itself
 - **No silent failures.** If the hook is meant to log or emit JSON, do so on stdout; surface errors on
   stderr. A `PreToolUse` hook can block in two ways: print the reason on stderr and exit `2` (the simple
-  form - what `block-direct-package-json-edit.sh` uses), or emit the standard deny JSON on stdout for
-  richer control:
+  form), or emit the standard deny JSON on stdout for richer control (what
+  `block-direct-package-json-edit.sh` uses):
   ```json
   {"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"<message>"}}
   ```

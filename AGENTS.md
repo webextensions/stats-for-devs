@@ -69,6 +69,8 @@ The full command list and the health-check suite behind `test` are indexed in
 - Never hand-edit `package.json` or `package-version.json` - edit
   [package.json.ts](package.json.ts), then regenerate with
   `node --run housekeeping:generate-package-json`.
+- Never hand-edit `package-lock.json` - it is owned by npm: sync it with `npm install`, or
+  regenerate it fully with `node --run housekeeping:update-package-lock-json`.
 - The `version` is owned by npm (`npm version`) - never hand-edit it (derivation detail: the
   header comment in `package.json.ts`).
 
@@ -82,6 +84,8 @@ Details: [.claude/rules/git-workflow.md](.claude/rules/git-workflow.md).
   [.claude/rules/code-style.md](.claude/rules/code-style.md).
 - Commits: clear, ASCII subjects - they become the `CHANGELOG.md` entries; never hand-edit
   `CHANGELOG.md`: [.claude/rules/git-workflow.md](.claude/rules/git-workflow.md).
+- Decision charter (the "why" behind the conventions; derive answers from it when no rule covers a
+  case): [.claude/rules/first-principles.md](.claude/rules/first-principles.md).
 - Fork-owned vs shared files (which files conflict on template merges - keep your side):
   [docs/template-project/file-conventions.md](docs/template-project/file-conventions.md).
 - Tests: Vitest `*.test.js` files, colocated next to the source or grouped under [test/](test/):

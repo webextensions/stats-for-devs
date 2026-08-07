@@ -9,6 +9,8 @@ description: Git workflow, scripts, and project management conventions
 - After editing `package.json.ts`, run `node --run housekeeping:generate-package-json` to regenerate `package.json`
 - Use `node --run housekeeping:update-and-generate-package-json` to update npm dependencies in `package.json.ts`
   (regenerates `package.json` from `package.json.ts`)
+- `package-lock.json` is owned by npm - never edit it directly; `npm install` syncs it, and
+  `node --run housekeeping:update-package-lock-json` regenerates it from scratch
 
 ## Git Hooks (Husky)
 - **Pre-commit** and **pre-push**: run the full health-check suite (`node --run test`); the

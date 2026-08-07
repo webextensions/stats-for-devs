@@ -16,8 +16,11 @@ import { Command } from 'commander';
 import compression from 'compression';
 import express from 'express';
 import extend from 'extend';
+import getPort, { portNumbers } from 'get-port';
 
+import packageJson from '../../../package.json' with { type: 'json' };
 import { logger } from '../../../utils/logger.ts';
+import { notifier } from '../../../utils/notifier/notifier.ts';
 import { handleUnhandledErrors } from './handleUnhandledErrors.ts';
 import { logServerPaths } from './logServerPaths.ts';
 
@@ -204,13 +207,38 @@ const application = {
             exp.use(handle404Middleware({ projectRootFullPath, staticDir }));
         }
 
-        const portNumber = _httpServerConfig.port;
+        let portNumber = _httpServerConfig.port;
+        if (process.env.HTTP_PORT_DYNAMIC === 'yes') {
+            portNumber = await getPort({
+                port: portNumbers(portNumber, 65535)
+            });
+        }
 
         const server = useHmr ? sharedHmrHttpServer : http.createServer(exp);
         server.on('error', function (err) {
-            if ((err as NodeJS.ErrnoException).code === 'EADDRINUSE') {
+            const isPortInUse = ((err as NodeJS.ErrnoException).code === 'EADDRINUSE');
+
+            if (isPortInUse) {
                 logger.error(`Error: Port ${portNumber} is already in use (configured via server.access.url.http.port).`);
                 logger.error('Stop the other process using it, or configure a different port.');
+                if (process.env.HTTP_PORT_DYNAMIC !== 'yes') {
+                    logger.error('Alternatively, use a dynamically picked port: "node --run start:app:http-port-dynamic" (HTTP_PORT_DYNAMIC=yes).');
+                }
+            }
+
+            if (_nonProductionDevToolsConfig.flagNotifyServerStartupErrors) {
+                // The flag exists only in the development config tiers. The notification is
+                // fire-and-forget: the notify-send child is spawned synchronously and survives
+                // the process.exit(1) below.
+                const notificationMessage = (
+                    isPortInUse ?
+                        `Port ${portNumber} is already in use.` :
+                        (err.message || String(err))
+                );
+                notifier.error(`[${packageJson.name}] - Server failed to start`, notificationMessage);
+            }
+
+            if (isPortInUse) {
                 process.exit(1); // eslint-disable-line n/no-process-exit
             }
             throw err;

@@ -1,3 +1,7 @@
+---
+description: Decision charter - the root rationales behind the conventions and the precedence order for decisions no specific rule covers
+---
+
 # First Principles - Decision Charter
 
 The root rationales behind this repository's conventions: the "why" layer from which the topical rules in this

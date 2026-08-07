@@ -1,3 +1,7 @@
+---
+description: The repo-wide code style baseline - ESM, 4-space indentation, semicolons, unix line endings, bash shebang
+---
+
 # Code Style - Baseline
 
 The repo-wide style baseline. ESLint ([eslint.config.js](../../eslint.config.js)), EditorConfig

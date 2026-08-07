@@ -28,16 +28,20 @@
 
     // Let search see git-ignored files (local config, generated artifacts worth grepping), while
     // "search.exclude" keeps the genuinely noisy directories out (mirror the globalIgnores list in
-    // eslint.config.js; package-lock.json is tracked, so it needs an explicit rule).
+    // eslint.config.js; package-lock.json is tracked, so it needs an explicit rule, and app-data -
+    // local databases/backups - is a deliberate extra beyond that list). Patterns without "**/"
+    // match at the workspace root only, where these outputs live; no trailing slashes - VS Code's
+    // glob treats them literally on wildcard patterns, so e.g. "public-*/" would match nothing.
     "search.exclude": {
         "**/.cache": true,
-        "**/coverage": true,
-        "**/dist": true,
         "**/node_modules": true,
-        "**/public-*": true,
         "**/temp": true,
         "**/tmp": true,
-        "package-lock.json": true
+        "app-data": true,
+        "coverage": true,
+        "dist": true,
+        "package-lock.json": true,
+        "public-*": true
     },
     "search.useIgnoreFiles": false,
 

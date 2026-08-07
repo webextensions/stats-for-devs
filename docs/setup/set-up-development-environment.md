@@ -22,7 +22,7 @@ instead of copying values from them.
 ```sh
 nvm use
 npm install
-node --run setup    # editor soft-links + seeds .git/info/exclude
+node --run setup    # editor soft-links + seeds .git/info/exclude + agent language server
 node --run test     # verify the health-check suite passes on a clean checkout
 ```
 

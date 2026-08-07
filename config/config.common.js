@@ -1,5 +1,5 @@
-import { applicationName } from './app-customizations.js';
 import { PORT_NUMBER_HTTP } from './constants.js';
+import { applicationName } from './project-customizations.js';
 
 const configForThisMode = {
     application: {

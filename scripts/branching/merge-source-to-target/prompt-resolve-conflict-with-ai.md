@@ -52,7 +52,7 @@ and the ownership map in
 - Fill-in-slot configs (`knip.config.ts`, `scripts/health-checks/checks/status-of-files.config.ts`,
   `all-is-well.config.ts`): keep BOTH sides - the source's structural changes plus the target's filled-in
   entries.
-- Blocks fenced by `BEGIN: APP-CUSTOMIZATIONS` / `END: APP-CUSTOMIZATIONS`
+- Blocks fenced by `BEGIN: PROJECT-CUSTOMIZATIONS` / `END: PROJECT-CUSTOMIZATIONS`
   ([.claude/rules/comment-tags.md](../../../.claude/rules/comment-tags.md)): resolve per hunk - the target's
   side inside the fences, the source's side outside.
 - Ignore lists (`.gitignore`, the `globalIgnores` arrays, the `tsconfig.json` `exclude` list,
