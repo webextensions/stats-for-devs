@@ -21,6 +21,7 @@ export default defineConfig([
     // override at the end of this file.)
     globalIgnores([
         '.cache/',
+        '.playwright-mcp/', // Playwright MCP artifacts - screenshots/traces (git-ignored family-wide)
         'coverage/',
         'dist/', // Library build output of the npm-package template branches
         'node_modules/',

@@ -1,15 +1,23 @@
 # ======= Custom ignored directories and files =======
 
 # Auto-generated directories
-dist
+/coverage/
+/dist/
 /public-*/
 
-# Application data (databases etc.)
+# Application data (databases etc.) - deliberately only the databases, narrower than .gitignore's
+# /app-data/, so Cursor can still index the other local app-data files
 /app-data/database/
+
+# Playwright files
+/.playwright-mcp/
 
 # Secrets files
 **/*.secrets.*
 !**/*.secrets.example.*
+
+# Vendored third-party files (frontend branches)
+/frontend/src/resources/3rdparty/
 
 # ======= Generic ignored directories and files =======
 
@@ -35,8 +43,8 @@ backup
 *.bak
 
 # Cache and dependency directories
-.cache
-node_modules
+/.cache/
+/node_modules/
 
 # Log directories and files
 logs

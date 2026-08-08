@@ -27,19 +27,25 @@
     },
 
     // Let search see git-ignored files (local config, generated artifacts worth grepping), while
-    // "search.exclude" keeps the genuinely noisy directories out (mirror the globalIgnores list in
-    // eslint.config.js; package-lock.json is tracked, so it needs an explicit rule, and app-data -
-    // local databases/backups - is a deliberate extra beyond that list). Patterns without "**/"
-    // match at the workspace root only, where these outputs live; no trailing slashes - VS Code's
-    // glob treats them literally on wildcard patterns, so e.g. "public-*/" would match nothing.
+    // "search.exclude" keeps the genuinely noisy content out (mirror the globalIgnores list in
+    // eslint.config.js; deliberate extras beyond that list: package-lock.json is tracked, so it
+    // needs an explicit rule, app-data holds local databases/backups, .playwright-mcp holds
+    // git-ignored agent artifacts, and frontend/src/resources/3rdparty is the tracked vendored
+    // third-party tree, matching the stylelint / knip / non-keyboard-characters exemption scope).
+    // Bare patterns match relative to the workspace root only, where these outputs live; a "**/"
+    // prefix opts into any-depth matching. A trailing slash marks a directory and works on plain
+    // names, but VS Code's glob treats it literally on wildcard patterns - "public-*/" would match
+    // nothing - so "public-*" stays slash-less.
     "search.exclude": {
-        "**/.cache": true,
-        "**/node_modules": true,
-        "**/temp": true,
-        "**/tmp": true,
-        "app-data": true,
-        "coverage": true,
-        "dist": true,
+        ".playwright-mcp/": true,
+        "**/.cache/": true,
+        "**/temp/": true,
+        "**/tmp/": true,
+        "app-data/": true,
+        "coverage/": true,
+        "dist/": true,
+        "frontend/src/resources/3rdparty/": true,
+        "node_modules/": true,
         "package-lock.json": true,
         "public-*": true
     },
