@@ -56,34 +56,5 @@
     },
     "terminal.integrated.env.linux": {
         "PATH": "${workspaceFolder}/.vscode/soft-links:${env:PATH}"
-    },
-
-    // Auto-regenerate package.json whenever package.json.ts (the source of truth) or the
-    // utils/package-json-utils/ helper module it computes its dependency fields with is saved, so
-    // the generated manifest never drifts from its sources. The two blocks below target a different
-    // "run on save" extension each; install whichever matches your VSCode / VSCode-based IDE (see
-    // .vscode/extensions.json). The Claude Code equivalent is
-    // .claude/hooks/PostToolUse/regenerate-package-json-after-source-edit.sh - keep the two in sync.
-
-    // VS Code: extension "wk-j.save-and-run" (https://github.com/wk-j/vscode-save-and-run)
-    "saveAndRun": {
-        "commands": [
-            {
-                "match": "(package\\.json\\.ts|utils/package-json-utils/.+\\.ts)$",
-                "cmd": "./scripts/housekeeping/generate-package-json.sh",
-                "useShortcut": false,
-                "silent": true
-            }
-        ]
-    },
-
-    // Cursor: extension "achilleshr.runonsave" (https://open-vsx.org/extension/achilleshr/RunOnSave)
-    "achilleshr.runonsave": {
-        "commands": [
-            {
-                "match": "(package\\.json\\.ts|utils/package-json-utils/.+\\.ts)$",
-                "cmd": "./scripts/housekeeping/generate-package-json.sh"
-            }
-        ]
     }
 }

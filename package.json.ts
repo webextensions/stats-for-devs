@@ -595,9 +595,14 @@ const packageJson = {
         // Runs the test suite
         "vitest": "vitest run",
 
-        // Fast parse-check (module.stripTypeScriptTypes) of every repo JS/TS file discovered by
-        // `git ls-files --cached --others --exclude-standard` - catches syntax errors before ESLint/Vitest.
-        "syntaxlint": "./scripts/health-checks/checks/check-syntax.ts",
+        // Syntax checks, split by toolchain:
+        //     * syntaxlint:js - fast parse-check (module.stripTypeScriptTypes) of every repo JS/TS file discovered by
+        //       `git ls-files --cached --others --exclude-standard` - catches syntax errors before ESLint/Vitest
+        //     * syntaxlint:sh - `bash -n` over the repo's *.sh files and the extension-less git hooks in ".husky/",
+        //       discovered the same way (the only automated check the shell scripts get)
+        "syntaxlint":    "concurrently \"node --run syntaxlint:js\" \"node --run syntaxlint:sh\"",
+        "syntaxlint:js": "./scripts/health-checks/checks/check-syntax.ts",
+        "syntaxlint:sh": "./scripts/health-checks/checks/check-shell-syntax.sh",
 
         // Runs the full check suite via the all-is-well orchestrator (concurrently by default)
         "test": "node --run all-is-well",
@@ -709,6 +714,12 @@ const packageJson = {
 
         // (Re)generates package.json (and package-version.json) from package.json.ts
         "housekeeping:generate-package-json":            "./scripts/housekeeping/generate-package-json.sh",
+
+        // Long-running watcher which regenerates package.json on every change to package.json.ts or
+        // utils/package-json-utils/*.ts (started automatically by the folder-open task in ".vscode/tasks.json").
+        // This NEVER exits - do not run it in an agent session without a timeout; use
+        // housekeeping:generate-package-json for a one-shot regeneration instead.
+        "housekeeping:generate-package-json:watch":      "./scripts/housekeeping/watch-package-json.ts",
 
         // Bumps dependency versions in package.json.ts, then (re)generates package.json (and package-version.json)
         "housekeeping:update-and-generate-package-json": "./scripts/housekeeping/update-and-generate-package-json.sh",

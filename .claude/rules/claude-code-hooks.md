@@ -10,6 +10,12 @@ in [.claude/settings.json](../settings.json). To keep hooks readable, debuggable
 project keeps the **logic in standalone shell scripts** under [.claude/hooks/](../hooks/) and limits `settings.json` to
 short pointers that invoke those scripts. Do **not** inline multi-statement shell commands into `settings.json`.
 
+Cursor agent hooks follow the same shape in a parallel tree - see
+[.cursor/rules/cursor-hooks.mdc](../../.cursor/rules/cursor-hooks.mdc). That file lists the **deliberate**
+divergences from the conventions below (a flat `file_path` in the event payload, an always-zero exit
+code, camelCase event directories, and paths resolved from the script's own location rather than
+`$CLAUDE_PROJECT_DIR`). Do not "sync" those away.
+
 ## Directory Layout
 
 ```
@@ -91,7 +97,10 @@ Conventions:
 - **Read input from stdin** using `node` - Claude Code pipes the hook event JSON to the script. Parse it
   with a small `node -e` reader (see the template's `f="$(node -e '...')"` line) rather than `jq`: `node`
   is always present in this repo, `jq` may not be. Read `tool_input.file_path` (or the appropriate field
-  for the event) and gate on the result
+  for the event) and gate on the result. Exception: a hook that fires on every matched tool call and
+  almost always no-ops may gate with a cheap `grep -Eq` over the raw event JSON instead, avoiding a Node
+  startup per call - see [PostToolUse/regenerate-package-json-after-source-edit.sh](../hooks/PostToolUse/regenerate-package-json-after-source-edit.sh)
+  (its comments explain how to anchor the match so file contents cannot false-positive)
 - **Header comment is mandatory.** State what the hook does and *why* - the value of moving hooks out of
   `settings.json` is lost if the script doesn't explain itself
 - **No silent failures.** If the hook is meant to log or emit JSON, do so on stdout; surface errors on

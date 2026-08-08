@@ -5,4 +5,54 @@
 
     // Start Claude Code sessions with edits pre-approved (Claude still asks for commands).
     "claudeCode.initialPermissionMode": "acceptEdits"
+
+    // ---------------------------------------------------------------------------------------------
+    // OPTIONAL: regenerate package.json from package.json.ts on save, via a third-party extension.
+    //
+    // This is NOT required. The built-in mechanism is the "Watch package.json.ts ..." task in
+    // .vscode/tasks.json, which starts automatically when the folder is opened and needs no
+    // extension at all. Use one of the blocks below ONLY if you prefer save-triggered regeneration.
+    //
+    // Install at most ONE of the two extensions, otherwise the generator runs twice on every save.
+    // If you do install one, consider changing the watcher task's "runOn" to "default" so that the
+    // extension is the only writer.
+    // ---------------------------------------------------------------------------------------------
+
+    // -- VS Code -- extension "emeraldwalk.RunOnSave"
+    //    https://marketplace.visualstudio.com/items?itemName=emeraldwalk.RunOnSave
+    //    https://github.com/emeraldwalk/vscode-runonsave
+    //    Not published on Open VSX, so it is NOT installable in Cursor - use the pucelle block below.
+    //
+    // "emeraldwalk.runonsave": {
+    //     "commands": [
+    //         {
+    //             "match": "(package\\.json\\.ts|utils/package-json-utils/.+\\.ts)$",
+    //             "cmd": "${workspaceFolder}/scripts/housekeeping/generate-package-json.sh",
+    //             "isAsync": true
+    //         }
+    //     ]
+    // },
+
+    // -- Cursor (also works in VS Code) -- extension "pucelle.run-on-save"
+    //    https://open-vsx.org/extension/pucelle/run-on-save
+    //    https://github.com/pucelle/vscode-run-on-save
+    //
+    // "runOnSave.commands": [
+    //     {
+    //         "match": "(package\\.json\\.ts|utils/package-json-utils/.+\\.ts)$",
+    //         "command": "${workspaceFolder}/scripts/housekeeping/generate-package-json.sh",
+    //         "runIn": "backend",
+    //         "doNotDisturb": true,
+    //         "runningStatusMessage": "Regenerating package.json ...",
+    //         "finishStatusMessage": "package.json regenerated"
+    //     }
+    // ]
+
+    // ---------------------------------------------------------------------------------------------
+    // "task.allowAutomaticTasks": "on" lets the folder-open watcher task start without a prompt.
+    // It is application-scoped: VS Code / Cursor deliberately IGNORE it in workspace settings, so it
+    // cannot be committed with the project. Either set it in your USER settings.json, or answer
+    // "Allow" to the one-time prompt (re-open that choice via Command Palette >
+    // "Tasks: Manage Automatic Tasks").
+    // ---------------------------------------------------------------------------------------------
 }

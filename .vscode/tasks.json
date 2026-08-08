@@ -6,9 +6,52 @@
         {
             "type": "shell",
             "label": "Generate package.json (from package.json.ts)",
+            "detail": "One-shot regeneration. Run it via \"Tasks: Run Task\".",
             "command": "node --run housekeeping:generate-package-json",
             "presentation": {
                 "reveal": "always"
+            },
+
+            // An empty array declares "this task emits no diagnostics". Omitting the key instead makes
+            // VS Code / Cursor prompt "Select for which kind of errors and warnings to scan the task
+            // output" on every run.
+            "problemMatcher": []
+        },
+        {
+            "type": "shell",
+            "label": "Watch package.json.ts (regenerate package.json on change)",
+            "detail": "Long-running watcher, started automatically when this folder is opened.",
+
+            // The watcher reacts to the file WRITE, so it also covers autosave, "Save All",
+            // AI-agent writes and "git checkout" - not just a save in a focused editor tab.
+            // See scripts/housekeeping/watch-package-json.ts for the implementation.
+            "command": "node --run housekeeping:generate-package-json:watch",
+            "isBackground": true,
+
+            // Required for a background task. Without it, VS Code / Cursor prompt for an output
+            // scanner and can never settle the task's state.
+            "problemMatcher": [],
+
+            "presentation": {
+                "close": false,
+                "echo": true,
+                "focus": false,
+                "panel": "dedicated",
+                "reveal": "silent",
+                "revealProblems": "never",
+                "showReuseMessage": false
+            },
+            "runOptions": {
+                // Guards against https://github.com/microsoft/vscode/issues/160013 , where running any
+                // task can re-trigger the "folderOpen" tasks. Two watchers would mean two generator
+                // processes racing to write package.json.
+                "instanceLimit": 1,
+
+                // NOTE: This needs "Allow Automatic Tasks" once per folder (the editor prompts on the
+                // first open; re-open the choice via Command Palette > "Tasks: Manage Automatic
+                // Tasks"). The related "task.allowAutomaticTasks" setting is application-scoped, so it
+                // is deliberately ignored in workspace settings and cannot be committed here.
+                "runOn": "folderOpen"
             }
         }
     ]

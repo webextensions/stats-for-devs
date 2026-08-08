@@ -11,8 +11,11 @@ index (commands are documented as comments in `package.json.ts`, health checks i
 
 - **Generated files:** hooks block direct edits to the generated `package.json` /
   `package-version.json` and regenerate them after `package.json.ts` edits - always edit
-  `package.json.ts` (the hook headers in [.claude/hooks/](.claude/hooks/) document the mechanics).
-  The npm-owned `package-lock.json` is blocked the same way - sync it via `npm install`.
+  `package.json.ts` (the hook headers in [.claude/hooks/](.claude/hooks/) document the mechanics;
+  the editor-side equivalents are the folder-open watcher task in
+  [.vscode/tasks.json](.vscode/tasks.json) and the Cursor `afterFileEdit` hook in
+  [.cursor/hooks.json](.cursor/hooks.json)). The npm-owned `package-lock.json` is blocked the same
+  way - sync it via `npm install`.
 - **Session start:** SessionStart hooks inject workspace context (branch, dirty summary, CodeGraph
   status) and report missing workstation tooling - see their headers in
   [.claude/hooks/SessionStart/](.claude/hooks/SessionStart/).

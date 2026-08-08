@@ -343,11 +343,21 @@ const CHECK_STYLELINT: HealthCheck = {
 // Fast parse-check (via module.stripTypeScriptTypes) of every repo JS/TS file discovered by
 // `git ls-files --cached --others --exclude-standard`, run before ESLint/Vitest so parse errors surface
 // here rather than as confusing downstream failures.
-const CHECK_SYNTAXLINT: HealthCheck = {
-    name: 'syntaxlint',
+const CHECK_SYNTAXLINT_JS: HealthCheck = {
+    name: 'syntaxlint:js',
     cmd: 'node',
-    args: ['--run', 'syntaxlint'],
+    args: ['--run', 'syntaxlint:js'],
     errorMsg: 'Failure in syntax check of repo .cjs/.cts/.js/.mjs/.mts/.ts files'
+};
+
+// Fast parse-check (`bash -n`, parse-only - nothing is executed) of every repo *.sh file plus the
+// extension-less git hooks in .husky/, discovered the same way as syntaxlint:js. The only automated
+// check the shell scripts get (there is no shellcheck).
+const CHECK_SYNTAXLINT_SH: HealthCheck = {
+    name: 'syntaxlint:sh',
+    cmd: 'node',
+    args: ['--run', 'syntaxlint:sh'],
+    errorMsg: 'Failure in syntax check of repo shell scripts (*.sh and the .husky/ hooks)'
 };
 
 // Full static type check (tsc, run via the "test:types" script as "tsc --pretty"; noEmit comes from
@@ -425,7 +435,8 @@ const healthChecks: HealthCheck[] = [
     CHECK_DO_NOT_COMMIT,
     CHECK_STATUS_OF_FILES,
     CHECK_NODE_VERSION,
-    CHECK_SYNTAXLINT,
+    CHECK_SYNTAXLINT_JS,
+    CHECK_SYNTAXLINT_SH,
     CHECK_NPM_INSTALL,
     CHECK_PKG_VERSION_SYNC,
     CHECK_PKG_JSON_SYNC,

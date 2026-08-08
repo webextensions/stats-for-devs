@@ -94,6 +94,7 @@
       "Bash(node --run eslint)",
       "Bash(node --run housekeeping:generate-package-json)",
       "Bash(node --run knip)",
+      "Bash(node --run syntaxlint:*)",
       "Bash(node --run syntaxlint)",
       "Bash(node --run test:compare-package-json-with-source)",
       "Bash(node --run test:compare-package-version-with-source)",

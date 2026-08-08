@@ -18,6 +18,9 @@
 // the non-keyboard-character guard - tracked plus untracked-not-ignored, so brand-new files are checked
 // too.
 //
+// Shell scripts are covered separately by ./check-shell-syntax.sh (`bash -n`, `node --run syntaxlint:sh`);
+// the `syntaxlint` npm script runs both.
+//
 // Usage:
 //     $ ./check-syntax.ts                    # check, exit 1 on any parse error
 //     $ ./check-syntax.ts --exit-with-code-0 # exit 0 even when a file fails to parse
