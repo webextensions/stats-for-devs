@@ -43,7 +43,8 @@ manual correction. Internalize them when writing new code.
 ## Imports and References
 
 - Do not import symbols speculatively - `no-unused-vars` / `@typescript-eslint/no-unused-vars` are
-  not autofixable. Import only what the code references right now.
+  not autofixable. Import only what the code references right now. An especially common slip:
+  importing CSS-module class names and forgetting to attach them to the JSX.
 - `no-undef` fires for symbols referenced but never imported or declared - add the import when
   introducing a new identifier; do not assume it is globally available.
 - Never use namespace imports (`import * as ns`) - destructure the named members instead. Rule:
@@ -53,6 +54,41 @@ manual correction. Internalize them when writing new code.
 
 - Calls to `callback`, `done`, `exitWithError`, `reject`, `resolve` must be `return`ed. Rule:
   `n/callback-return`.
+- Under `backend/`, the Express callees `next`, `res.end`, `res.send`, `res.status` are also
+  registered (see the backend override block in [eslint.config.js](../../eslint.config.js)).
+  Forgetting `return` after sending a response is a top cause of "headers already sent" bugs:
+
+  ```ts
+  // Good - return prevents fall-through
+  if (err) return res.status(404).send('Not found');
+  return res.send(result);
+
+  // Bad - execution continues past the response and reaches the next send
+  if (err) res.status(404).send('Not found'); // no return > headers-already-sent
+  res.send(result);
+  ```
+
+## React Hooks Order (frontend)
+
+- Rule: `react-hooks/rules-of-hooks`. Hooks must be called unconditionally at the top of the
+  component or custom-hook body - never inside `if`, loops, ternaries, after an early `return`, or
+  inside event handlers.
+
+  ```tsx
+  // Good - hook at top level; the value is used conditionally below
+  const Component = ({ flagShowList }: { flagShowList: boolean }) => {
+      const [items, setItems] = useLocalStorage('items', []);
+      if (!flagShowList) return null;
+      return <List items={items} />;
+  };
+
+  // Bad - hook is conditional; React cannot guarantee call order between renders
+  const Component = ({ flagShowList }: { flagShowList: boolean }) => {
+      if (!flagShowList) return null;
+      const [items, setItems] = useLocalStorage('items', []); // rules-of-hooks error
+      return <List items={items} />;
+  };
+  ```
 
 ## Async / Await Discipline
 
@@ -83,5 +119,7 @@ Write conforming code now - the paired rules (`async-protect/async-suffix`,
 
 - Before reporting a task done, run `node --run eslint:fix` (or the scoped
   `node --run eslint:changed-files:fix`), then confirm no surviving errors.
+- When the change touched CSS, also run `node --run stylelint:fix` then `node --run stylelint` -
+  see [stylelint-gotchas.md](./stylelint-gotchas.md).
 - Do not paper over a real failure with `// eslint-disable-next-line` - fix the underlying issue,
   or surface the blocker.

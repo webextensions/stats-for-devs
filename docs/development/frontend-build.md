@@ -22,6 +22,11 @@ truth - the `build:*` / `server:*` / `start:*` / `stylelint*` script comments in
   bundle) and `--bundle-*` flags select among them. Note: the selection is not fully generic - a
   child branch adding a differently-named bundle also extends `filterConfigs` / `getConfigName` in
   `build.ts`.
+- App-version stamping: [frontend/src/index.html](../../frontend/src/index.html) carries
+  `<html data-app-version="{{appVersion}}">`; the placeholder is replaced with the `package.json`
+  version at build time by
+  [frontend/build/plugins/AppBootstrapPlugin/AppBootstrapPlugin.ts](../../frontend/build/plugins/AppBootstrapPlugin/AppBootstrapPlugin.ts),
+  so the served page identifies the app version it was built from.
 
 ## Config layering (config/)
 

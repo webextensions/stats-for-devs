@@ -16,6 +16,8 @@ checklist below; deep-dive details live in [`.claude/rules/`](../../rules/).
 
 - [ ] camelCase for variables, functions, utility files/dirs
 - [ ] PascalCase for classes and enums
+- [ ] PascalCase for components, component files/dirs, and their matching CSS class names (frontend)
+- [ ] Custom hooks: `use` prefix
 - [ ] UPPER_CASE for constants
 - [ ] `Async` suffix on every async function and every promise-returning function (and **only** on
       those - non-async functions must not use it)
@@ -64,6 +66,33 @@ checklist below; deep-dive details live in [`.claude/rules/`](../../rules/).
 - [ ] Every `Async` call is `await`ed or `return`ed (never fire-and-forget without a comment
       justifying it)
 
+### React (if applicable - see [react-components.md](../../rules/react-components.md))
+
+- [ ] Function components with destructured props; named exports only
+- [ ] `.tsx` only when the file contains JSX; hooks/utils belong in `.ts`
+- [ ] No `React.forwardRef` - React 19 accepts `ref` as a regular prop
+- [ ] CSS modules imported via named imports; `styles_` prefix alias on name collisions (see
+      [css-modules.md](../../rules/css-modules.md))
+- [ ] Only CSS classes actually referenced in the JSX are imported
+- [ ] Hooks called unconditionally at the top level - never inside `if`, loops, ternaries, after
+      an early `return`, or in event handlers
+- [ ] All `useEffect` dependencies listed; cleanup in the returned function
+- [ ] Event handlers as separate named functions with `handle` prefix
+- [ ] Jotai writable atoms have an initial value (`atom<T | null>(null)`, not `atom<T>()` - see
+      [typescript-gotchas.md](../../rules/typescript-gotchas.md))
+- [ ] Conditional rendering: `{condition && <Component />}`; IIFE for if-else
+
+### CSS (if applicable - see [css-modules.md](../../rules/css-modules.md) and [stylelint-gotchas.md](../../rules/stylelint-gotchas.md))
+
+- [ ] `.module.css` extension for component styles; a class matching the component name exists
+      (placeholder blocks carry a comment - empty blocks are banned)
+- [ ] camelCase for child/variant class names
+- [ ] No `hsl()` / `hsla()` (`function-disallowed-list`); custom properties read via `var(...)`
+- [ ] Spaces around `calc()` operators; no trailing zeros; leading zero required
+- [ ] Alpha as number, not percentage (`rgb(0 0 0 / 0.5)`)
+- [ ] Color-space keyword casing matches the spec (`sRGB`, `display-p3`)
+- [ ] Shorthand properties not placed after related longhand declarations
+
 ### Tests (if applicable - see [testing.md](../../rules/testing.md))
 
 - [ ] Vitest with `describe`, `it`, `expect` imported from `'vitest'`
@@ -82,7 +111,10 @@ checklist below; deep-dive details live in [`.claude/rules/`](../../rules/).
 
 - [ ] `node --run eslint:fix` (or the scoped `node --run eslint:changed-files:fix`) produces no
       surviving errors
-- [ ] `node --run test:types` passes
+- [ ] When CSS changed: `node --run stylelint:fix` then `node --run stylelint` produce no
+      surviving errors
+- [ ] `node --run test:types` passes (when only `frontend/` changed, the scoped
+      `node --run test:types:frontend` covers it - the frontend subtree has its own tsconfig)
 - [ ] No `// eslint-disable-*`, `// @ts-expect-error`, `// @ts-ignore`, or `as any` papering over
       real issues
 - [ ] Hacks/workarounds (if any) documented in [docs/because/](../../../docs/because/README.md)

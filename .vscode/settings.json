@@ -26,12 +26,23 @@
         "tsconfig.json": "tsconfig.tsbuildinfo"
     },
 
+    // Keep the file watcher away from the churny local-database/log paths under app-data (the
+    // PostgreSQL data directory and the SQLite -wal/-shm sidecars change constantly while the app
+    // runs). Unlike the "search.exclude" globs below, watcher globs need the "**" suffix to cover
+    // directory contents.
+    "files.watcherExclude": {
+        "app-data/database/**": true,
+        "app-data/logs/**": true
+    },
+
     // Let search see git-ignored files (local config, generated artifacts worth grepping), while
     // "search.exclude" keeps the genuinely noisy content out (mirror the globalIgnores list in
     // eslint.config.js; deliberate extras beyond that list: package-lock.json is tracked, so it
     // needs an explicit rule, app-data holds local databases/backups, .playwright-mcp holds
-    // git-ignored agent artifacts, and frontend/src/resources/3rdparty is the tracked vendored
-    // third-party tree, matching the stylelint / knip / non-keyboard-characters exemption scope).
+    // git-ignored agent artifacts, frontend/src/resources/3rdparty is the tracked vendored
+    // third-party tree, matching the stylelint / knip / non-keyboard-characters exemption scope, and
+    // tsconfig.tsbuildinfo is the incremental type-check cache written by tsc - matched at any depth
+    // to also cover the per-package caches of the other branches).
     // Bare patterns match relative to the workspace root only, where these outputs live; a "**/"
     // prefix opts into any-depth matching. A trailing slash marks a directory and works on plain
     // names, but VS Code's glob treats it literally on wildcard patterns - "public-*/" would match
@@ -41,6 +52,7 @@
         "**/.cache/": true,
         "**/temp/": true,
         "**/tmp/": true,
+        "**/tsconfig.tsbuildinfo": true,
         "app-data/": true,
         "coverage/": true,
         "dist/": true,

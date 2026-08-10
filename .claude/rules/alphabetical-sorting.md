@@ -1,6 +1,6 @@
 ---
 description: Alphabetical sorting convention for unordered lists in code and configuration
-paths: ["**/*.cjs", "**/*.cts", "**/*.js", "**/*.json", "**/*.jsx", "**/*.mjs", "**/*.mts", "**/*.ts", "**/*.tsx"]
+paths: ["**/*.cjs", "**/*.css", "**/*.cts", "**/*.js", "**/*.json", "**/*.jsx", "**/*.mjs", "**/*.mts", "**/*.ts", "**/*.tsx"]
 ---
 
 # Alphabetical Sorting
@@ -13,6 +13,7 @@ When a list of items has no meaningful order, keep them **alphabetically sorted*
 - Object keys/properties in configuration objects and JSON files
 - Destructured imports and exports (named members within `{ }`)
 - Import statements within each import group
+- CSS class name lists in `classNames()` calls (when application order does not matter)
 - Enum members (when order is not semantically significant)
 - Switch/case blocks (when order is not semantically significant)
 - Package dependency lists in `package.json.ts`
@@ -20,7 +21,7 @@ When a list of items has no meaningful order, keep them **alphabetically sorted*
 - Any other unordered list of names, strings, or identifiers
 
 ## Exceptions
-- Lists where order is meaningful (e.g., middleware pipeline, check launch order, priority-based arrays)
+- Lists where order is meaningful (e.g., middleware pipeline, check launch order, rendering order, priority-based arrays)
 - Numeric or date-based sequences
 - Items that must follow a specific logical grouping (e.g., import groups - alphabetize *within* each group, not across groups)
 

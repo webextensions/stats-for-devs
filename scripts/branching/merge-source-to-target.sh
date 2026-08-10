@@ -17,9 +17,13 @@
 # .claude/commands/cmd-merge-base-branches.md); --local and --push are incompatible. Before merging
 # it prints a divergence summary (incoming commits and changed files). It pushes the target branch
 # only when --push is given.
+# After checking out the target branch it deletes stale gitignored *.tsbuildinfo files: incremental
+# type-check state survives branch checkouts, and a stale one makes tsc report phantom errors on the
+# new branch (e.g. TS2307 "Cannot find module" for packages that are installed).
 # It auto-resolves the two conflicts that are expected on a template merge:
 #   - package.json      -> regenerated from package.json.ts
-#   - package-lock.json -> regenerated via `npm install`
+#   - package-lock.json -> regenerated via `npm install --prefer-offline` (cache-first; npm still
+#                          fetches from the network whatever the cache lacks)
 # package-version.json (the version fallback) usually needs no conflict handling: fork versions are
 # owned by each fork's own "main" via "npm version", and the shared "template" branch normally is not
 # version-bumped. If it does conflict, it is auto-resolved the same way in both modes: the target
@@ -225,6 +229,11 @@ git checkout "$TARGET_BRANCH"
 
 set +x
 
+# Drop stale incremental type-check state: *.tsbuildinfo is gitignored, so it survives the checkout
+# and makes tsc report phantom errors against the new branch (e.g. TS2307 "Cannot find module" for
+# packages that are installed). The next type check rebuilds it. node_modules is pruned for speed.
+find . -path ./node_modules -prune -o -name '*.tsbuildinfo' -type f -exec rm -f {} +
+
 if [ "$FLAG_LOCAL" = true ]; then
     echo "Local mode (--local): skipping the upstream sync for '$TARGET_BRANCH'."
 else
@@ -391,8 +400,8 @@ if [ "$MERGE_EXIT_CODE" -ne 0 ]; then
 
         if [ "$HAS_PACKAGE_LOCK_JSON_CONFLICT" = true ]; then
             if [ -z "$(git ls-files -u -- package.json.ts)" ]; then
-                echo "Conflict detected in package-lock.json. Running 'npm install' to resolve..."
-                npm install
+                echo "Conflict detected in package-lock.json. Running 'npm install --prefer-offline' to resolve..."
+                npm install --prefer-offline
                 git add package-lock.json
             else
                 echo "package.json.ts is still unresolved - skipping the package-lock.json resolution." >&2
@@ -453,8 +462,8 @@ if [ "$MERGE_EXIT_CODE" -ne 0 ]; then
         fi
 
         if [ "$HAS_PACKAGE_LOCK_JSON_CONFLICT" = true ]; then
-            echo "Conflict detected in package-lock.json. Running 'npm install' to resolve..."
-            npm install
+            echo "Conflict detected in package-lock.json. Running 'npm install --prefer-offline' to resolve..."
+            npm install --prefer-offline
             git add package-lock.json
         fi
 

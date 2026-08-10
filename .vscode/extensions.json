@@ -8,6 +8,7 @@
     // (Cursor, and VS Code). They are intentionally NOT recommended here, since they are optional.
     "recommendations": [
         "dbaeumer.vscode-eslint",
-        "editorconfig.editorconfig"
+        "editorconfig.editorconfig",
+        "stylelint.vscode-stylelint"
     ]
 }

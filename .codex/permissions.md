@@ -5,9 +5,12 @@ Some assistant runtimes keep a narrow allow list for shell commands and deny des
 ## Preferred Allowed Commands
 
 - File exploration: `ls`, `rg`, `rg --files`, `wc`, `git show`, `git status`, `git diff`, `git log`
+- Development scripts: `node --run start`, `node --run start:app:use-hmr`
+- Build scripts (one-shot variants only): `node --run build:dry-run`, `node --run build:do-not-watch`
 - Lint scripts: `node --run eslint`, `node --run eslint:fix`, `node --run eslint:*`
+- Stylelint scripts: `node --run stylelint`, `node --run stylelint:fix`, `node --run stylelint:*`
 - Test scripts: `node --run test`, `node --run test:*`, `node --run vitest`
-- Type checks: `node --run test:types`
+- Type checks: `node --run test:types`, `node --run test:types:frontend`
 - Housekeeping: `node --run housekeeping:generate-package-json`
 
 ## Commands To Avoid
