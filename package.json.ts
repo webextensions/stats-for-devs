@@ -287,12 +287,12 @@ const dependenciesForBuild = {
     "@vitejs/plugin-react": "^6.0.5", // Also provides reactCompilerPreset
     "babel-plugin-react-compiler": "^1.0.0",
     "commander": "^15.0.0", // Also declared in dependenciesForServer
-    "esbuild": "^0.28.1", // CSS minifier for the frontend build (cssMinify: 'esbuild' - see the REVISIT note in frontend/build/build-config-generator.ts)
-    "postcss": "^8.5.23", // For the SplitMultiClassAtScopePlugin build workaround
+    "esbuild": "^0.28.2", // CSS minifier for the frontend build (cssMinify: 'esbuild' - see the REVISIT note in frontend/build/build-config-generator.ts)
+    "postcss": "^8.5.26", // For the SplitMultiClassAtScopePlugin build workaround
     "postcss-selector-parser": "^7.1.5",
     "postcss-value-parser": "^4.2.0",
     "tsdown": "^0.22.14",
-    "vite": "^8.1.5"
+    "vite": "^8.2.1"
 
     /*
     End: Template originated "dependenciesForBuild"

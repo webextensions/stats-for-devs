@@ -55,6 +55,9 @@ asked in the current conversation (for example `/cmd-commit`, `/cmd-merge-base-b
   handles the index after manual review. (Two exceptions: `git mv` for intentional renames/moves, and
   `git add <named file>` to stage individually resolved files when concluding a merge - bulk staging such as
   `git add -A` / `git add .` always prompts via the `ask` list in [.claude/settings.json](../settings.json).)
+- With `rerere.enabled`, git may replay remembered conflict resolutions into the working tree during a merge; such
+  paths stay unmerged - review and stage them by name like any hand resolution (cascade specifics:
+  [.claude/commands/cmd-merge-base-branches.md](../commands/cmd-merge-base-branches.md)).
 
 ### Cloud / Remote Sessions
 

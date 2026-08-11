@@ -17,6 +17,11 @@ Resolve every conflicted path listed in the runtime context conservatively, stag
 (`git add <file>`), and report what you did per file. Anything you cannot resolve with confidence must be
 LEFT UNRESOLVED and reported - the wrapper script detects remaining unmerged paths and hands them to a human.
 
+A listed path that contains no conflict markers is not an unexpected state: with rerere enabled, git replayed
+a remembered resolution into the working tree (the path stays unmerged). Review the replayed content against
+both sides like any other resolution - a recording from an older merge can be stale - then stage it by name
+if correct, otherwise leave it unmerged and report.
+
 ## Hard Boundaries
 
 - Never commit, push, or conclude the merge - the wrapper script owns those steps.

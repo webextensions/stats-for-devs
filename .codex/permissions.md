@@ -18,7 +18,8 @@ machine-readable list is the `permissions.allow` / `ask` / `deny` arrays in
   `node --run syntaxlint`
 - Type checks: `node --run test:types`, `node --run test:types:frontend`
 - Housekeeping: `node --run housekeeping:generate-package-json`
-- npm read/install ops: `npm audit`, `npm ci`, `npm install`, `npm ls`, `npm outdated`, `npm show`, `npm view`
+- npm read/install ops: `npm audit`, `npm ci`, `npm install`, `npm ls`, `npm outdated`, `npm show`, `npm view`,
+  `npx --prefer-offline --yes npm-check-updates` (read-only dependency survey)
 
 ## Ask Before Running
 

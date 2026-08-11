@@ -271,7 +271,12 @@ fi
 set -x
 
 set +e
-git merge "$SOURCE_BRANCH" --no-edit
+# --no-rerere-autoupdate: with rerere.autoupdate enabled, git would stage the remembered
+# resolutions it replays, hiding those paths from the unmerged-path detection below - the merge
+# would then be committed (and with --push, pushed) with no review, no AI-review gates, and no
+# manifest regeneration. The replay itself still lands in the working tree; the path just stays
+# unmerged like any other conflict. Plain rerere.enabled behaves that way already and is untouched.
+git merge "$SOURCE_BRANCH" --no-edit --no-rerere-autoupdate
 MERGE_EXIT_CODE=$?
 set -e
 

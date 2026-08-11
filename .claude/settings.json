@@ -118,6 +118,8 @@
       "Bash(npm show *)",
       "Bash(npm test *)",
       "Bash(npm view *)",
+      "Bash(npx --prefer-offline --yes npm-check-updates *)",
+      "Bash(npx --prefer-offline --yes npm-check-updates)",
       "Bash(tree *)",
       "Bash(tree)",
       "mcp__codegraph",

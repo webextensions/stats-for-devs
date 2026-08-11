@@ -1,6 +1,6 @@
 ---
 name: skill-update-npm-packages
-description: Update npm dependency versions via package.json.ts (the source of truth) - survey, batch patch/minor via the bulk script, majors one at a time with changelog analysis, then a full lockfile recreate and health-check run.
+description: Update npm dependency versions via package.json.ts (the source of truth) - survey with npm-check-updates, batch the in-range bumps, majors one at a time with changelog analysis, then a full lockfile recreate and health-check run.
 argument-hint: [optional package names and/or tier: patch|minor|major]
 disable-model-invocation: true
 ---
@@ -28,8 +28,9 @@ Scope: version updates and the lockfile refresh only. Adding/removing packages a
 The range prefix in `package.json.ts` states the update intent - honor it:
 
 - `^` entries: update to the latest available version; a major bump goes through the per-major flow below.
-- `~` entries: update to the latest version within the SAME major (find it with
-  `npm view "<pkg>@<major>.x" version`). Report a newer major as available, but do not cross it.
+- `~` entries: update to the latest version within the SAME major (the `--target semver` survey pass surfaces
+  it; spot-check with `npm view "<pkg>@<major>.x" version`). Report a newer major as available, but do not
+  cross it.
 - `=` entries and bare exact versions (`1.2.3`): deliberately frozen - never update, report only.
 - Any other range syntax (`>=`, `x`, `*`, `||`, ...): stop and ask the developer.
 
@@ -37,19 +38,24 @@ Preserve each version line's inline `//` comment; update its text only when the 
 
 ## Workflow
 
-- **Survey**: run `npm outdated` (plus `npm view` where needed) and classify every candidate: patch/minor
-  batch, majors list, held-back pins, ask-first oddities.
-    - Nothing needs updating? Do not stop: skip the batch and per-major phases and continue to Finish
-      anyway - the from-scratch reinstall may still refresh transitive dependencies in `package-lock.json`.
-      Exception: when `$ARGUMENTS` restricted the session and none of the targeted packages/tiers needs a
-      change, report "already current" and stop - no recreate.
-- **Patch/minor batch (bulk)**: run `node --run housekeeping:update-and-generate-package-json`.
-    - It shells out to the globally installed `npm-check-updates`; if missing, run
-      `npm install -g npm-check-updates` and proceed.
-    - CRITICAL correction step: the script bumps EVERYTHING to latest, crossing majors even on `~` entries.
-      Review the `package.json.ts` diff and revert in place: `^` major bumps back to current (they move to
-      the per-major phase), `~` cross-major bumps down to latest-within-major, and any change to `=` / exact
-      entries. Then run `node --run housekeeping:generate-package-json` again.
+- **Survey**: run the two `npm-check-updates` passes below and classify every candidate: patch/minor batch,
+  majors list, held-back pins, ask-first oddities. Do not survey with `npm outdated`: it is anchored on the
+  INSTALLED state, so it reports nothing when the installed versions are already current even while the
+  declared range floors in `package.json.ts` have drifted behind. `npm-check-updates` compares the declared
+  ranges themselves and honors `.npmrc`'s `min-release-age`; `npx --yes` keeps it non-interactive and
+  `--prefer-offline` keeps it fast.
+    - `npx --prefer-offline --yes npm-check-updates --target semver` - updates WITHIN each declared range
+      (never crosses a `^` / `~` boundary): its output IS the patch/minor batch, floor-drift included.
+    - `npx --prefer-offline --yes npm-check-updates` - the full picture including majors: feeds the per-major
+      flow (`^` entries) and the held-back report (`~` majors, frozen `=` / exact pins).
+    - Nothing needs updating (both passes empty)? Do not stop: skip the batch and per-major phases and
+      continue to Finish anyway - the from-scratch reinstall may still refresh transitive dependencies in
+      `package-lock.json`. Exception: when `$ARGUMENTS` restricted the session and none of the targeted
+      packages/tiers needs a change, report "already current" and stop - no recreate.
+- **Patch/minor batch**: hand-edit the versions listed by the `--target semver` pass in `package.json.ts`,
+  then run `node --run housekeeping:generate-package-json` (the PostToolUse hook usually already ran it - the
+  explicit run is an idempotent confirmation). No correction pass is needed: `--target semver` cannot cross a
+  range boundary, so no major can slip into the batch.
 - **Majors, one at a time** (each `^` major, only after the batch above):
     - Read the changelog / release notes / migration guide; where the impact is unclear, analyze deeper
       (grep the repo's actual usage against the breaking changes) to be on the safer side.

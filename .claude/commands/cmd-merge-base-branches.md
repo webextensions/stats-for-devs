@@ -190,9 +190,16 @@ and is never an error.
   path-limited checkouts and its out-of-sync warnings are guaranteed red noise while a merge is in progress. Use
   this form for every `--ours` resolution below.
 - Large conflicted files (`package.json.ts` runs 600-800 lines): locate the hunks first with
-  `grep -nE '^(<{7}|={7}$|>{7})' <file>` (an ERE, so this doc itself contains no literal conflict markers for the
-  git-conflict-markers check to flag), then read only those line ranges - never slice blindly with repeated
-  `sed -n` probes.
+  `grep -nE '^(<{7}|\|{7}|={7}$|>{7})' <file>` (an ERE, so this doc itself contains no literal conflict markers for
+  the git-conflict-markers check to flag), then read only those line ranges - never slice blindly with repeated
+  `sed -n` probes. Under `merge.conflictstyle zdiff3` (which the closing tip recommends) the region between the
+  7-less-than line and the equals line is OURS followed by a 7-pipe base section: ours ends at the pipes - never
+  read the ancestor text below them as the child's side.
+- With rerere enabled (the closing tip recommends it, so expect it), a conflicted path may contain NO conflict
+  markers: git replayed a remembered resolution into the working tree - the merge output's tail prints
+  `Resolved '<file>' using previous resolution.` The path is still unmerged: review the replayed content against
+  both sides like any other resolution before staging it by name - a resolution recorded on an older cascade can be
+  stale for today's content.
 - Fork-owned files (listed in
   [docs/template-project/file-conventions.md](../../docs/template-project/file-conventions.md)): keep the child's side
   - `git -c core.hooksPath=/dev/null checkout --ours -- <file>` - then stage that file by name.
@@ -291,7 +298,8 @@ and is never an error.
   fix attempts uncommitted, stay on that branch, and report the exact state left behind. Also report - never run - the
   escape hatch `./scripts/branching/find-safe-template-merge-commit.sh --base <child> --source <base>`, which finds
   the newest `<base>` commit that merges cleanly and passes on `<child>`; its header documents that it uses local refs
-  only, disables hooks for its probe merges, and runs `git clean -fd` during cleanup.
+  only, disables hooks and rerere for its probe merges (probes neither learn from nor replay the rr-cache), and runs
+  `git clean -fd` during cleanup.
 
 ## Post-Merge Review and Follow-Up Commit
 
@@ -412,11 +420,13 @@ git fetch origin --prune && git for-each-ref --format='%(refname:short) %(upstre
 It deliberately pushes only the branches that are ahead or have no upstream yet; branches that are behind or diverged
 are left alone for the human to reconcile first. Both cover ALL local branches, including any `-flat` mirrors.
 
-When the run re-resolved the same identity conflicts a cascade always hits, close with the tip below as the VERY
-LAST element of the response, highlighted as a blockquote so it stands out. Never run these config commands
-yourself - repo-wide git config is the human's call.
+When the run re-resolved the same identity conflicts a cascade always hits, check the config first -
+`git config --get rerere.enabled` and `git config --get merge.conflictstyle` (read-only) - and close with the tip
+below only when either setting is absent, as the VERY LAST element of the response, highlighted as a blockquote so
+it stands out. When both are already set, skip the tip. Never run these config commands yourself - repo-wide git
+config is the human's call.
 
 > **Tip:** enable once - `git config rerere.enabled true` and `git config merge.conflictstyle zdiff3` - so git
-> replays these recurring resolutions on future cascades. Caveat: with rerere enabled, git auto-stages remembered
-> resolutions on future merges, so later runs must review what rerere staged before concluding - it bypasses the
-> stage-by-name discipline.
+> replays these recurring resolutions on future cascades. Replayed resolutions land in the working tree UNSTAGED
+> (the path stays conflicted): review them like any hand resolution before staging by name. Do NOT also enable
+> `rerere.autoupdate` - it would stage resolutions outside the review flow.
