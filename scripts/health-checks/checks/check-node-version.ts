@@ -24,13 +24,13 @@ import semver from 'semver';
 
 import { logger } from '../../../utils/logger.ts';
 
-const __dirname = import.meta.dirname;
-
 // CI tests against several Node versions on purpose (see header); enforcing one exact version there would
 // fail every matrix job. Skip the check in CI; it stays a hard gate locally / in the git hooks.
 if (process.env.CI) {
     process.exit(0);
 }
+
+const __dirname = import.meta.dirname;
 
 const exitWithCode0 = process.argv.includes('--exit-with-code-0');
 const flagNotify = process.argv.includes('--notify');

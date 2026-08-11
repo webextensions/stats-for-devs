@@ -79,7 +79,7 @@ process.emit = function (this: NodeJS.Process, eventName: string | symbol, paylo
     ) {
         return false;
     }
-    // eslint-disable-next-line unicorn/no-this-outside-of-class -- "this" must be forwarded to the original process.emit
+
     return (originalProcessEmit as (...args: unknown[]) => boolean).call(this, eventName, payload, ...rest);
 } as typeof process.emit;
 
