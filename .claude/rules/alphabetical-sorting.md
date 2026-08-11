@@ -17,7 +17,7 @@ When a list of items has no meaningful order, keep them **alphabetically sorted*
 - Enum members (when order is not semantically significant)
 - Switch/case blocks (when order is not semantically significant)
 - Package dependency lists in `package.json.ts`
-- Object keys and the `permissions.allow` / `permissions.deny` lists in `.claude/settings.json` (enforced by the `claude-settings-sort` check)
+- Object keys and the `permissions.allow` / `permissions.ask` / `permissions.deny` lists in `.claude/settings.json` (enforced by the `claude-settings-sort` check)
 - Any other unordered list of names, strings, or identifiers
 
 ## Exceptions

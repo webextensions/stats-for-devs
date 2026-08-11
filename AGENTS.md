@@ -80,6 +80,9 @@ Details: [.claude/rules/git-workflow.md](.claude/rules/git-workflow.md).
 
 - ASCII punctuation only, in every file including markdown and commit messages:
   [.claude/rules/non-keyboard-characters.md](.claude/rules/non-keyboard-characters.md).
+- Code exploration: when `.codegraph/` holds a real index (not just its committed `.gitignore`),
+  reach for `codegraph explore "<question>"` / `codegraph node <symbol>` before grep or file reads
+  (MCP wiring: [.mcp.json](.mcp.json); deep-dive: the CodeGraph section of [CLAUDE.md](CLAUDE.md)).
 - Code style (ESM, 4-space indentation, semicolons, unix line endings, bash shebang):
   [.claude/rules/code-style.md](.claude/rules/code-style.md).
 - Commits: clear, ASCII subjects - they become the `CHANGELOG.md` entries; never hand-edit
@@ -93,12 +96,14 @@ Details: [.claude/rules/git-workflow.md](.claude/rules/git-workflow.md).
 
 ## Git and safety
 
-- A human owns git state: never stage, unstage, commit, push, force-push, skip hooks with
-  `--no-verify`, or run destructive `rm -rf` (two index-touching exceptions: `git mv` for
-  intentional renames/moves, and `git add` of named resolved files to conclude a merge - the human
-  still reviews before push).
+- In local/interactive sessions a human owns git state: never stage, unstage, commit, push,
+  force-push, skip hooks with `--no-verify`, or run destructive `rm -rf` unless explicitly asked
+  (two index-touching exceptions: `git mv` for intentional renames/moves, and `git add` of named
+  resolved files to conclude a merge - the human still reviews before push).
+- In cloud/remote sessions (e.g. Claude Code on Cloud), delivery requires pushing: stage named
+  files, commit, and push to a dedicated task branch (never `main`). Force pushes stay denied.
 - Details and enforcement: [.claude/rules/git-workflow.md](.claude/rules/git-workflow.md) and the
-  deny list in [.claude/settings.json](.claude/settings.json).
+  `ask` / `deny` permission rules in [.claude/settings.json](.claude/settings.json).
 
 ## Template-sync workflow
 

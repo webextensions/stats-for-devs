@@ -1,6 +1,6 @@
 ---
 description: Layout and conventions for Cursor agent hooks - .cursor/hooks.json pointers plus standalone hook scripts under .cursor/hooks/
-globs:
+globs: .cursor/hooks/**,.cursor/hooks.json
 alwaysApply: false
 ---
 # Cursor Hooks - Layout and Conventions
@@ -75,7 +75,7 @@ it can only hit a real JSON key: inside a JSON string the same text is escaped a
 the required unescaped quote then cannot match.
 
 ```sh
-grep -Eq '[{,][[:space:]]*"file_path"[[:space:]]*:[[:space:]]*"([^"]*[/\\])?package\.json\.ts"'
+grep -Eq '[{,][[:space:]]*"file_path"[[:space:]]*:[[:space:]]*"([^"]*[/\\])?(package\.json\.ts|utils[/\\]package-json-utils[/\\][^"]*\.ts)"'
 ```
 
 ## Wiring Into `hooks.json`

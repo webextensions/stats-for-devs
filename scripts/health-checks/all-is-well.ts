@@ -102,7 +102,7 @@ const CHECK_BUILD_LIB: HealthCheck = {
 };
 
 // Fails when .claude/settings.json is not normalized: its object keys must be alphabetized and the
-// permissions.allow / permissions.deny arrays sorted + deduped (Claude Code appends "always allow"
+// permissions.allow / permissions.ask / permissions.deny arrays sorted + deduped (Claude Code appends "always allow"
 // approvals to the end and edits keys over time). "--optimize-for-change" runs this only when
 // .claude/settings.json is staged; the Stop hook keeps it normalized live between runs.
 const CHECK_CLAUDE_SETTINGS_SORT: HealthCheck = {

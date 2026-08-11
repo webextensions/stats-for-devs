@@ -3,8 +3,8 @@
 /* eslint-disable n/no-process-exit */
 
 // Normalizes .claude/settings.json and .claude/settings.local.json: recursively alphabetizes every
-// object key (top-level and nested) and sorts + dedupes the permissions.allow and permissions.deny
-// arrays.
+// object key (top-level and nested) and sorts + dedupes the permissions.allow, permissions.ask and
+// permissions.deny arrays.
 //
 // Why: Claude Code appends "always allow" approvals to the END of the permission arrays during a
 // session (leaving them unsorted and occasionally duplicated) and otherwise adds/edits keys over time,
@@ -16,8 +16,8 @@
 //   - .claude/settings.json (the committed file) and .claude/settings.local.json (gitignored, where
 //     Claude Code typically appends "always allow" approvals). An absent file is a skipped no-op, so in
 //     CI / git hooks - where settings.local.json does not exist - only the committed file is processed.
-//   - Object keys everywhere are sorted. Among arrays, only permissions.allow and permissions.deny are
-//     sorted/deduped; every other array keeps its original element order.
+//   - Object keys everywhere are sorted. Among arrays, only permissions.allow, permissions.ask and
+//     permissions.deny are sorted/deduped; every other array keeps its original element order.
 //
 // Sort order: case-insensitive (localeCompare, base sensitivity), so the existing convention is
 // preserved - e.g. Bash(...) < mcp__... < WebFetch(...) < WebSearch (uppercase and lowercase
@@ -57,8 +57,8 @@ const toRelativePath = function (settingsAbsPath: string): string {
     return path.relative(projectRoot, settingsAbsPath).split(path.sep).join('/');
 };
 
-// The permission arrays we sort/dedupe. (Decision: "allow" + "deny" only; all other arrays keep order.)
-const SORTED_KEYS = ['allow', 'deny'];
+// The permission arrays we sort/dedupe. (Decision: the permission rule lists only; all other arrays keep order.)
+const SORTED_KEYS = ['allow', 'ask', 'deny'];
 
 const DEFAULT_INDENT = '  '; // 2 spaces, used only if indentation cannot be detected
 

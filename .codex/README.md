@@ -18,7 +18,9 @@ user-global `cmd-sync-ai-instructions-*` commands.
 ## Scope Notes
 
 - Keep changes within this repository unless the user explicitly asks otherwise.
-- Prefer `rg` for exploration.
+- Prefer CodeGraph (`codegraph explore` / `codegraph node`) when the index is live (see the code
+  exploration note in [AGENTS.md](../AGENTS.md)); for plain text searches, prefer `rg` over
+  `grep`/`find`.
 - Verify `node --version` satisfies `.nvmrc` before running project Node commands; if not, fix the
   active Node.js environment, verify again, then continue.
 - Keep generated code consistent with nearby precedent.

@@ -44,13 +44,25 @@ description: Git workflow, scripts, and project management conventions
 
 ## Safety
 
+In local/interactive sessions, the human owns git state: staging, commits, and pushes happen only when explicitly
+asked in the current conversation (for example `/cmd-commit`, `/cmd-merge-base-branches`).
+
 - Never amend previous commits unless explicitly asked.
 - Never commit `.env`, credentials, or secrets.
-- Never force-push unless explicitly asked.
-- Never stage or unstage changes (`git add`, `git restore --staged`, `git reset`, etc.); the developer handles the
-  index after manual review. (Two exceptions: `git mv` for intentional renames/moves, and `git add <named file>` to
-  stage individually resolved files when concluding a merge - bulk staging such as `git add -A` / `git add .` stays
-  denied.)
+- Never force-push - denied outright in [.claude/settings.json](../settings.json), including `--force-with-lease`;
+  after a rebase, hand the push command to the human.
+- Never stage or unstage changes (`git add`, `git restore --staged`, `git reset`, etc.) unprompted; the developer
+  handles the index after manual review. (Two exceptions: `git mv` for intentional renames/moves, and
+  `git add <named file>` to stage individually resolved files when concluding a merge - bulk staging such as
+  `git add -A` / `git add .` always prompts via the `ask` list in [.claude/settings.json](../settings.json).)
+
+### Cloud / Remote Sessions
+
+In cloud environments (Claude Code on Cloud and similar), pushing is how work is delivered, so the ownership rule
+inverts: the agent IS expected to stage, commit, and push - always to a dedicated task branch (create one when
+needed), never directly to `main`. Stage the specific files changed (`git add <file> ...`), not bulk
+`git add -A` / `git add .` - the bulk forms sit on the `ask` list and stall on approval. Force pushes and
+`--no-verify` stay off-limits everywhere.
 
 ## Non-Obvious Decisions
 - Document hacks, workarounds, and non-obvious decisions in the `docs/because/` directory

@@ -88,7 +88,7 @@ update. This is opt-in and decided ONCE, before any git operation, so the cascad
 - Nothing to update on a branch (the skill reports "already current"): record it, create no commit, continue.
 - If the update cannot reach a green `node --run test`, STOP the cascade immediately: stay on that branch, leave the
   working tree and any partial changes exactly as they are, and report the precise state. Never try to discard the
-  work - `git reset*` and `git restore --staged*` are denied in [.claude/settings.json](../settings.json), and
+  work - `git reset*` and `git restore *` sit on the `ask` list in [.claude/settings.json](../settings.json), and
   running `git restore` over uncommitted work is forbidden. The merge commit that preceded it stays.
 
 ## Read the Tree
@@ -248,7 +248,7 @@ and is never an error.
   file, not just the markers); keep both when compatible. On a genuine contradiction, pause and ask the developer with
   the AskUserQuestion tool, presenting both sides with evidence - never guess.
 - Stage only individually named resolved files (`git add <file> ...`); bulk staging (`git add -A`, `git add .`, etc.)
-  stays denied.
+  always prompts via the `ask` list in [.claude/settings.json](../settings.json).
 - Before concluding: verify no unmerged paths remain. Stray conflict markers need no manual sweep - the
   `git-conflict-markers` check inside `node --run test` already asserts that.
 
@@ -356,8 +356,8 @@ lost. Prepare then refuses to start the next run - that interlock is intended, n
   of the stop; account for that in the stop report.
 - The human resolves the dirty state, commits it, and pushes it. The cascade does not resume before that.
 - Never discard the work yourself - not `git merge --abort`, not `git restore`, not any equivalent.
-  `git merge --abort` is absent from the deny list but destroys uncommitted work, so it stays the human's call like
-  every other git-state decision here.
+  `git merge --abort` sits in no permission tier (it would not even prompt outside default mode) but destroys
+  uncommitted work, so it stays the human's call like every other git-state decision here.
 - After the human has committed and pushed, re-run the command: edges already merged report "already up to date", so
   the cascade resumes rather than redoing work, and `<branch> subtree` narrows it to what is left.
 

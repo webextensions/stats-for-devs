@@ -22,8 +22,10 @@ index (commands are documented as comments in `package.json.ts`, health checks i
 - **Stop hooks:** the scripts in [.claude/hooks/Stop/](.claude/hooks/Stop/) auto-run fixers (plus a
   read-only type check) at the end of each turn - each script's header documents what and when.
   Still produce clean output in the first place; do not rely on the fixers.
-- **Permissions:** the deny list in [.claude/settings.json](.claude/settings.json) (authoritative)
-  blocks index-mutating git ops and destructive deletes. The human owns commits and pushes.
+- **Permissions:** [.claude/settings.json](.claude/settings.json) (authoritative) denies force
+  pushes outright; index-mutating git ops and destructive deletes sit on the `ask` list and always
+  prompt. Who stages/commits/pushes per session type: the Safety section of
+  [.claude/rules/git-workflow.md](.claude/rules/git-workflow.md).
 - **Rules:** topical rules live in [.claude/rules/](.claude/rules/). Files with no `paths:` frontmatter
   key load at launch (e.g. `non-keyboard-characters.md`); the rest are path-scoped and load only when a
   matching file is read - editing a `.ts` file pulls in `typescript-gotchas.md`, editing a hook script

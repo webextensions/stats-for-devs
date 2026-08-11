@@ -122,13 +122,14 @@
       "Bash(tree)",
       "mcp__codegraph",
       "mcp__context7",
+      "mcp__plugin_playwright_playwright",
       "WebFetch(domain:docs.claude.com)",
       "WebFetch(domain:docs.npmjs.com)",
       "WebFetch(domain:socket.dev)",
       "WebFetch(domain:www.npmjs.com)",
       "WebSearch"
     ],
-    "deny": [
+    "ask": [
       "Bash(git add --all)",
       "Bash(git add --all*)",
       "Bash(git add --update)",
@@ -139,6 +140,17 @@
       "Bash(git add -u*)",
       "Bash(git add . *)",
       "Bash(git add .)",
+      "Bash(git checkout -- *)",
+      "Bash(git clean*)",
+      "Bash(git reset*)",
+      "Bash(git restore *)",
+      "Bash(git rm *)",
+      "Bash(git stash clear)",
+      "Bash(git stash drop*)",
+      "Bash(rm -fr *)",
+      "Bash(rm -rf *)"
+    ],
+    "deny": [
       "Bash(git push --force)",
       "Bash(git push --force*)",
       "Bash(git push -f)",
@@ -146,11 +158,7 @@
       "Bash(git push * --force*)",
       "Bash(git push * -f *)",
       "Bash(git push * -f)",
-      "Bash(git reset*)",
-      "Bash(git restore --staged*)",
-      "Bash(git rm *)",
-      "Bash(rm -fr *)",
-      "Bash(rm -rf *)"
+      "Bash(git push * +*)"
     ]
   }
 }
