@@ -7,7 +7,7 @@ export default defineConfig({
     // pass through untouched, so the plugin is safe for the whole suite.
     plugins: [react()],
 
-    /* Begin: APP-CUSTOMIZATIONS */
+    // BEGIN: PROJECT-CUSTOMIZATIONS
     css: {
         // The published widget's class names are hash-free documented API (".sfd-" + local name);
         // tests assert them, so vitest must compile the library's CSS Modules exactly like the
@@ -18,10 +18,10 @@ export default defineConfig({
             generateScopedName: 'sfd-[local]'
         }
     },
-    /* End: APP-CUSTOMIZATIONS */
+    // END: PROJECT-CUSTOMIZATIONS
 
     test: {
-        /* Begin: APP-CUSTOMIZATIONS */
+        // BEGIN: PROJECT-CUSTOMIZATIONS
         // Process ONLY the library's CSS (compiled class maps + "?inline" text with real sfd-*
         // names); everything else keeps vitest's default identity-proxy class names.
         // classNameStrategy 'scoped' makes vitest defer to Vite's CSS-modules pipeline (the
@@ -33,7 +33,7 @@ export default defineConfig({
                 classNameStrategy: 'scoped'
             }
         },
-        /* End: APP-CUSTOMIZATIONS */
+        // END: PROJECT-CUSTOMIZATIONS
 
         // Tests live in two homes (see .claude/rules/testing.md): colocated next to the source
         // for simple, self-contained units, and under test/ when grouping fits better. This glob

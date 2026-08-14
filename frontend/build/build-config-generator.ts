@@ -154,7 +154,7 @@ const buildConfigGenerator = function (generatorOptions: any = {}, frontEndConfi
             devSourcemap: cssSourcemapVite !== false,
 
             modules: {
-                /* Begin: APP-CUSTOMIZATIONS */
+                // BEGIN: PROJECT-CUSTOMIZATIONS
                 // The published widget's class names are hash-free documented API (".sfd-" +
                 // local name - see frontend/lib/tsdown.config.ts), and the demo harness compiles
                 // the library from SOURCE (frontend/src/App/LibraryDemo/), so the harness must
@@ -168,7 +168,7 @@ const buildConfigGenerator = function (generatorOptions: any = {}, frontEndConfi
                     const hash = createHash('sha256').update(filename + css).digest('base64url').slice(0, 5);
                     return `${path.basename(filename).replace(/\.module\.css.*$/, '')}__${name}--${hash}`;
                 }
-                /* End: APP-CUSTOMIZATIONS */
+                // END: PROJECT-CUSTOMIZATIONS
                 // localsConvention is intentionally omitted to preserve PascalCase class names
             }
         },
