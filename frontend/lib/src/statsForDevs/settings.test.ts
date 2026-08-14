@@ -18,6 +18,7 @@ describe('settings helpers', function () {
         expect(result.enabledMetricIds).toEqual(MINIMAL_METRIC_IDS);
         expect(result.opacity).toBe(DEFAULT_SETTINGS.opacity);
         expect(result.visualAids.outlineAll).toBe(false);
+        expect(result.visualAids.tiltIndicator).toBe(false);
         expect(result.collapsedGroups).toEqual({});
     });
 
@@ -49,6 +50,14 @@ describe('settings helpers', function () {
         expect(resolvePresetMetricIds('extensive', allIds).length)
             .toBeGreaterThan(resolvePresetMetricIds('common', allIds).length);
         expect(resolvePresetMetricIds('unknown', allIds)).toEqual([]);
+    });
+
+    it('resolvePresetMetricIds should include the device-orientation ids in the extensive preset', function () {
+        const sensorIds = [
+            'compassHeading', 'motionAcceleration', 'motionRotationRate', 'orientationAngles', 'screenOrientation'
+        ];
+        const resolved = resolvePresetMetricIds('extensive', sensorIds);
+        expect(resolved).toEqual(sensorIds);
     });
 
     it('isThresholdExceeded should compare against numeric thresholds only', function () {

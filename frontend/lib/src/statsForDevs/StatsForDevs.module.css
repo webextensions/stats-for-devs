@@ -250,6 +250,15 @@
     justify-content: space-between;
 }
 
+/* A sensor row that doubles as the iOS permission trigger (see the tap-to-grant handling in the TSX) */
+.rowTappable {
+    cursor: pointer;
+}
+
+.rowTappable .valueText {
+    text-decoration: underline dotted;
+}
+
 .labelCell {
     color: rgb(165 170 180);
     white-space: nowrap;

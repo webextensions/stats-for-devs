@@ -14,7 +14,7 @@ to the shared homes that keep receiving template updates.
 ## Project overview
 
 `stats-for-devs` - a floating, draggable dev HUD ("stats for nerds" style) showing live
-viewport, breakpoint, responsiveness, mobile-input, performance and interaction metrics, plus
+viewport, breakpoint, responsiveness, mobile-input, device-orientation, performance and interaction metrics, plus
 optional visual page aids. Forked from the `template-widget` template branch (npm packages
 shipping an embeddable widget): `template-npm-package-for-react` (its full React-package layer -
 `abstract-frontend-build`'s config-driven Vite (Rolldown) + React + TypeScript build under
@@ -22,7 +22,7 @@ shipping an embeddable widget): `template-npm-package-for-react` (its full React
 opt-in Vite HMR under `backend/src/server/`, plus `abstract-npm-package`'s publishable manifest
 and publint) plus the widget layer on top. The package code lives under
 [frontend/lib/](frontend/lib/) (see its [README](frontend/lib/README.md) for the layout): the
-widget area `src/statsForDevs/` (overlay components, the 28-metric registry, trackers, settings,
+widget area `src/statsForDevs/` (overlay components, the 33-metric registry, trackers, settings,
 visibility store, visual aids), the side-effect-free public barrel `src/index.ts` (named exports
 only; `mountStatsForDevs`/`unmountStatsForDevs`, `StatsForDevsRoot`, the visibility store, the
 window API installer, registry introspection, the settings model), the `src/auto.ts` side-effect

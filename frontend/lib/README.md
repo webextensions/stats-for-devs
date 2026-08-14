@@ -26,7 +26,7 @@ frontend/lib/
             Sparkline/                             - inline SVG trend graph for numeric metrics
             icons/                                 - the seven icons as inline SVG components (Apache-2.0 path data)
             mount.tsx        - mountStatsForDevs()/unmountStatsForDevs() (self-mounting: own container + root)
-            metrics.ts       - the 28-metric registry (6 groups) + setBuildInfo
+            metrics.ts       - the 33-metric registry (7 groups) + setBuildInfo
             trackers.ts      - refcounted global listeners (pointer, scroll, touch, longtask, inspect mode)
             settings.ts      - settings shape, defaults, normalization, presets (pure)
             useSettings.ts   - localStorage-persisted settings hook ("statsForDevs.settings")

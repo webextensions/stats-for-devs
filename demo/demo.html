@@ -120,6 +120,16 @@
         <p>Focus this field on a phone to watch the virtual-keyboard and viewport metrics react.</p>
         <p><label>Type here: <input type="text" placeholder="focus me" /></label></p>
 
+        <h2>Device orientation</h2>
+        <p>
+            Enable the <em>Device orientation</em> metrics and tilt / rotate the phone (the
+            <em>Tilt indicator</em> visual aid draws a bubble level from the same data). Browsers only deliver
+            sensor events over HTTPS (or <code>localhost</code>) - over plain LAN HTTP the rows say
+            <code>needs https</code>; use the hosted demo above or an HTTPS tunnel. On iOS the rows say
+            <code>tap to enable</code> - tap any of them to trigger the permission prompt. On a desktop they
+            simply report <code>no data</code>.
+        </p>
+
         <h2>Performance</h2>
         <p>
             Enable the <em>Performance</em> metrics (and try setting a threshold on them, so they turn red).

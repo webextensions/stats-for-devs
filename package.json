@@ -8,7 +8,7 @@
         "react-draggable": "^4.5.0",
         "use-local-storage-state": "^19.5.0"
     },
-    "description": "A floating, draggable dev HUD (YouTube-nerd-stats style) with live viewport, breakpoint, responsiveness, mobile-input, performance and interaction metrics - drop it into any web page",
+    "description": "A floating, draggable dev HUD (YouTube-nerd-stats style) with live viewport, breakpoint, responsiveness, mobile-input, device-orientation, performance and interaction metrics - drop it into any web page",
     "devDependencies": {
         "@babel/core": "^8.0.1",
         "@eslint-react/eslint-plugin": "^5.18.3",
@@ -111,10 +111,12 @@
         "debugging",
         "dev",
         "dev-tools",
+        "device-orientation",
         "devtools",
         "dpr",
         "drop-in",
         "dvh",
+        "gyroscope",
         "hud",
         "lvh",
         "metrics",

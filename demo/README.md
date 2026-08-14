@@ -1,7 +1,11 @@
 # Demo
 
-[demo.html](demo.html) exercises every metric group: breakpoints, tap targets, virtual keyboard, long tasks,
-heap growth, DOM-node count, scrolling and inspect mode.
+[demo.html](demo.html) exercises every metric group: breakpoints, tap targets, virtual keyboard, device
+orientation, long tasks, heap growth, DOM-node count, scrolling and inspect mode.
+
+Note for the device-orientation metrics: browsers only deliver sensor events in a secure context, so on a
+phone use the hosted demo below (or any HTTPS tunnel to your machine) - over plain LAN HTTP the rows report
+`needs https`. On iOS, tap any sensor row to trigger the required permission prompt.
 
 It loads `../dist/widget.js` (the unminified standalone build) directly, so run the build once and then just
 open the file - no server and no install:

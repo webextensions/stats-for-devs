@@ -53,7 +53,7 @@ try {
 const core = {
     "name": "stats-for-devs",
     version, // Owned by npm (see header); derived from package.json / package-version.json, never hard-coded
-    "description": "A floating, draggable dev HUD (YouTube-nerd-stats style) with live viewport, breakpoint, responsiveness, mobile-input, performance and interaction metrics - drop it into any web page",
+    "description": "A floating, draggable dev HUD (YouTube-nerd-stats style) with live viewport, breakpoint, responsiveness, mobile-input, device-orientation, performance and interaction metrics - drop it into any web page",
     "author": "webextensions.org",
     "license": "MIT",
 
@@ -83,10 +83,12 @@ const core = {
         "debugging",
         "dev",
         "dev-tools",
+        "device-orientation",
         "devtools",
         "dpr",
         "drop-in",
         "dvh",
+        "gyroscope",
         "hud",
         "lvh",
         "metrics",

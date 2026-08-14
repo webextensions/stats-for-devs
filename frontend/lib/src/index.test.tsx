@@ -58,9 +58,9 @@ describe('public entry point (frontend/lib/src/index.ts)', function () {
         expect(typeof useStatsForDevsShown).toBe('function');
     });
 
-    it('should expose the 28-metric registry and the default settings', function () {
-        expect(getAllMetricIds().length).toBe(28);
-        expect(getAllMetrics().length).toBe(28);
+    it('should expose the 33-metric registry and the default settings', function () {
+        expect(getAllMetricIds().length).toBe(33);
+        expect(getAllMetrics().length).toBe(33);
         expect(DEFAULT_SETTINGS.enabledMetricIds).toEqual(['activeBreakpoint', 'viewportSize']);
     });
 

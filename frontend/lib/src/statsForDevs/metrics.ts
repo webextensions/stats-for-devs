@@ -9,16 +9,21 @@
 // (see `setBuildInfo` below and `mount.tsx`).
 
 import { describeElement } from './dom.ts';
+import type { SensorPermission } from './trackers.ts';
 import {
+    getDeviceMotion,
+    getDeviceOrientation,
     getHoveredElement,
     getLongTaskCount,
     getPointer,
     getScroll,
+    getSensorPermissionState,
     getTouch,
     getVisualViewport
 } from './trackers.ts';
 
 type MetricGroup =
+'deviceOrientation' |
 'interaction' |
 'layout' |
 'mobileInput' |
@@ -49,12 +54,14 @@ const METRIC_GROUP_ORDER: MetricGroup[] = [
     'layout',
     'responsive',
     'mobileInput',
+    'deviceOrientation',
     'performance',
     'interaction',
     'readouts'
 ];
 
 const METRIC_GROUP_LABELS: Record<MetricGroup, string> = {
+    deviceOrientation: 'Device orientation',
     interaction: 'Interaction & DOM',
     layout: 'Layout & viewport',
     mobileInput: 'Mobile input',
@@ -94,6 +101,49 @@ const formatBytes = function (bytes: number): string {
         return `${(bytes / 1024).toFixed(1)} KB`;
     }
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const normalizeAngle = function (degrees: number): number {
+    return ((degrees % 360) + 360) % 360;
+};
+
+// Order is the compass rose (45-degree steps clockwise from north), not alphabetical
+const CARDINAL_DIRECTIONS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+
+const cardinalFromHeading = function (heading: number): string {
+    return CARDINAL_DIRECTIONS[Math.round(normalizeAngle(heading) / 45) % 8];
+};
+
+const formatOrientationAngles = function (alpha: number | null, beta: number | null, gamma: number | null): string {
+    const formatAngle = (value: number | null) => (value === null ? '?' : String(Math.round(value)));
+    return `a${formatAngle(alpha)} b${formatAngle(beta)} g${formatAngle(gamma)}`;
+};
+
+const formatXyzTriplet = function (x: number | null, y: number | null, z: number | null): string {
+    const formatAxis = (value: number | null) => (value === null ? '?' : value.toFixed(1));
+    return `x${formatAxis(x)} y${formatAxis(y)} z${formatAxis(z)}`;
+};
+
+// Maps the sensor permission machine (see `trackers.ts`) + first-event flag to the display sentinel;
+// null means "real data is available - format it".
+const resolveSensorSentinel = function (permission: SensorPermission, hasEvent: boolean): string | null {
+    if (permission === 'unsupported') {
+        return 'n/a';
+    }
+    if (permission === 'insecure-context') {
+        return 'needs https';
+    }
+    if (permission === 'needs-permission') {
+        return 'tap to enable';
+    }
+    if (permission === 'denied') {
+        return 'denied';
+    }
+    if (!hasEvent) {
+        // API present but silent so far (typical desktop) - or a phone that has not fired yet
+        return 'no data';
+    }
+    return null;
 };
 
 // Lazily-created, hidden, fixed-position probe elements used to measure CSS units that only resolve against
@@ -226,6 +276,69 @@ const BUILT_IN_METRICS: StatMetric[] = [
         label: 'Scroll velocity'
     },
 
+    // Device orientation
+    {
+        getValue: () => {
+            const orientation = getDeviceOrientation();
+            return resolveSensorSentinel(getSensorPermissionState(), orientation.hasEvent) ??
+            formatOrientationAngles(orientation.alpha, orientation.beta, orientation.gamma);
+        },
+        group: 'deviceOrientation',
+        id: 'orientationAngles',
+        label: 'Orientation angles'
+    },
+    {
+        // `screen.orientation` is a live object - read per tick like `viewportSize`; optional-chained for jsdom
+        getValue: () => {
+            const screenOrientation = window.screen?.orientation;
+            return screenOrientation ? `${screenOrientation.type} ${screenOrientation.angle}deg` : 'n/a';
+        },
+        group: 'deviceOrientation',
+        id: 'screenOrientation',
+        label: 'Screen orientation'
+    },
+    {
+        getValue: () => {
+            const motion = getDeviceMotion();
+            return resolveSensorSentinel(getSensorPermissionState(), motion.hasEvent) ??
+            formatXyzTriplet(motion.accelX, motion.accelY, motion.accelZ);
+        },
+        group: 'deviceOrientation',
+        id: 'motionAcceleration',
+        label: 'Accel (m/s^2)'
+    },
+    {
+        getValue: () => {
+            const motion = getDeviceMotion();
+            return resolveSensorSentinel(getSensorPermissionState(), motion.hasEvent) ??
+            formatXyzTriplet(motion.rotationAlpha, motion.rotationBeta, motion.rotationGamma);
+        },
+        group: 'deviceOrientation',
+        id: 'motionRotationRate',
+        label: 'Rotation (deg/s)'
+    },
+    {
+        getValue: () => {
+            const orientation = getDeviceOrientation();
+            const sentinel = resolveSensorSentinel(getSensorPermissionState(), orientation.hasEvent);
+            if (sentinel) {
+                return sentinel;
+            }
+            // iOS `webkitCompassHeading` is already degrees clockwise from north; absolute alpha counts the other way
+            const heading = orientation.webkitCompassHeading ??
+            (orientation.absoluteAlpha === null ? null : normalizeAngle(360 - orientation.absoluteAlpha));
+            if (heading === null) {
+                // Events fire but no absolute/compass source (e.g. iOS non-Safari, some desktops)
+                return 'n/a';
+            }
+            const rounded = Math.round(heading) % 360;
+            return `${rounded} (${cardinalFromHeading(rounded)})`;
+        },
+        group: 'deviceOrientation',
+        id: 'compassHeading',
+        label: 'Compass'
+    },
+
     // Performance
     {
         getValue: () => {
@@ -329,12 +442,17 @@ export type {
 };
 
 export {
+    cardinalFromHeading,
     computeActiveBreakpoint,
     formatBytes,
+    formatOrientationAngles,
+    formatXyzTriplet,
     getAllMetricIds,
     getAllMetrics,
     getMatchedBreakpoints,
     METRIC_GROUP_LABELS,
     METRIC_GROUP_ORDER,
+    normalizeAngle,
+    resolveSensorSentinel,
     setBuildInfo
 };

@@ -2,6 +2,11 @@
 // overlay the whole document). Each aid is independently toggleable and tears down cleanly. Driven by
 // `settings.visualAids` from the overlay.
 
+import {
+    getDeviceOrientation,
+    getSensorPermissionState
+} from './trackers.ts';
+
 const OVERLAY_Z_INDEX = '2147483640';
 const TAP_TARGET_MIN_PX = 44;
 const INTERACTIVE_SELECTOR = 'a, button, input, select, textarea, [role="button"], [tabindex]';
@@ -207,9 +212,129 @@ const setFocusHighlight = function (enabled: boolean) {
     }
 };
 
+// --- Tilt indicator (bubble level) ----------------------------------------------------------------------
+// Reads the device-orientation tracker state instead of owning a listener: an own listener would
+// re-create the whole iOS permission problem (no user gesture to request from). Aids are only
+// toggleable from the mounted overlay, whose snapshot hook keeps the refcounted trackers running.
+
+let tiltContainer: HTMLDivElement | null = null;
+let tiltBubble: HTMLDivElement | null = null;
+let tiltLabel: HTMLDivElement | null = null;
+let tiltIntervalId = 0;
+
+const TILT_SIZE_PX = 96;
+const TILT_BUBBLE_PX = 14;
+// Angles at or beyond this pin the bubble to the circle's edge
+const TILT_MAX_DEG = 45;
+
+const updateTiltIndicator = function () {
+    if (!tiltBubble || !tiltLabel) {
+        return;
+    }
+    const orientation = getDeviceOrientation();
+    if (getSensorPermissionState() !== 'granted' || !orientation.hasEvent ||
+    orientation.beta === null || orientation.gamma === null) {
+        tiltBubble.style.display = 'none';
+        tiltLabel.textContent = 'no sensor data';
+        return;
+    }
+    const clampTilt = function (degrees: number): number {
+        return Math.max(-TILT_MAX_DEG, Math.min(TILT_MAX_DEG, degrees));
+    };
+    const radius = (TILT_SIZE_PX - TILT_BUBBLE_PX) / 2;
+    const offsetX = (clampTilt(orientation.gamma) / TILT_MAX_DEG) * radius;
+    const offsetY = (clampTilt(orientation.beta) / TILT_MAX_DEG) * radius;
+    tiltBubble.style.display = 'block';
+    tiltBubble.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+    tiltLabel.textContent = `b${Math.round(orientation.beta)} g${Math.round(orientation.gamma)}`;
+};
+
+const setTiltIndicator = function (enabled: boolean) {
+    if (enabled) {
+        if (tiltContainer) {
+            return;
+        }
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.top = '8px';
+        container.style.left = '50%';
+        container.style.transform = 'translateX(-50%)';
+        container.style.zIndex = OVERLAY_Z_INDEX;
+        container.style.pointerEvents = 'none';
+        container.style.textAlign = 'center';
+
+        const circle = document.createElement('div');
+        circle.style.position = 'relative';
+        circle.style.width = `${TILT_SIZE_PX}px`;
+        circle.style.height = `${TILT_SIZE_PX}px`;
+        circle.style.margin = '0 auto';
+        circle.style.border = '1px solid rgb(80 200 255 / 0.8)';
+        circle.style.borderRadius = '50%';
+        circle.style.background = 'rgb(0 0 0 / 0.25)';
+
+        const crossVertical = document.createElement('div');
+        crossVertical.style.position = 'absolute';
+        crossVertical.style.left = '50%';
+        crossVertical.style.top = '0';
+        crossVertical.style.bottom = '0';
+        crossVertical.style.width = '1px';
+        crossVertical.style.background = 'rgb(80 200 255 / 0.3)';
+
+        const crossHorizontal = document.createElement('div');
+        crossHorizontal.style.position = 'absolute';
+        crossHorizontal.style.top = '50%';
+        crossHorizontal.style.left = '0';
+        crossHorizontal.style.right = '0';
+        crossHorizontal.style.height = '1px';
+        crossHorizontal.style.background = 'rgb(80 200 255 / 0.3)';
+
+        const bubble = document.createElement('div');
+        bubble.style.position = 'absolute';
+        bubble.style.left = `${(TILT_SIZE_PX - TILT_BUBBLE_PX) / 2}px`;
+        bubble.style.top = `${(TILT_SIZE_PX - TILT_BUBBLE_PX) / 2}px`;
+        bubble.style.width = `${TILT_BUBBLE_PX}px`;
+        bubble.style.height = `${TILT_BUBBLE_PX}px`;
+        bubble.style.borderRadius = '50%';
+        bubble.style.background = 'rgb(80 200 255 / 0.9)';
+        bubble.style.display = 'none';
+
+        const label = document.createElement('div');
+        label.style.display = 'inline-block';
+        label.style.marginTop = '4px';
+        label.style.font = '11px monospace';
+        label.style.color = 'rgb(255 255 255)';
+        label.style.background = 'rgb(0 0 0 / 0.7)';
+        label.style.padding = '1px 4px';
+        label.style.borderRadius = '3px';
+
+        circle.append(crossVertical, crossHorizontal, bubble);
+        container.append(circle, label);
+        document.body.append(container);
+
+        tiltContainer = container;
+        tiltBubble = bubble;
+        tiltLabel = label;
+
+        updateTiltIndicator();
+        tiltIntervalId = window.setInterval(updateTiltIndicator, 100);
+    } else {
+        if (tiltIntervalId) {
+            window.clearInterval(tiltIntervalId);
+            tiltIntervalId = 0;
+        }
+        if (tiltContainer) {
+            tiltContainer.remove();
+        }
+        tiltContainer = null;
+        tiltBubble = null;
+        tiltLabel = null;
+    }
+};
+
 export {
     setCrosshair,
     setFocusHighlight,
     setOutlineAll,
-    setTapTargets
+    setTapTargets,
+    setTiltIndicator
 };

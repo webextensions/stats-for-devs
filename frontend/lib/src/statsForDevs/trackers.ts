@@ -14,10 +14,54 @@ type TouchState = { activeTouches: number };
 type VisualViewportState = { height: number; offsetTop: number; scale: number };
 type HoveredElementState = { height: number; selector: string; width: number } | null;
 
+type DeviceMotionState = {
+    accelX: number | null;
+    accelY: number | null;
+    accelZ: number | null;
+    hasEvent: boolean;
+    rotationAlpha: number | null;
+    rotationBeta: number | null;
+    rotationGamma: number | null
+};
+type DeviceOrientationState = {
+    absoluteAlpha: number | null;
+    alpha: number | null;
+    beta: number | null;
+    gamma: number | null;
+    hasEvent: boolean;
+    webkitCompassHeading: number | null
+};
+type SensorPermission = 'denied' | 'granted' | 'insecure-context' | 'needs-permission' | 'unsupported';
+
+// Static-side / vendor extensions absent from lib.dom (same approach as `PerformanceWithMemory` in `metrics.ts`)
+type SensorEventStatic = { requestPermission?: () => Promise<'denied' | 'granted'> };
+type DeviceOrientationEventWithCompass = DeviceOrientationEvent & { webkitCompassHeading?: number };
+
 const pointerState: PointerState = { clientX: 0, clientY: 0, pageX: 0, pageY: 0 };
 const scrollState: ScrollState = { direction: 'idle', velocity: 0, x: 0, y: 0 };
 const touchState: TouchState = { activeTouches: 0 };
 const visualViewportState: VisualViewportState = { height: 0, offsetTop: 0, scale: 1 };
+const deviceMotionState: DeviceMotionState = {
+    accelX: null,
+    accelY: null,
+    accelZ: null,
+    hasEvent: false,
+    rotationAlpha: null,
+    rotationBeta: null,
+    rotationGamma: null
+};
+const deviceOrientationState: DeviceOrientationState = {
+    absoluteAlpha: null,
+    alpha: null,
+    beta: null,
+    gamma: null,
+    hasEvent: false,
+    webkitCompassHeading: null
+};
+
+// null = not yet computed; resolved lazily so importing this module stays side-effect-free / SSR-safe
+let sensorPermission: SensorPermission | null = null;
+let sensorListenersAttached = false;
 
 let longTaskCount = 0;
 let longTaskObserver: PerformanceObserver | null = null;
@@ -117,6 +161,141 @@ const handleVisualViewportChange = function () {
     visualViewportState.scale = Math.round(vv.scale * 100) / 100;
 };
 
+const handleDeviceOrientation = function (evt: DeviceOrientationEvent) {
+    deviceOrientationState.alpha = evt.alpha;
+    deviceOrientationState.beta = evt.beta;
+    deviceOrientationState.gamma = evt.gamma;
+    if (evt.absolute && evt.alpha !== null) {
+        deviceOrientationState.absoluteAlpha = evt.alpha;
+    }
+    const compassHeading = (evt as DeviceOrientationEventWithCompass).webkitCompassHeading;
+    if (typeof compassHeading === 'number') {
+        deviceOrientationState.webkitCompassHeading = compassHeading;
+    }
+    // Sensorless Chrome fires one all-null event on attach - that is "no data", not a reading
+    if (typeof compassHeading === 'number' || evt.alpha !== null || evt.beta !== null || evt.gamma !== null) {
+        deviceOrientationState.hasEvent = true;
+    }
+};
+
+const handleDeviceOrientationAbsolute = function (evt: DeviceOrientationEvent) {
+    if (evt.alpha === null) {
+        return;
+    }
+
+    deviceOrientationState.absoluteAlpha = evt.alpha;
+    deviceOrientationState.hasEvent = true;
+};
+
+const handleDeviceMotion = function (evt: DeviceMotionEvent) {
+    const accel = evt.accelerationIncludingGravity;
+    if (accel) {
+        deviceMotionState.accelX = accel.x;
+        deviceMotionState.accelY = accel.y;
+        deviceMotionState.accelZ = accel.z;
+    }
+    const rotation = evt.rotationRate;
+    if (rotation) {
+        deviceMotionState.rotationAlpha = rotation.alpha;
+        deviceMotionState.rotationBeta = rotation.beta;
+        deviceMotionState.rotationGamma = rotation.gamma;
+    }
+    // Sensorless Chrome fires one all-null event on attach - that is "no data", not a reading
+    const flagHasReading = Boolean(
+        (accel && (accel.x !== null || accel.y !== null || accel.z !== null)) ||
+        (rotation && (rotation.alpha !== null || rotation.beta !== null || rotation.gamma !== null))
+    );
+    if (flagHasReading) {
+        deviceMotionState.hasEvent = true;
+    }
+};
+
+const getSensorPermissionState = function (): SensorPermission {
+    if (sensorPermission === null) {
+        if (typeof window === 'undefined' ||
+        (typeof DeviceOrientationEvent === 'undefined' && typeof DeviceMotionEvent === 'undefined')) {
+            sensorPermission = 'unsupported';
+        } else if (!window.isSecureContext) {
+            // Browsers only deliver sensor events in secure contexts - surfaced so LAN-HTTP testing is not a mystery
+            sensorPermission = 'insecure-context';
+        } else if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof (DeviceOrientationEvent as unknown as SensorEventStatic).requestPermission === 'function') {
+            // iOS 13+ gates sensor events behind a user-gesture permission prompt (see `requestSensorPermissionAsync`)
+            sensorPermission = 'needs-permission';
+        } else {
+            sensorPermission = 'granted';
+        }
+    }
+    return sensorPermission;
+};
+
+const attachSensorListeners = function () {
+    if (sensorListenersAttached) {
+        return;
+    }
+    sensorListenersAttached = true;
+    if (typeof DeviceOrientationEvent !== 'undefined') {
+        window.addEventListener('deviceorientation', handleDeviceOrientation, { passive: true });
+        if ('ondeviceorientationabsolute' in window) {
+            // Chrome/Android: plain `deviceorientation` is relative; the absolute variant feeds the compass metric
+            window.addEventListener('deviceorientationabsolute', handleDeviceOrientationAbsolute, { passive: true });
+        }
+    }
+    if (typeof DeviceMotionEvent !== 'undefined') {
+        window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
+    }
+};
+
+const detachSensorListeners = function () {
+    if (!sensorListenersAttached) {
+        return;
+    }
+    sensorListenersAttached = false;
+    window.removeEventListener('deviceorientation', handleDeviceOrientation);
+    window.removeEventListener('deviceorientationabsolute', handleDeviceOrientationAbsolute);
+    window.removeEventListener('devicemotion', handleDeviceMotion);
+    // Reset so a later restart shows fresh data (not stale readings) only once events actually arrive again
+    deviceMotionState.hasEvent = false;
+    deviceOrientationState.hasEvent = false;
+};
+
+// iOS 13+ shows a single prompt covering both sensor APIs. `requestPermission()` must be invoked
+// synchronously within the user gesture, so both promises are collected before the first await.
+const requestSensorPermissionAsync = async function (): Promise<[Error | null, SensorPermission?]> {
+    try {
+        const requests: Promise<'denied' | 'granted'>[] = [];
+        if (typeof DeviceOrientationEvent !== 'undefined') {
+            const requestPermission = (DeviceOrientationEvent as unknown as SensorEventStatic).requestPermission;
+            if (requestPermission) {
+                requests.push(requestPermission());
+            }
+        }
+        if (typeof DeviceMotionEvent !== 'undefined') {
+            const requestPermission = (DeviceMotionEvent as unknown as SensorEventStatic).requestPermission;
+            if (requestPermission) {
+                requests.push(requestPermission());
+            }
+        }
+        if (requests.length === 0) {
+            // Nothing to request (non-iOS) - report the computed state unchanged
+            return [null, getSensorPermissionState()];
+        }
+        const results = await Promise.allSettled(requests);
+        const flagGranted = results.some((result) => result.status === 'fulfilled' && result.value === 'granted');
+        // 'denied' is session-sticky: iOS auto-rejects silent re-requests after a denial until the page reloads
+        sensorPermission = flagGranted ? 'granted' : 'denied';
+        if (flagGranted && refCount > 0) {
+            attachSensorListeners();
+        }
+        return [null, sensorPermission];
+    } catch (err) {
+        sensorPermission = 'denied';
+        const msgErr = 'Error: Failed to request device sensor permission';
+        console.error(msgErr, err);
+        return [new Error(msgErr, { cause: { code: 'ERROR_SENSOR_PERMISSION_REQUEST', originalError: err } })];
+    }
+};
+
 const handleInspectClick = function (evt: MouseEvent) {
     if (inspectMode !== 'pick') {
         return;
@@ -189,6 +368,11 @@ const startTrackers = function () {
     } catch {
         // `longtask` is not supported everywhere (e.g. Safari / Firefox) - the metric just stays at its count.
     }
+
+    // On iOS ('needs-permission') the listeners attach later, via `requestSensorPermissionAsync`
+    if (getSensorPermissionState() === 'granted') {
+        attachSensorListeners();
+    }
 };
 
 const stopTrackers = function () {
@@ -214,6 +398,8 @@ const stopTrackers = function () {
         longTaskObserver.disconnect();
         longTaskObserver = null;
     }
+
+    detachSensorListeners();
 
     setInspectMode('off');
 };
@@ -247,13 +433,29 @@ const getHoveredElement = function (): HoveredElementState {
     return hoveredElementState;
 };
 
+const getDeviceMotion = function (): DeviceMotionState {
+    return deviceMotionState;
+};
+
+const getDeviceOrientation = function (): DeviceOrientationState {
+    return deviceOrientationState;
+};
+
+export type {
+    SensorPermission
+};
+
 export {
+    getDeviceMotion,
+    getDeviceOrientation,
     getHoveredElement,
     getLongTaskCount,
     getPointer,
     getScroll,
+    getSensorPermissionState,
     getTouch,
     getVisualViewport,
+    requestSensorPermissionAsync,
     setInspectMode,
     startTrackers,
     stopTrackers

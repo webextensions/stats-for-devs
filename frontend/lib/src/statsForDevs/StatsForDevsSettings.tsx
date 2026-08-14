@@ -37,7 +37,8 @@ const VISUAL_AID_OPTIONS: { key: keyof VisualAids; label: string }[] = [
     { key: 'outlineAll', label: 'Outline all elements' },
     { key: 'tapTargets', label: 'Tap-target checker (44px)' },
     { key: 'crosshair', label: 'Cursor crosshair + ruler' },
-    { key: 'focusHighlight', label: 'Focused-element highlight' }
+    { key: 'focusHighlight', label: 'Focused-element highlight' },
+    { key: 'tiltIndicator', label: 'Tilt indicator (bubble level)' }
 ];
 
 // The settings view shown inside the floating overlay (toggled by the header gear). Every setting the overlay

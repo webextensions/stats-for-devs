@@ -53,6 +53,7 @@ import {
     pill,
     resizeHandle,
     row,
+    rowTappable,
     StatsForDevs as styles_StatsForDevs,
     title as titleClass,
     titleRow,
@@ -60,7 +61,11 @@ import {
     valueText
 } from './StatsForDevs.module.css';
 import { StatsForDevsSettings as StatsForDevsSettingsView } from './StatsForDevsSettings.tsx';
-import { setInspectMode } from './trackers.ts';
+import {
+    getSensorPermissionState,
+    requestSensorPermissionAsync,
+    setInspectMode
+} from './trackers.ts';
 import { useStatsForDevsSettings } from './useSettings.ts';
 import { useStatsSnapshot } from './useStatsSnapshot.ts';
 import {
@@ -72,7 +77,8 @@ import {
     setCrosshair,
     setFocusHighlight,
     setOutlineAll,
-    setTapTargets
+    setTapTargets,
+    setTiltIndicator
 } from './visualAids.ts';
 
 const CORNER_CLASS = {
@@ -137,11 +143,13 @@ const StatsForDevs = function () {
         setTapTargets(settings.visualAids.tapTargets);
         setCrosshair(settings.visualAids.crosshair);
         setFocusHighlight(settings.visualAids.focusHighlight);
+        setTiltIndicator(settings.visualAids.tiltIndicator);
     }, [
         settings.visualAids.crosshair,
         settings.visualAids.focusHighlight,
         settings.visualAids.outlineAll,
-        settings.visualAids.tapTargets
+        settings.visualAids.tapTargets,
+        settings.visualAids.tiltIndicator
     ]);
 
     useEffect(function () {
@@ -150,6 +158,7 @@ const StatsForDevs = function () {
             setTapTargets(false);
             setCrosshair(false);
             setFocusHighlight(false);
+            setTiltIndicator(false);
         };
     }, []);
 
@@ -372,6 +381,22 @@ const StatsForDevs = function () {
         });
     };
 
+    const handleSensorPermissionTap = function () {
+        // Fire-and-forget from a sync click handler: requestPermission() must be invoked synchronously
+        // within the user gesture (iOS), and the row re-renders from tracker state on the next snapshot
+        // tick. The function never rejects (error-tuple convention), so there is nothing to catch.
+        void requestSensorPermissionAsync();
+    };
+
+    const handleSensorPermissionKeyDown = function (evt: React.KeyboardEvent<HTMLDivElement>) {
+        if (!(evt.key === 'Enter' || evt.key === ' ')) {
+            return;
+        }
+
+        evt.preventDefault();
+        handleSensorPermissionTap();
+    };
+
     return (
         <Draggable
             handle="#sfd-drag-handle"
@@ -484,8 +509,26 @@ const StatsForDevs = function () {
                                             const displayText = (metric.maxDisplayChars && rawText.length > metric.maxDisplayChars) ?
                                                 `${rawText.slice(0, metric.maxDisplayChars)}...` :
                                                 rawText;
+                                            // Any sensor row doubles as the iOS permission trigger while the
+                                            // grant is pending (its value shows the 'tap to enable' sentinel)
+                                            const flagTapToGrant = metric.group === 'deviceOrientation' &&
+                                            getSensorPermissionState() === 'needs-permission';
                                             return (
-                                                <div key={metric.id} className={row}>
+                                                <div
+                                                    key={metric.id}
+                                                    className={classNames(row, flagTapToGrant && rowTappable)}
+                                                    {
+                                                        ...(
+                                                            flagTapToGrant && {
+                                                                onClick: handleSensorPermissionTap,
+                                                                onKeyDown: handleSensorPermissionKeyDown,
+                                                                role: 'button',
+                                                                tabIndex: 0,
+                                                                title: 'Tap to enable device sensors'
+                                                            }
+                                                        )
+                                                    }
+                                                >
                                                     <span className={labelCell}>{metric.label}</span>
                                                     <span className={classNames(valueCell, exceeded && danger)}>
                                                         {

@@ -4,9 +4,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 A floating, draggable dev HUD - "stats for devs", in the spirit of YouTube's "stats for nerds" - showing live
-viewport, breakpoint, responsiveness, mobile-input, performance and interaction metrics for the page you are
-working on. Plus optional visual page aids: outline-all, a 44px tap-target checker, a cursor crosshair, and a
-focused-element highlight.
+viewport, breakpoint, responsiveness, mobile-input, device-orientation, performance and interaction metrics
+for the page you are working on. Plus optional visual page aids: outline-all, a 44px tap-target checker, a
+cursor crosshair, a focused-element highlight, and a sensor-driven bubble level.
 
 It is a dev-only tool and it looks like one: a fixed dark, deliberately theme-independent overlay that stays
 readable on top of whatever you are building.
@@ -167,6 +167,21 @@ All settings, including which of these are shown, live behind the gear icon in t
 | `virtualKeyboard` | Virtual keyboard |
 | `scrollVelocity` | Scroll velocity |
 
+### Device orientation
+
+| Metric id | Label | Notes |
+|---|---|---|
+| `orientationAngles` | Orientation angles | `deviceorientation` alpha / beta / gamma, as `a173 b12 g-4` |
+| `screenOrientation` | Screen orientation | `screen.orientation` type and angle |
+| `motionAcceleration` | Accel (m/s^2) | `devicemotion` acceleration including gravity |
+| `motionRotationRate` | Rotation (deg/s) | `devicemotion` rotation rate (gyroscope) |
+| `compassHeading` | Compass | Degrees clockwise from north + cardinal direction; needs an absolute source |
+
+These rows stay visible where sensors cannot deliver and say why: `n/a` (API absent), `needs https` (sensors
+require a secure context), `tap to enable` (iOS 13+ - tap any sensor row to trigger the permission prompt;
+it must come from a tap), `denied` (grant refused; sticky until reload), or `no data` (API present but silent,
+which is the normal desktop case).
+
 ### Performance
 
 | Metric id | Label | Notes |
@@ -203,7 +218,7 @@ settings) above which the value turns red.
 | `none` | nothing |
 | `minimal` (default) | `activeBreakpoint`, `viewportSize` |
 | `common` | the minimal set plus `build`, `connection`, `dpr`, `matchedBreakpoints`, `orientation`, `pointerType` |
-| `extensive` | 24 of the 28 |
+| `extensive` | 29 of the 33 |
 | `all` | everything |
 
 ### Breakpoints
@@ -231,6 +246,8 @@ cleanly when switched off.
 - **Tap-target checker (44px)** - flags interactive elements smaller than the 44px guideline.
 - **Cursor crosshair and ruler** - pointer-following guide lines with a coordinate label.
 - **Focused-element highlight** - a box around whatever currently has focus.
+- **Tilt indicator (bubble level)** - a top-center bubble level driven by the device-orientation sensors; shows
+  `no sensor data` until the sensors deliver (see the Device orientation metric notes above).
 
 ## Settings and persistence
 
@@ -279,6 +296,12 @@ reduce its footprint.
 Modern evergreen browsers. Individual metrics degrade rather than break: unsupported APIs are either hidden from
 the settings list (`jsHeapMb`), silently stay at their initial value (`longTasks`), or report `n/a`. A metric
 whose read throws shows `(error)` instead of taking the overlay down with it.
+
+The Device orientation sensors have extra gates: browsers only deliver `deviceorientation` / `devicemotion`
+events in a secure context (HTTPS or `localhost`), and iOS 13+ additionally requires a user-gesture permission
+grant - tap any sensor row in the HUD to trigger it. The rows spell out the current gate (`needs https`,
+`tap to enable`, `denied`, `no data`), so for phone testing over plain LAN HTTP expect `needs https`; use an
+HTTPS tunnel or the hosted demo instead.
 
 ## Size
 

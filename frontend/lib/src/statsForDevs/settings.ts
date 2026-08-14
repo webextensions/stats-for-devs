@@ -12,7 +12,8 @@ type VisualAids = {
     crosshair: boolean;
     focusHighlight: boolean;
     outlineAll: boolean;
-    tapTargets: boolean
+    tapTargets: boolean;
+    tiltIndicator: boolean
 };
 
 type StatsForDevsSettings = {
@@ -52,6 +53,7 @@ const EXTENSIVE_METRIC_IDS = [
     'activeBreakpoint',
     'anyHover',
     'build',
+    'compassHeading',
     'connection',
     'domNodes',
     'dpr',
@@ -60,10 +62,14 @@ const EXTENSIVE_METRIC_IDS = [
     'jsHeapMb',
     'lvh',
     'matchedBreakpoints',
+    'motionAcceleration',
+    'motionRotationRate',
     'mouseCoords',
     'orientation',
+    'orientationAngles',
     'pinchZoomScale',
     'pointerType',
+    'screenOrientation',
     'scrollPosition',
     'scrollVelocity',
     'scrollbarWidth',
@@ -79,7 +85,8 @@ const DEFAULT_VISUAL_AIDS: VisualAids = {
     crosshair: false,
     focusHighlight: false,
     outlineAll: false,
-    tapTargets: false
+    tapTargets: false,
+    tiltIndicator: false
 };
 
 const DEFAULT_SETTINGS: StatsForDevsSettings = {
