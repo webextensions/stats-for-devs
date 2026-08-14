@@ -1,9 +1,9 @@
 ---
-name: running-the-project
+name: skill-run-the-project
 description: Use when asked to run, start, launch, serve, or demo this project, or to see a change working in the real app - covers this branch's start commands (the Express server + Vite frontend build demoing the publishable React library), the tsdown library build, port/URL, prerequisites, and the startup success signal.
 ---
 
-# Running the Project
+# Run the Project
 
 ## Running this branch
 
@@ -17,6 +17,9 @@ description: Use when asked to run, start, launch, serve, or demo this project, 
 - It started successfully when the log shows `Server (HTTP) is available at:` (or
   `Server (HTTP + Vite HMR) is available at:`) followed by the reachable URLs; a busy port prints
   `Error: Port 3000 is already in use (configured via server.access.url.http.port).`
+- A busy port can be avoided with the `:http-port-dynamic` script variants
+  (`node --run start:app:http-port-dynamic`; they set `HTTP_PORT_DYNAMIC=yes`): the server picks
+  the next free port from 3000 upward, so read the actual URL from the startup log.
 - `node --run build:dry-run` - one-shot verification build, nothing written.
 - The demo app renders the publishable library (the stats-for-devs dev HUD) in two modes -
   in-tree (`<StatsForDevsRoot />` with Show/Hide/Toggle buttons) and imperative self-mount

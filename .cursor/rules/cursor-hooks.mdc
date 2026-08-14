@@ -1,0 +1,125 @@
+---
+description: Layout and conventions for Cursor agent hooks - .cursor/hooks.json pointers plus standalone hook scripts under .cursor/hooks/
+globs: .cursor/hooks/**,.cursor/hooks.json
+alwaysApply: false
+---
+# Cursor Hooks - Layout and Conventions
+
+Cursor agent hooks (`afterFileEdit`, `beforeShellExecution`, `beforeReadFile`, `sessionStart`, `stop`,
+...) are configured in [.cursor/hooks.json](mdc:.cursor/hooks.json). To keep hooks readable, debuggable
+and version-control friendly, this project keeps the **logic in standalone shell scripts** under
+`.cursor/hooks/` and limits `hooks.json` to short pointers. Do **not** inline multi-statement commands
+into `hooks.json`.
+
+This mirrors the Claude Code convention documented in
+[.claude/rules/claude-code-hooks.md](mdc:.claude/rules/claude-code-hooks.md). Read that file too - the
+directory-per-event layout, kebab-case action-verb file naming, mandatory header comment, "no silent
+failures" rule, and the "`.sh` entry point; paired `.ts` helper when a hook needs real logic" shape all
+apply here unchanged. Only the differences below are Cursor-specific.
+
+## Directory Layout
+
+```
+.cursor/
+  hooks.json
+  hooks/
+    afterFileEdit/
+      <descriptive-kebab-case-name>.sh
+    beforeShellExecution/
+      <descriptive-kebab-case-name>.sh
+    ...
+```
+
+One subdirectory per Cursor hook event, named **exactly** as the event appears in `hooks.json`
+(`afterFileEdit`, `afterShellExecution`, `beforeMCPExecution`, `beforeReadFile`,
+`beforeShellExecution`, `preCompact`, `sessionEnd`, `sessionStart`, `stop`, ...). Cursor's event names
+are camelCase - do not PascalCase them to match the `.claude/hooks/` directories.
+
+## Differences From the Claude Code Hooks (Deliberate - Do Not "Fix" These)
+
+A `cmd-sync-ai-instructions-*` pass will notice these divergences. They are intentional:
+
+- **Flat `file_path` in the payload.** Cursor's `afterFileEdit` event carries `file_path` at the TOP
+  level; the Claude Code `PostToolUse` event nests the same value under `tool_input`. A hook copied
+  from one tree to the other must have this changed or it silently never fires.
+- **`afterFileEdit` is informational-only.** Cursor cannot be blocked from it, so these hooks leave the
+  exit code at `0` and report problems on stderr. The Claude Code `PostToolUse` counterpart exits `2`
+  on failure.
+- **Paths resolved from the script, not an env var.** Cursor sets no `$CLAUDE_PROJECT_DIR`, and its
+  hook cwd and PATH are less specified than Claude Code's, so resolve everything from the script's own
+  location (`cd "$(dirname "$0")"`) and invoke project scripts by path rather than through
+  `node --run`.
+
+Like the `.claude` hooks, each script starts with `#!/usr/bin/env bash` and must stay executable
+(mode 755) - Cursor's `command` value is a bare script path and is not guaranteed to be run through a
+shell. Nothing in the repo enforces the mode, so a lost `+x` here breaks the hook silently.
+
+## Payload
+
+Every hook receives the event JSON on stdin - read it whole (`grep` reads it directly in a shell hook;
+a paired `.ts` helper reads `readFileSync(0, 'utf8')`). The common fields are
+`conversation_id`, `generation_id`, `model`, `hook_event_name`, `cursor_version`, `workspace_roots`,
+`user_email` and `transcript_path`. `afterFileEdit` adds:
+
+```json
+{
+    "file_path": "<absolute path>",
+    "edits": [{ "old_string": "<search>", "new_string": "<replace>" }]
+}
+```
+
+**Gating on `file_path` from a shell hook.** The payload carries the edit strings too, so a naive
+`grep` for `"file_path"` also matches a file whose *contents* mention it - and that is not
+hypothetical, since the smoke-test line below is exactly such a string. Anchor the match on `[{,]` so
+it can only hit a real JSON key: inside a JSON string the same text is escaped as `\"file_path\"`, and
+the required unescaped quote then cannot match.
+
+```sh
+grep -Eq '[{,][[:space:]]*"file_path"[[:space:]]*:[[:space:]]*"([^"]*[/\\])?(package\.json\.ts|utils[/\\]package-json-utils[/\\][^"]*\.ts)"'
+```
+
+## Wiring Into `hooks.json`
+
+Each entry is a thin pointer. Paths are relative to the repo root:
+
+```json
+{
+    "version": 1,
+    "hooks": {
+        "afterFileEdit": [
+            {
+                "command": ".cursor/hooks/afterFileEdit/<hook-name>.sh"
+            }
+        ]
+    }
+}
+```
+
+Use `.cursor/hooks.json` - **not** `.cursor/.hooks.json`. Never ship both: if a future Cursor version
+reads both, every hook fires twice, which for the package.json regenerator would mean two generator
+processes racing to write the same file.
+
+## Smoke-Testing a Hook
+
+Cursor reads hooks at session start, so reload the window after adding or editing one, and check
+Cursor Settings > Hooks if it does not fire. Before that, verify the file itself by piping a
+representative event into it:
+
+```sh
+echo '{"file_path":"'"$PWD"'/package.json.ts","edits":[]}' | ./.cursor/hooks/afterFileEdit/regenerate-package-json-after-source-edit.sh
+```
+
+Then confirm the no-op path with a non-matching `file_path` (it should print nothing and exit `0`).
+
+## Current Hooks
+
+- [.cursor/hooks/afterFileEdit/regenerate-package-json-after-source-edit.sh](mdc:.cursor/hooks/afterFileEdit/regenerate-package-json-after-source-edit.sh) -
+  regenerates `package.json` whenever the agent edits `package.json.ts` or
+  `utils/package-json-utils/*.ts`. Counterpart of the Claude Code PostToolUse hook and of the
+  folder-open watcher task in [.vscode/tasks.json](mdc:.vscode/tasks.json), which covers plain human
+  edits.
+
+Note that Cursor has no `beforeFileEdit` event, so the Claude Code guard that blocks direct
+`package.json` edits (`.claude/hooks/PreToolUse/block-direct-package-json-edit.sh`) has no exact Cursor
+counterpart. The health check `pkg-json-sync` (`node --run test:compare-package-json-with-source`) is
+the backstop.

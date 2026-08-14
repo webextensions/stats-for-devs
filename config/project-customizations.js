@@ -1,4 +1,4 @@
-// APP CUSTOMIZATIONS: Update the values in this file to match your application.
+// PROJECT CUSTOMIZATIONS: Update the values in this file to match your application.
 
 /* eslint-disable import-x/exports-last */
 

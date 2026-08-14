@@ -20,6 +20,9 @@
 # - Aborts before doing any Git probe work when the starting working tree or index is dirty.
 # - Disables Git hooks only for internal probe checkout/reset/merge operations. The configured
 #   test command still runs normally.
+# - Runs probe merges with rerere disabled (`-c rerere.enabled=false --no-rerere-autoupdate`), so
+#   probes neither learn from nor replay the user's recorded resolutions (rr-cache) and stay
+#   representative of a virgin merge.
 # - Treats "latest" as the newest first-parent commit reachable from the source branch and not
 #   reachable from the base branch.
 # - Tests each candidate by temporarily detaching HEAD at the base commit, creating a probe merge

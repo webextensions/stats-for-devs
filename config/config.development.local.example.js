@@ -24,7 +24,8 @@ const configForThisMode = {
             }
         },
         nonProductionDevTools: {
-            flagNotifyServerPathsOnLaunch: true
+            flagNotifyServerPathsOnLaunch: true,
+            flagNotifyServerStartupErrors: true
         }
     },
     vite: {

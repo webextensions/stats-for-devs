@@ -16,9 +16,14 @@
 // fail to LOAD with ERR_INVALID_PACKAGE_CONFIG before the guard below runs - the suite still sees a
 // non-zero exit, just not this warning. Same caveat as package.json.ts (see its header).
 //
+// "--notify" additionally raises a desktop notification. It is passed only by
+// .claude/hooks/SessionStart/report-missing-agent-tooling.sh - never add it to a healthChecks entry in
+// ../all-is-well.ts, which runs on every commit and push and has to stay silent.
+//
 // Usage:
 //     $ ./check-npm-install-status.ts                    # exits 1 on drift (used by the health-check suite)
 //     $ ./check-npm-install-status.ts --exit-with-code-0 # warns only (always exits 0)
+//     $ ./check-npm-install-status.ts --notify           # also raises a desktop notification
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -31,9 +36,22 @@ const __dirname = import.meta.dirname;
 const projectRoot = path.resolve(__dirname, '..', '..', '..');
 
 const exitWithCode0 = process.argv.includes('--exit-with-code-0');
+const flagNotify = process.argv.includes('--notify');
 
 const exitWithAppropriateCode = function (exitCode: number) {
     process.exit(exitWithCode0 ? 0 : exitCode);
+};
+
+// A desktop notification is a decoration-only nicety (.claude/rules/first-principles.md), so the helper
+// is imported only once we actually have something to report - the healthy path pays nothing for it.
+// Failures are swallowed: a notification is optional and must never change this check's outcome.
+const notifyAsync = async function (title: string, message: string) {
+    try {
+        const { notifier } = await import('../../../utils/notifier/notifier.ts');
+        notifier.warn(title, message);
+    } catch {
+        // Ignored on purpose.
+    }
 };
 
 const readFileAsJson = function (filePath: string): Record<string, unknown> | undefined {
@@ -62,6 +80,10 @@ if (!mainPackageJson) {
         logger.warn(message);
     } else {
         logger.error(message);
+    }
+
+    if (flagNotify) {
+        await notifyAsync('Unable to read package.json', 'The declared dependencies could not be determined.');
     }
 
     exitWithAppropriateCode(1);
@@ -100,5 +122,13 @@ if (!mismatchOrInvalidFound) {
     logger.error('\n' + updateMessages.length + '/' + total + ' npm package(s) need to be updated:');
     logger.log(' '.repeat(4) + updateMessages.join('\n    '));
     logger.error('\nWe might want to run "$ npm install"\n');
+
+    if (flagNotify) {
+        await notifyAsync(
+            'npm packages out of date',
+            updateMessages.length + '/' + total + ' package(s) drifted from package.json\nRun: npm install'
+        );
+    }
+
     exitWithAppropriateCode(1);
 }

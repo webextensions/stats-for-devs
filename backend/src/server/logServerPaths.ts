@@ -1,6 +1,6 @@
 import libLocalIpAddressesAndHostnames from 'local-ip-addresses-and-hostnames';
 
-import { PREFERRED_HOSTNAMES_FOR_LOCAL_DEVELOPMENT } from '../../../config/app-customizations.js';
+import { PREFERRED_HOSTNAMES_FOR_LOCAL_DEVELOPMENT } from '../../../config/project-customizations.js';
 import packageJson from '../../../package.json' with { type: 'json' };
 import { logger } from '../../../utils/logger.ts';
 

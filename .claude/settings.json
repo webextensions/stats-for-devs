@@ -1,11 +1,15 @@
 {
   "disabledMcpjsonServers": [
-    "deepwiki"
-  ],
-  "enabledMcpjsonServers": [
-    "context7",
+    "deepwiki",
     "mdn"
   ],
+  "enabledMcpjsonServers": [
+    "codegraph",
+    "context7"
+  ],
+  "enabledPlugins": {
+    "context7@claude-plugins-official": false
+  },
   "hooks": {
     "PostToolUse": [
       {
@@ -27,6 +31,23 @@
           }
         ],
         "matcher": "Write|Edit|MultiEdit"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/SessionStart/announce-workspace-context.sh\"",
+            "timeout": 5,
+            "type": "command"
+          },
+          {
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/SessionStart/report-missing-agent-tooling.sh\"",
+            "timeout": 5,
+            "type": "command"
+          }
+        ],
+        "matcher": "startup|clear"
       }
     ],
     "Stop": [
@@ -55,6 +76,7 @@
   "permissions": {
     "allow": [
       "Bash(bash -n *)",
+      "Bash(codegraph *)",
       "Bash(command -v node)",
       "Bash(echo *)",
       "Bash(git --no-pager diff --staged)",
@@ -72,6 +94,7 @@
       "Bash(node --run eslint)",
       "Bash(node --run housekeeping:generate-package-json)",
       "Bash(node --run knip)",
+      "Bash(node --run syntaxlint:*)",
       "Bash(node --run syntaxlint)",
       "Bash(node --run test:compare-package-json-with-source)",
       "Bash(node --run test:compare-package-version-with-source)",
@@ -95,25 +118,20 @@
       "Bash(npm show *)",
       "Bash(npm test *)",
       "Bash(npm view *)",
+      "Bash(npx --prefer-offline --yes npm-check-updates *)",
+      "Bash(npx --prefer-offline --yes npm-check-updates)",
       "Bash(tree *)",
       "Bash(tree)",
-      "mcp__codegraph__codegraph_callees",
-      "mcp__codegraph__codegraph_callers",
-      "mcp__codegraph__codegraph_explore",
-      "mcp__codegraph__codegraph_files",
-      "mcp__codegraph__codegraph_impact",
-      "mcp__codegraph__codegraph_node",
-      "mcp__codegraph__codegraph_search",
-      "mcp__codegraph__codegraph_status",
-      "mcp__plugin_context7_context7__query-docs",
-      "mcp__plugin_context7_context7__resolve-library-id",
+      "mcp__codegraph",
+      "mcp__context7",
+      "mcp__plugin_playwright_playwright",
       "WebFetch(domain:docs.claude.com)",
       "WebFetch(domain:docs.npmjs.com)",
       "WebFetch(domain:socket.dev)",
       "WebFetch(domain:www.npmjs.com)",
       "WebSearch"
     ],
-    "deny": [
+    "ask": [
       "Bash(git add --all)",
       "Bash(git add --all*)",
       "Bash(git add --update)",
@@ -124,6 +142,17 @@
       "Bash(git add -u*)",
       "Bash(git add . *)",
       "Bash(git add .)",
+      "Bash(git checkout -- *)",
+      "Bash(git clean*)",
+      "Bash(git reset*)",
+      "Bash(git restore *)",
+      "Bash(git rm *)",
+      "Bash(git stash clear)",
+      "Bash(git stash drop*)",
+      "Bash(rm -fr *)",
+      "Bash(rm -rf *)"
+    ],
+    "deny": [
       "Bash(git push --force)",
       "Bash(git push --force*)",
       "Bash(git push -f)",
@@ -131,11 +160,7 @@
       "Bash(git push * --force*)",
       "Bash(git push * -f *)",
       "Bash(git push * -f)",
-      "Bash(git reset*)",
-      "Bash(git restore --staged*)",
-      "Bash(git rm *)",
-      "Bash(rm -fr *)",
-      "Bash(rm -rf *)"
+      "Bash(git push * +*)"
     ]
   }
 }

@@ -76,6 +76,7 @@
     // surface locally.)
     "exclude": [
         ".cache",
+        ".playwright-mcp", // Playwright MCP artifacts - screenshots/traces (git-ignored family-wide)
         "coverage",
         "dist", // Library build output of the npm-package template branches
         "frontend", // Needs jsx + "bundler" module resolution; has its own tsconfig (frontend/tsconfig.json, checked by "test:types:frontend")

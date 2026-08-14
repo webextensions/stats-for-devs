@@ -28,6 +28,23 @@ Recurring failure modes from past agent sessions. Following this reduces retries
 - Fix: with the `.nvmrc` Node active (verified as above), run `npm rebuild <package>` - or a clean
   `npm install` when other dependencies may also be stale.
 
+## Vite dry-run and strict warnings
+
+- The custom logger in [frontend/build/build.ts](../../frontend/build/build.ts) can treat
+  Vite/Rolldown warnings as errors (e.g. the one-shot `node --run build:dry-run`). New toolchain
+  messages may fail the build until added to `IGNORABLE_WARNING_PATTERNS` there or adjusted via
+  Rolldown `checks` in
+  [frontend/build/build-config-generator.ts](../../frontend/build/build-config-generator.ts).
+- If `build:dry-run` exits `1` despite "built in Xs", read the warning line, not only Rollup's
+  success banner.
+
+## Paths ignored by Cursor (`.cursorignore`)
+
+- If `Read` / `Write` cannot access a path (often under `temp/`, `.cache/`, or other directories
+  listed in [.cursorignore](../../.cursorignore)), use the terminal to read or create the file, or
+  ask to place the artifact outside ignored paths. Do not assume the file is missing when the
+  editor tool is blocked.
+
 ## One-shot vs watch commands (timeouts)
 
 - Watch-mode scripts do not exit - they are wrong for a bounded agent shell run unless explicitly

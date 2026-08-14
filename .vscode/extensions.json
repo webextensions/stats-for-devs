@@ -1,11 +1,14 @@
 {
-    // Install only ONE of the two save-on-save extensions below, whichever matches your editor:
-    // "wk-j.save-and-run" for VS Code, "achilleshr.runonsave" for Cursor (see .vscode/settings.json).
-    // Installing both runs generate-package-json.sh twice on every package.json.ts save.
+    // Note: No "run on save" extension is needed to keep package.json in sync with package.json.ts.
+    // That is handled by the "Watch package.json.ts ..." task in .vscode/tasks.json, which starts
+    // automatically when this folder is opened (see scripts/housekeeping/watch-package-json.ts).
+    //
+    // If you would still rather have it triggered by the editor's save, .vscode/settings.example.json
+    // carries opt-in configuration for "emeraldwalk.RunOnSave" (VS Code) and "pucelle.run-on-save"
+    // (Cursor, and VS Code). They are intentionally NOT recommended here, since they are optional.
     "recommendations": [
         "dbaeumer.vscode-eslint",
         "editorconfig.editorconfig",
-        "wk-j.save-and-run",
-        "achilleshr.runonsave"
+        "stylelint.vscode-stylelint"
     ]
 }

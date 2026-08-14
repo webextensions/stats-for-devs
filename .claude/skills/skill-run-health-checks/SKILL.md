@@ -1,10 +1,10 @@
 ---
-name: running-health-checks
+name: skill-run-health-checks
 description: Use when asked to run the project's checks/tests, or to diagnose a failing health-check suite - runs node --run test, isolates the failing check, and reports actionable results.
 allowed-tools: Bash(node --run *)
 ---
 
-# Running Health Checks
+# Run Health Checks
 
 Run the project's health-check suite and report results. The suite, its launch order, and each
 check's documentation live in the `healthChecks` array of

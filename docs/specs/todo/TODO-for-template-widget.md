@@ -27,10 +27,5 @@
   [docs/because/widget-standalone-build.md](../../because/widget-standalone-build.md)).
 * Upstream candidates for `abstract-javascript-project` (then merge down), noted while porting
   from the npm-package-template reference repo: GitHub issue templates
-  (`.github/ISSUE_TEMPLATE/bug_report.yml` / `feature_request.yml` / `config.yml`), a
-  `.github/PULL_REQUEST_TEMPLATE.md`, and the `.vscode/` note that the VS Code (`wk-j.save-and-run`)
-  and Cursor (`achilleshr.runonsave`) save-and-run extensions must not be installed together.
-* The branching tree in [docs/template-project/README.md](../../template-project/README.md) still
-  shows `template-widget` under `abstract-frontend-build`; the upstream re-parenting (under
-  `template-npm-package-for-react`, with the three widget flavors) arrives from
-  `abstract-javascript-project` by template merge - do not "fix" the shared doc on this branch.
+  (`.github/ISSUE_TEMPLATE/bug_report.yml` / `feature_request.yml` / `config.yml`) and a
+  `.github/PULL_REQUEST_TEMPLATE.md`.

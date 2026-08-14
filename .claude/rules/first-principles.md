@@ -1,3 +1,7 @@
+---
+description: Decision charter - the root rationales behind the conventions and the precedence order for decisions no specific rule covers
+---
+
 # First Principles - Decision Charter
 
 The root rationales behind this repository's conventions: the "why" layer from which the topical rules in this
@@ -73,9 +77,10 @@ When the principles themselves conflict:
 
 ## When touching git, versions, or releases
 
-- **The human owns git state** - never stage, unstage, commit, or push; `git mv` for intentional renames is the only
-  index-touching exception, and the human still reviews it. Enforced by the deny list in
-  [.claude/settings.json](../settings.json) ([git-workflow.md](./git-workflow.md)).
+- **The human owns git state in local sessions** - never stage, unstage, commit, or push unless explicitly asked;
+  the index-touching exceptions and the cloud-session carve-out (agents there deliver by pushing to a task branch)
+  live in [git-workflow.md](./git-workflow.md). Enforced by the `ask` / `deny` permission rules in
+  [.claude/settings.json](../settings.json).
 - **Never bypass checks** - no `--no-verify`, and no lint or check suppressions added just to get past a failure; fix
   the cause or surface the blocker.
 - Versioning, commit-message, and template-merge conventions live in [git-workflow.md](./git-workflow.md) and

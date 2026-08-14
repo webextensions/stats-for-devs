@@ -41,6 +41,7 @@ const patternsMarkedToKeep = [
     '.codegraph/',
     '.env',
     '.husky/_/',
+    /\.log$/, // *.log anywhere - runtime logs, not regenerable, never auto-delete
     /\.secrets\./, // *.secrets.* anywhere - secrets files, never auto-delete
     '.vscode/soft-links/node',
     'app-data/',
@@ -52,8 +53,10 @@ const patternsMarkedToKeep = [
     'config/encryption/keys/*.*.runtime.public.pem',
     'frontend/',
     'frontend/tsconfig.tsbuildinfo',
+    'logs/',
     'node_modules/',
     'temp/',
+    'tmp/',
     'tsconfig.tsbuildinfo'
 ];
 
@@ -65,8 +68,9 @@ const patternsToDelete = [
     // /^public-development-local\/(.*)/,
     // /^public-production-local\/(.*)/,
 
-    '.playwright-mcp/',
-    'dist/', // Library build output of the npm-package template branches (regenerate: node --run build:lib)
+    /^\.playwright-mcp\//,
+    /^coverage\//, // Vitest coverage output (left by a prior "vitest run --coverage")
+    /^dist\//, // Library build output of the npm-package template branches (regenerate: node --run build:lib)
     /^public-(.*)\/(.*)/
 ];
 

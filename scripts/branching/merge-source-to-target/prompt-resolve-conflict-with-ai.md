@@ -17,6 +17,11 @@ Resolve every conflicted path listed in the runtime context conservatively, stag
 (`git add <file>`), and report what you did per file. Anything you cannot resolve with confidence must be
 LEFT UNRESOLVED and reported - the wrapper script detects remaining unmerged paths and hands them to a human.
 
+A listed path that contains no conflict markers is not an unexpected state: with rerere enabled, git replayed
+a remembered resolution into the working tree (the path stays unmerged). Review the replayed content against
+both sides like any other resolution - a recording from an older merge can be stale - then stage it by name
+if correct, otherwise leave it unmerged and report.
+
 ## Hard Boundaries
 
 - Never commit, push, or conclude the merge - the wrapper script owns those steps.
@@ -52,7 +57,7 @@ and the ownership map in
 - Fill-in-slot configs (`knip.config.ts`, `scripts/health-checks/checks/status-of-files.config.ts`,
   `all-is-well.config.ts`): keep BOTH sides - the source's structural changes plus the target's filled-in
   entries.
-- Blocks fenced by `BEGIN: APP-CUSTOMIZATIONS` / `END: APP-CUSTOMIZATIONS`
+- Blocks fenced by `BEGIN: PROJECT-CUSTOMIZATIONS` / `END: PROJECT-CUSTOMIZATIONS`
   ([.claude/rules/comment-tags.md](../../../.claude/rules/comment-tags.md)): resolve per hunk - the target's
   side inside the fences, the source's side outside.
 - Ignore lists (`.gitignore`, the `globalIgnores` arrays, the `tsconfig.json` `exclude` list,

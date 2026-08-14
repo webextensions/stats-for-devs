@@ -3,10 +3,11 @@
 # Stop hook (fires when the agent is about to end its turn).
 #
 # Keeps .claude/settings.json and .claude/settings.local.json tidy: Claude Code appends "always allow"
-# approvals to the END of the permissions.allow / permissions.deny arrays during a session and adds/edits
-# other keys over time, leaving the document unordered. This hook runs "node --run claude-settings-sort:fix",
-# which recursively sorts (case-insensitive) every object key and sorts + de-duplicates the allow / deny
-# arrays in place, preserving each file's indentation and trailing newline.
+# approvals to the END of the permissions.allow / permissions.ask / permissions.deny arrays during a
+# session and adds/edits other keys over time, leaving the document unordered. This hook runs
+# "node --run claude-settings-sort:fix", which recursively sorts (case-insensitive) every object key and
+# sorts + de-duplicates the allow / ask / deny arrays in place, preserving each file's indentation and
+# trailing newline.
 #
 # Why at Stop: the approval is written mid-turn (when a permission is granted), so by the time the turn
 # ends the new entry is on disk and can be sorted. There is no tool call for permission writes, so a

@@ -1,6 +1,6 @@
 ---
 description: Error handling patterns using the [error, result] tuple convention
-globs: ["**/*.ts", "**/*.tsx", "**/*.js"]
+paths: ["**/*.cjs", "**/*.cts", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.mts", "**/*.ts", "**/*.tsx"]
 ---
 
 # Error Handling - `[error, result]` Tuple Pattern

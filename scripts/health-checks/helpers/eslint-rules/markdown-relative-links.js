@@ -11,7 +11,9 @@ import path from 'node:path';
 // Matches a URI scheme prefix (http:, https:, mailto:, tel:, ...).
 const URI_SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 
-/** @type {import('@eslint/markdown').MarkdownRuleDefinition} */
+/**
+@type {import('@eslint/markdown').MarkdownRuleDefinition}
+*/
 const markdownRelativeLinks = {
     meta: {
         type: 'problem',

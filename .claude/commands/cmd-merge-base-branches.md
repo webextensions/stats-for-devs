@@ -62,7 +62,7 @@ update. This is opt-in and decided ONCE, before any git operation, so the cascad
     - `Yes - full session incl. majors` - majors handled one at a time.
 - On "No", nothing else in this section applies and the cascade behaves as if this section did not exist.
 - The update work itself follows
-  [.claude/skills/update-npm-packages/SKILL.md](../skills/update-npm-packages/SKILL.md) exactly - READ that file and
+  [.claude/skills/skill-update-npm-packages/SKILL.md](../skills/skill-update-npm-packages/SKILL.md) exactly - READ that file and
   follow it; it is `disable-model-invocation: true`, so it is read as a file rather than invoked through the Skill
   tool. Pass the chosen tier through as that skill's `$ARGUMENTS`. Do not restate its workflow here.
 - Scope: every branch in the run, INCLUDING the root base branch that receives no incoming merge (today
@@ -88,7 +88,7 @@ update. This is opt-in and decided ONCE, before any git operation, so the cascad
 - Nothing to update on a branch (the skill reports "already current"): record it, create no commit, continue.
 - If the update cannot reach a green `node --run test`, STOP the cascade immediately: stay on that branch, leave the
   working tree and any partial changes exactly as they are, and report the precise state. Never try to discard the
-  work - `git reset*` and `git restore --staged*` are denied in [.claude/settings.json](../settings.json), and
+  work - `git reset*` and `git restore *` sit on the `ask` list in [.claude/settings.json](../settings.json), and
   running `git restore` over uncommitted work is forbidden. The merge commit that preceded it stays.
 
 ## Read the Tree
@@ -143,6 +143,11 @@ and is never an error.
 - This is the run's ONE sync step: the per-edge script invocations below run with `--local`, which skips syncing
   deliberately - mid-cascade branches carry local, unpushed merge commits that the script's sync gate would
   otherwise refuse.
+- When the content being propagated renames, moves, or removes anything, run the cross-branch reference sweep
+  BEFORE the first merge: `for b in <branches in the run>; do git grep -n '<old name>' "$b"; done`. A fix that
+  belongs on an ancestor must land on the ancestor before that ancestor merges into its children - discovering it
+  afterwards means re-merging every downstream edge. Sweep refs with `git grep`, never `grep -r --include=...`:
+  the extension filter silently misses extensionless files (`.npmignore`, `.gitignore`, `.husky/*`).
 
 ## Merge Each Edge
 
@@ -151,6 +156,12 @@ and is never an error.
   `./scripts/branching/merge-source-to-target.sh --source <base> --target <child> --local`. Always `--local`
   (Prepare already synced), never `--push`, and never `--resolve-conflict-with-ai` or its `--allow-ai-*` companions -
   this run resolves conflicts itself, with full context, per "Conflict Resolution" below.
+- Log every long-output command in the cascade - the merge script, `node --run test`, big `git diff` / `git show` -
+  per [.claude/rules/long-command-outputs.md](../rules/long-command-outputs.md). For the script:
+  `mkdir -p .cache/agent-logs; ./scripts/branching/merge-source-to-target.sh --source <base> --target <child> --local
+  > .cache/agent-logs/merge-<base>-into-<child>.log 2>&1; echo "EXIT=$?"; tail -40 .cache/agent-logs/merge-<base>-into-<child>.log`.
+  The decisive signals - the conflict list, the exit code, the post-merge hook result - are at the TAIL of the
+  output; the head is checkout noise, so a head-only preview of an unlogged run tells you nothing.
 - Script exit 0: the edge is done mechanically - either "Nothing new to merge" (record as already up to date, no
   commit) or a merge commit the script created (clean merge, or manifest-only conflicts it auto-resolved).
 - Script exit non-zero with a merge in progress (`git rev-parse -q --verify MERGE_HEAD`): conflicts remain. The
@@ -170,18 +181,35 @@ and is never an error.
 
 ## Conflict Resolution
 
-- These cascade rules supersede the global `/cmd-resolve-merge-conflicts` command for the whole run: that command
-  forbids wholesale `--ours` resolutions and any staging, which is right for interactive conflict help but wrong
-  inside this cascade's documented resolutions - do not let it override the rules below.
+- These cascade rules supersede the [/cmd-resolve-merge-conflicts](./cmd-resolve-merge-conflicts.md) command for
+  the whole run: that command forbids wholesale `--ours` resolutions and any staging, which is right for
+  interactive conflict help but wrong inside this cascade's documented resolutions - do not let it override the
+  rules below.
+- Path-limited `--ours` checkouts mid-resolution run with the hook suppressed for that one invocation -
+  `git -c core.hooksPath=/dev/null checkout --ours -- <file>` - because `.husky/post-checkout` fires even on
+  path-limited checkouts and its out-of-sync warnings are guaranteed red noise while a merge is in progress. Use
+  this form for every `--ours` resolution below.
+- Large conflicted files (`package.json.ts` runs 600-800 lines): locate the hunks first with
+  `grep -nE '^(<{7}|\|{7}|={7}$|>{7})' <file>` (an ERE, so this doc itself contains no literal conflict markers for
+  the git-conflict-markers check to flag), then read only those line ranges - never slice blindly with repeated
+  `sed -n` probes. Under `merge.conflictstyle zdiff3` (which the closing tip recommends) the region between the
+  7-less-than line and the equals line is OURS followed by a 7-pipe base section: ours ends at the pipes - never
+  read the ancestor text below them as the child's side.
+- With rerere enabled (the closing tip recommends it, so expect it), a conflicted path may contain NO conflict
+  markers: git replayed a remembered resolution into the working tree - the merge output's tail prints
+  `Resolved '<file>' using previous resolution.` The path is still unmerged: review the replayed content against
+  both sides like any other resolution before staging it by name - a resolution recorded on an older cascade can be
+  stale for today's content.
 - Fork-owned files (listed in
   [docs/template-project/file-conventions.md](../../docs/template-project/file-conventions.md)): keep the child's side
-  - `git checkout --ours -- <file>` - then stage that file by name.
+  - `git -c core.hooksPath=/dev/null checkout --ours -- <file>` - then stage that file by name.
 - `deleted by us` / `deleted by them` paths: `git checkout --ours` cannot resolve these (the missing side has no
   version), and accepting a deletion needs `git rm`, which is denied. Stop, present both sides, and let the human
   decide - never reach for a plumbing workaround such as `git update-index --force-remove`.
 - Manifest files are generated from each other, so resolve them in THIS order - the resolutions and their reasons
   mirror [scripts/branching/merge-source-to-target.sh](../../scripts/branching/merge-source-to-target.sh):
-    - `package.json` FIRST: `git checkout --ours -- package.json`. OURS, never `--theirs` - `package.json.ts` derives
+    - `package.json` FIRST: `git -c core.hooksPath=/dev/null checkout --ours -- package.json`. OURS, never
+      `--theirs` - `package.json.ts` derives
       `version` from the adjacent `package.json`, so the base's side would silently regress the child's version;
       every other field is regenerated regardless of side. First because it restores parseable JSON: the generator
       `import()`s `package.json.ts`, and Node reads the adjacent `package.json` to load it, throwing
@@ -214,34 +242,46 @@ and is never an error.
 - Shared-in-structure but branch-populated files conflict routinely and want a merge of entries, not a side-pick:
     - Fill-in-slot configs (`knip.config.ts`, `scripts/health-checks/checks/status-of-files.config.ts`,
       `all-is-well.config.ts`): keep BOTH sides - the base's structural changes plus the child's filled-in slots.
-    - `.claude/skills/running-the-project/SKILL.md` is branch-aware by design: keep the child's replaced sections,
+    - `.claude/skills/skill-run-the-project/SKILL.md` is branch-aware by design: keep the child's replaced sections,
       take the base's updates outside them.
-    - Blocks fenced by `BEGIN: APP-CUSTOMIZATIONS` / `END: APP-CUSTOMIZATIONS`
+    - Blocks fenced by `BEGIN: PROJECT-CUSTOMIZATIONS` / `END: PROJECT-CUSTOMIZATIONS`
       ([.claude/rules/comment-tags.md](../rules/comment-tags.md)): resolve per hunk - the child's side inside the
       fences, the base's side outside.
 - Ignore lists (`.gitignore`, the `globalIgnores` arrays, the `tsconfig.json` `exclude` list, `.cursorignore` - the
-  full set in [.claude/skills/updating-ignore-rules/SKILL.md](../skills/updating-ignore-rules/SKILL.md)): shared
+  full set in [.claude/skills/skill-update-ignore-rules/SKILL.md](../skills/skill-update-ignore-rules/SKILL.md)): shared
   patterns are owned by the root base branch and flow down by merge, so resolve these toward the BASE side - the
   opposite default from fork-owned files.
 - Any other (shared) file: understand both sides' intent (`git log` / `git show` of the relevant commits, the whole
   file, not just the markers); keep both when compatible. On a genuine contradiction, pause and ask the developer with
   the AskUserQuestion tool, presenting both sides with evidence - never guess.
 - Stage only individually named resolved files (`git add <file> ...`); bulk staging (`git add -A`, `git add .`, etc.)
-  stays denied.
+  always prompts via the `ask` list in [.claude/settings.json](../settings.json).
 - Before concluding: verify no unmerged paths remain. Stray conflict markers need no manual sweep - the
   `git-conflict-markers` check inside `node --run test` already asserts that.
 
 ## Tests and Fix-Forward
 
 - Every `git checkout` in the cascade triggers `.husky/post-checkout`, whose four checks are warn-only and
-  informational - nothing there is a failure to fix. Its npm-install-status nudge is the signal for the next bullet.
-  It also fires on path-limited checkouts, so `git checkout --ours -- package.json` mid-resolution prints red
-  out-of-sync noise - equally informational, resolved by the regenerate step.
+  informational - nothing there is a failure to fix. Its npm-install-status nudge is one trigger for the resync
+  gate below. (Path-limited `--ours` checkouts mid-resolution run with hooks suppressed - see "Conflict
+  Resolution" - so they print no noise.)
 - `.husky/post-commit` prints `revisit` reminders after every commit the cascade creates - recurring maintenance
   nudges, not action items for this run.
-- Branches differ in dependencies, but `node_modules/` carries over across checkouts: when checks fail only because
-  the installed packages do not match the current branch's manifest (the npm-install check says to run npm install,
-  or a dependency's binary is missing), run `npm ci` and rerun - that is an environment fix, not a commit.
+- Branches differ in dependencies, but `node_modules/` carries over across checkouts. Resync it only when there is
+  a reason - never prophylactically per edge:
+    - The gate: the merge actually changed the lockfile (`git diff --name-only HEAD^1..HEAD -- package-lock.json`
+      prints it), the post-checkout npm-install-status nudge fired, or a check names a missing package or binary.
+    - The fix, tiered like [.husky/post-merge](../../.husky/post-merge): `npm install --prefer-offline` first
+      (cache-first, seconds when little changed); plain `npm install` when the cache-first run misbehaves or while
+      debugging; `npm ci` as the clean-slate fallback - restoring the committed lockfile first
+      (`git checkout -- package-lock.json`) if an install rewrote it. All are environment fixes, not commits.
+    - When the gate fires, resync BEFORE interpreting any check results: the post-merge hook's suite inside the
+      merge script's output ran against the PREVIOUS branch's `node_modules`, so its failures are environmental -
+      disregard them wholesale instead of investigating them, then rerun.
+- The merge script deletes stale gitignored `*.tsbuildinfo` after its target checkout. After any MANUAL
+  `git checkout <branch>` in the cascade, do the same
+  (`find . -path ./node_modules -prune -o -name '*.tsbuildinfo' -type f -exec rm -f {} +`): stale incremental
+  type-check state yields phantom `TS2307 Cannot find module` errors for packages that are installed.
 - Failures a merge commonly introduces, and where each fix lives:
     - `claude-settings-sort`: a merged `.claude/settings.json` comes out unsorted or with duplicates - run
       `node --run claude-settings-sort:fix`.
@@ -258,7 +298,8 @@ and is never an error.
   fix attempts uncommitted, stay on that branch, and report the exact state left behind. Also report - never run - the
   escape hatch `./scripts/branching/find-safe-template-merge-commit.sh --base <child> --source <base>`, which finds
   the newest `<base>` commit that merges cleanly and passes on `<child>`; its header documents that it uses local refs
-  only, disables hooks for its probe merges, and runs `git clean -fd` during cleanup.
+  only, disables hooks and rerere for its probe merges (probes neither learn from nor replay the rr-cache), and runs
+  `git clean -fd` during cleanup.
 
 ## Post-Merge Review and Follow-Up Commit
 
@@ -274,8 +315,13 @@ ONE follow-up commit created by you.
     - Docs and AI instructions on the child that reference what the merge changed (renamed scripts, moved files, new
       conventions): `AGENTS.md`, `.claude/rules/`, skills, `docs/` - unfixed drift misleads future agent runs and
       raises their error rate.
+    - Backticked path drift in the files the merge brought in: `eslint:markdown` validates only `[](...)` markdown
+      links - not backticked paths, and not `.claude/agents/` - so verify those by hand with
+      `grep -oE '(frontend|backend|scripts|docs|config)/[A-Za-z0-9_./-]+' <file> | sort -u | while read -r p; do
+      [ -e "$p" ] || echo "stale: $p"; done`. Known false positives to dismiss without churn: glob-ish stems
+      (`config/config.*.js`) and proposed-file paths inside review reports.
     - Branch-owned content needing branch-specific adaptation: branch-owned skills (for example
-      `.claude/skills/running-the-project/` - what "running the project" means differs per branch), and fork-owned
+      `.claude/skills/skill-run-the-project/` - what "running the project" means differs per branch), and fork-owned
       docs and checklists per
       [docs/template-project/file-conventions.md](../../docs/template-project/file-conventions.md) (`README.md` /
       `AGENTS.md` wording, `docs/init/CUSTOMIZE/` style checklists, branch-specific docs).
@@ -318,8 +364,8 @@ lost. Prepare then refuses to start the next run - that interlock is intended, n
   of the stop; account for that in the stop report.
 - The human resolves the dirty state, commits it, and pushes it. The cascade does not resume before that.
 - Never discard the work yourself - not `git merge --abort`, not `git restore`, not any equivalent.
-  `git merge --abort` is absent from the deny list but destroys uncommitted work, so it stays the human's call like
-  every other git-state decision here.
+  `git merge --abort` sits in no permission tier (it would not even prompt outside default mode) but destroys
+  uncommitted work, so it stays the human's call like every other git-state decision here.
 - After the human has committed and pushed, re-run the command: edges already merged report "already up to date", so
   the cascade resumes rather than redoing work, and `<branch> subtree` narrows it to what is left.
 
@@ -348,17 +394,14 @@ lost. Prepare then refuses to start the next run - that interlock is intended, n
 - Test outcomes, follow-up commits created, local tracking branches created, diverged branches needing attention.
 - Flat mirrors: the wrapper's per-mirror verdicts (appended / already up to date), `no mirrors exist`, or
   `skipped (mid-cascade stop)`.
-- When the run re-resolved the same identity conflicts a cascade always hits, suggest the human enable, once:
-  `git config rerere.enabled true` and `git config merge.conflictstyle zdiff3`. Never run them - repo-wide git config
-  is the human's call. Include the caveat that with rerere enabled, git auto-stages remembered resolutions on future
-  merges, so later runs must review what rerere staged before concluding - it bypasses the stage-by-name discipline.
 - Finish with the closing section below.
 
 ## Closing: Push Status and Pushing
 
 Nothing was pushed - reviewing and publishing stays the human's step. Per branch, review with
-`git log origin/<branch>..<branch>`. Then end the response with BOTH fenced blocks below, VERBATIM: they are
-hard-coded so every run offers the same copy-pasteable pair - do not regenerate, shorten, or adapt them.
+`git log origin/<branch>..<branch>`. Then output BOTH fenced blocks below, VERBATIM: they are hard-coded so every
+run offers the same copy-pasteable pair - do not regenerate, shorten, or adapt them. Only the rerere tip at the end
+of this section may follow them.
 
 Push status of every local branch:
 
@@ -376,3 +419,14 @@ git fetch origin --prune && git for-each-ref --format='%(refname:short) %(upstre
 
 It deliberately pushes only the branches that are ahead or have no upstream yet; branches that are behind or diverged
 are left alone for the human to reconcile first. Both cover ALL local branches, including any `-flat` mirrors.
+
+When the run re-resolved the same identity conflicts a cascade always hits, check the config first -
+`git config --get rerere.enabled` and `git config --get merge.conflictstyle` (read-only) - and close with the tip
+below only when either setting is absent, as the VERY LAST element of the response, highlighted as a blockquote so
+it stands out. When both are already set, skip the tip. Never run these config commands yourself - repo-wide git
+config is the human's call.
+
+> **Tip:** enable once - `git config rerere.enabled true` and `git config merge.conflictstyle zdiff3` - so git
+> replays these recurring resolutions on future cascades. Replayed resolutions land in the working tree UNSTAGED
+> (the path stays conflicted): review them like any hand resolution before staging by name. Do NOT also enable
+> `rerere.autoupdate` - it would stage resolutions outside the review flow.

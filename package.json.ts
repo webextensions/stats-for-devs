@@ -184,7 +184,9 @@ const core = {
 // (frontend/lib/src/, built into dist/) imports. Installed by every consumer, so keep this
 // minimal (react / react-dom are supplied by the consumer instead - see dependenciesForPeer).
 const dependenciesForPackage = {
-    /* Begin: Project originated "dependenciesForPackage" */
+    /*
+    Begin: Project originated "dependenciesForPackage"
+    */
 
     // Also in the template originated "dependenciesForApp" with the identical spec - when a
     // package resolves into both "dependencies" and "devDependencies", the collector emits it
@@ -193,27 +195,41 @@ const dependenciesForPackage = {
     "react-draggable": "^4.5.0", // Drag support for the HUD panel (docking / repositioning)
     "use-local-storage-state": "^19.5.0" // Persists the HUD settings ("statsForDevs.settings")
 
-    /* End: Project originated "dependenciesForPackage" */
+    /*
+    End: Project originated "dependenciesForPackage"
+    */
 
-    /* Begin: Template originated "dependenciesForPackage" */
+    /*
+    Begin: Template originated "dependenciesForPackage"
+    */
 
     // No template originated "dependenciesForPackage" yet
 
-    /* End: Template originated "dependenciesForPackage" */
+    /*
+    End: Template originated "dependenciesForPackage"
+    */
 };
 
 const dependenciesForPackage_overrides = {
-    /* Begin: Project originated "dependenciesForPackage_overrides" */
+    /*
+    Begin: Project originated "dependenciesForPackage_overrides"
+    */
 
     // No project originated "dependenciesForPackage_overrides" yet
 
-    /* End: Project originated "dependenciesForPackage_overrides" */
+    /*
+    End: Project originated "dependenciesForPackage_overrides"
+    */
 
-    /* Begin: Template originated "dependenciesForPackage_overrides" */
+    /*
+    Begin: Template originated "dependenciesForPackage_overrides"
+    */
 
     // No template originated "dependenciesForPackage_overrides" yet
 
-    /* End: Template originated "dependenciesForPackage_overrides" */
+    /*
+    End: Template originated "dependenciesForPackage_overrides"
+    */
 };
 
 // Dependencies imported by the frontend app under frontend/src/ (React plus the client state
@@ -221,13 +237,19 @@ const dependenciesForPackage_overrides = {
 // that DEPLOY the app, "devDependencies" where the app is only a development/demo harness - the
 // membership stays identical either way.
 const dependenciesForApp = {
-    /* Begin: Project originated "dependenciesForApp" */
+    /*
+    Begin: Project originated "dependenciesForApp"
+    */
 
     // No project originated "dependenciesForApp" yet
 
-    /* End: Project originated "dependenciesForApp" */
+    /*
+    End: Project originated "dependenciesForApp"
+    */
 
-    /* Begin: Template originated "dependenciesForApp" */
+    /*
+    Begin: Template originated "dependenciesForApp"
+    */
 
     "classnames": "^2.5.1",
     "jotai": "^2.20.2",
@@ -235,36 +257,52 @@ const dependenciesForApp = {
     "react-dom": "^19.2.8", // Dev copy; consumers supply their own (see dependenciesForPeer)
     "zustand": "^5.0.14"
 
-    /* End: Template originated "dependenciesForApp" */
+    /*
+    End: Template originated "dependenciesForApp"
+    */
 };
 
 const dependenciesForApp_overrides = {
-    /* Begin: Project originated "dependenciesForApp_overrides" */
+    /*
+    Begin: Project originated "dependenciesForApp_overrides"
+    */
 
     // No project originated "dependenciesForApp_overrides" yet
 
-    /* End: Project originated "dependenciesForApp_overrides" */
+    /*
+    End: Project originated "dependenciesForApp_overrides"
+    */
 
-    /* Begin: Template originated "dependenciesForApp_overrides" */
+    /*
+    Begin: Template originated "dependenciesForApp_overrides"
+    */
 
     // Force every transitive react/react-dom requirement onto our copy - prevents a second React
     // in the tree (which breaks hooks/context at runtime)
     "react": "$react",
     "react-dom": "$react-dom"
 
-    /* End: Template originated "dependenciesForApp_overrides" */
+    /*
+    End: Template originated "dependenciesForApp_overrides"
+    */
 };
 
 // Dependencies imported by the build toolchain: the config-driven demo-app build under
 // frontend/build/ (Vite) and the publishable library build (tsdown), run locally and in CI.
 const dependenciesForBuild = {
-    /* Begin: Project originated "dependenciesForBuild" */
+    /*
+    Begin: Project originated "dependenciesForBuild"
+    */
 
     // No project originated "dependenciesForBuild" yet
 
-    /* End: Project originated "dependenciesForBuild" */
+    /*
+    End: Project originated "dependenciesForBuild"
+    */
 
-    /* Begin: Template originated "dependenciesForBuild" */
+    /*
+    Begin: Template originated "dependenciesForBuild"
+    */
 
     "@babel/core": "^8.0.1", // @rolldown/plugin-babel peer; hosts the React Compiler pass
     "@jridgewell/gen-mapping": "^0.3.13",
@@ -274,28 +312,38 @@ const dependenciesForBuild = {
     "@vitejs/plugin-react": "^6.0.5", // Also provides reactCompilerPreset
     "babel-plugin-react-compiler": "^1.0.0",
     "commander": "^15.0.0", // Also declared in dependenciesForServer
-    "esbuild": "^0.28.1", // CSS minifier for the frontend build (cssMinify: 'esbuild' - see the REVISIT note in frontend/build/build-config-generator.ts)
-    "postcss": "^8.5.23", // For the SplitMultiClassAtScopePlugin build workaround
-    "postcss-selector-parser": "^7.1.4",
+    "esbuild": "^0.28.2", // CSS minifier for the frontend build (cssMinify: 'esbuild' - see the REVISIT note in frontend/build/build-config-generator.ts)
+    "postcss": "^8.5.26", // For the SplitMultiClassAtScopePlugin build workaround
+    "postcss-selector-parser": "^7.1.5",
     "postcss-value-parser": "^4.2.0",
     "tsdown": "^0.22.14",
-    "vite": "^8.1.5"
+    "vite": "^8.2.1"
 
-    /* End: Template originated "dependenciesForBuild" */
+    /*
+    End: Template originated "dependenciesForBuild"
+    */
 };
 
 const dependenciesForBuild_overrides = {
-    /* Begin: Project originated "dependenciesForBuild_overrides" */
+    /*
+    Begin: Project originated "dependenciesForBuild_overrides"
+    */
 
     // No project originated "dependenciesForBuild_overrides" yet
 
-    /* End: Project originated "dependenciesForBuild_overrides" */
+    /*
+    End: Project originated "dependenciesForBuild_overrides"
+    */
 
-    /* Begin: Template originated "dependenciesForBuild_overrides" */
+    /*
+    Begin: Template originated "dependenciesForBuild_overrides"
+    */
 
     // No template originated "dependenciesForBuild_overrides" yet
 
-    /* End: Template originated "dependenciesForBuild_overrides" */
+    /*
+    End: Template originated "dependenciesForBuild_overrides"
+    */
 };
 
 // Dependencies imported by the Express server under backend/src/server/ and the config/ layering
@@ -303,50 +351,73 @@ const dependenciesForBuild_overrides = {
 // that DEPLOY the server, "devDependencies" where it only serves development - the membership
 // stays identical either way.
 const dependenciesForServer = {
-    /* Begin: Project originated "dependenciesForServer" */
+    /*
+    Begin: Project originated "dependenciesForServer"
+    */
 
     // No project originated "dependenciesForServer" yet
 
-    /* End: Project originated "dependenciesForServer" */
+    /*
+    End: Project originated "dependenciesForServer"
+    */
 
-    /* Begin: Template originated "dependenciesForServer" */
+    /*
+    Begin: Template originated "dependenciesForServer"
+    */
 
     "commander": "^15.0.0", // Also declared in dependenciesForBuild
     "compression": "^1.8.1",
     "express": "^5.2.1",
     "extend": "^3.0.2", // Also declared in dependenciesForDev
+    "get-port": "^7.2.0", // Dynamic port pick for the HTTP server (HTTP_PORT_DYNAMIC=yes)
     "local-ip-addresses-and-hostnames": "=0.3.0"
 
-    /* End: Template originated "dependenciesForServer" */
+    /*
+    End: Template originated "dependenciesForServer"
+    */
 };
 
 const dependenciesForServer_overrides = {
-    /* Begin: Project originated "dependenciesForServer_overrides" */
+    /*
+    Begin: Project originated "dependenciesForServer_overrides"
+    */
 
     // No project originated "dependenciesForServer_overrides" yet
 
-    /* End: Project originated "dependenciesForServer_overrides" */
+    /*
+    End: Project originated "dependenciesForServer_overrides"
+    */
 
-    /* Begin: Template originated "dependenciesForServer_overrides" */
+    /*
+    Begin: Template originated "dependenciesForServer_overrides"
+    */
 
     // No template originated "dependenciesForServer_overrides" yet
 
-    /* End: Template originated "dependenciesForServer_overrides" */
+    /*
+    End: Template originated "dependenciesForServer_overrides"
+    */
 };
 
 // Dependencies useful only in the local dev / CI setup: the lint, type-check, test, health-check,
 // and release toolchain, plus the sources of the vendored dev overlays (re-vendored via
 // "copy-files-from-to").
 const dependenciesForDev = {
-    /* Begin: Project originated "dependenciesForDev" */
+    /*
+    Begin: Project originated "dependenciesForDev"
+    */
 
     // No project originated "dependenciesForDev" yet
 
-    /* End: Project originated "dependenciesForDev" */
+    /*
+    End: Project originated "dependenciesForDev"
+    */
 
-    /* Begin: Template originated "dependenciesForDev" */
+    /*
+    Begin: Template originated "dependenciesForDev"
+    */
 
-    "@eslint-react/eslint-plugin": "^5.18.1",
+    "@eslint-react/eslint-plugin": "^5.18.3",
     "@eslint/js": "^10.0.1",
     "@eslint/markdown": "^8.0.3",
     "@stylistic/eslint-plugin": "^5.10.0",
@@ -359,7 +430,7 @@ const dependenciesForDev = {
     "@types/node-notifier": "^8.0.5",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "@types/semver": "^7.7.1",
+    "@types/semver": "^7.8.0",
     "@webextensions/revisit": "^0.2.0", // Recurring-reminders tool run by the post-commit hook (see revisit.json)
     "auto-changelog": "^2.6.0",
     "boxen": "^8.0.1",
@@ -367,27 +438,27 @@ const dependenciesForDev = {
     "concurrently": "^10.0.4",
     "console-panel": "^1.0.4", // Vendored into frontend/src/resources/3rdparty/autoloaded/ via "copy-files-from-to"
     "del": "^8.0.1",
-    "eslint": "^10.8.0",
+    "eslint": "^10.8.1",
     "eslint-config-ironplate": "^3.0.0", // The entries below marked "ironplate peer" are its required peerDependencies
     "eslint-plugin-import-newlines": "^2.0.0",
     "eslint-plugin-import-x": "^4.17.1", // ironplate peer
-    "eslint-plugin-n": "^18.2.2", // ironplate peer
+    "eslint-plugin-n": "^18.3.0", // ironplate peer
     "eslint-plugin-promise": "^7.3.0", // ironplate peer
     "eslint-plugin-react-hooks": "^7.1.1", // Optional ironplate peer
     "eslint-plugin-react-refresh": "^0.5.3", // Optional ironplate peer
     "eslint-plugin-simple-import-sort": "^14.0.0",
-    "eslint-plugin-unicorn": "^72.0.0", // ironplate peer
+    "eslint-plugin-unicorn": "^73.0.0", // ironplate peer
     "execa": "^10.0.1",
     "extend": "^3.0.2", // Also declared in dependenciesForServer
-    "globals": "^17.8.0",
+    "globals": "^17.9.0",
     "husky": "^9.1.7",
     "jsdom": "^30.0.1", // Opted into per test file via the "@vitest-environment jsdom" pragma
-    "knip": "^6.31.0",
+    "knip": "^6.32.0",
     "lockfile-lint": "^5.0.0",
     "lodash-es": "^4.18.1",
     "node-notifier": "^10.0.1",
     "package-cjson": "^3.0.0",
-    "publint": "^0.3.22",
+    "publint": "^0.3.23",
     "semver": "^7.8.5",
     "shell-quote": "^1.10.0",
     "stats.js": "=0.17.0", // Vendored into frontend/src/resources/3rdparty/autoloaded/ via "copy-files-from-to"
@@ -395,21 +466,29 @@ const dependenciesForDev = {
     "stylelint-config-css-modules": "^4.6.0",
     "stylelint-config-recommended": "^18.0.0",
     "typescript": "~6.0.3", // Optional ironplate peer for its TypeScript configs
-    "typescript-eslint": "^8.65.0", // Optional ironplate peer
+    "typescript-eslint": "^8.66.0", // Optional ironplate peer
     "typescript-plugin-css-modules": "^5.2.0", // Editor/tsserver types for *.module.css imports (wired in frontend/tsconfig.json "plugins")
     "vitest": "^4.1.10"
 
-    /* End: Template originated "dependenciesForDev" */
+    /*
+    End: Template originated "dependenciesForDev"
+    */
 };
 
 const dependenciesForDev_overrides = {
-    /* Begin: Project originated "dependenciesForDev_overrides" */
+    /*
+    Begin: Project originated "dependenciesForDev_overrides"
+    */
 
     // No project originated "dependenciesForDev_overrides" yet
 
-    /* End: Project originated "dependenciesForDev_overrides" */
+    /*
+    End: Project originated "dependenciesForDev_overrides"
+    */
 
-    /* Begin: Template originated "dependenciesForDev_overrides" */
+    /*
+    Begin: Template originated "dependenciesForDev_overrides"
+    */
 
     // stylelint-config-css-modules's declared stylelint peer range lags behind stylelint 17;
     // pin its peer to our stylelint so npm resolves a single copy instead of erroring/duping
@@ -417,7 +496,9 @@ const dependenciesForDev_overrides = {
         "stylelint": "$stylelint"
     }
 
-    /* End: Template originated "dependenciesForDev_overrides" */
+    /*
+    End: Template originated "dependenciesForDev_overrides"
+    */
 };
 
 // Supplied by the consuming project, not bundled: tsdown externalizes every "dependencies" /
@@ -426,32 +507,48 @@ const dependenciesForDev_overrides = {
 // the automatic JSX runtime); development and tests run against the dev copies in
 // dependenciesForApp.
 const dependenciesForPeer = {
-    /* Begin: Project originated "dependenciesForPeer" */
+    /*
+    Begin: Project originated "dependenciesForPeer"
+    */
 
     // No project originated "dependenciesForPeer" yet
 
-    /* End: Project originated "dependenciesForPeer" */
+    /*
+    End: Project originated "dependenciesForPeer"
+    */
 
-    /* Begin: Template originated "dependenciesForPeer" */
+    /*
+    Begin: Template originated "dependenciesForPeer"
+    */
 
     "react": ">=18",
     "react-dom": ">=18" // Needed by the mount()/unmount() helpers (react-dom/client's createRoot)
 
-    /* End: Template originated "dependenciesForPeer" */
+    /*
+    End: Template originated "dependenciesForPeer"
+    */
 };
 
 const dependenciesForPeer_overrides = {
-    /* Begin: Project originated "dependenciesForPeer_overrides" */
+    /*
+    Begin: Project originated "dependenciesForPeer_overrides"
+    */
 
     // No project originated "dependenciesForPeer_overrides" yet
 
-    /* End: Project originated "dependenciesForPeer_overrides" */
+    /*
+    End: Project originated "dependenciesForPeer_overrides"
+    */
 
-    /* Begin: Template originated "dependenciesForPeer_overrides" */
+    /*
+    Begin: Template originated "dependenciesForPeer_overrides"
+    */
 
     // No template originated "dependenciesForPeer_overrides" yet
 
-    /* End: Template originated "dependenciesForPeer_overrides" */
+    /*
+    End: Template originated "dependenciesForPeer_overrides"
+    */
 };
 
 // Per-peer metadata ("peerDependenciesMeta") - only meaningful for packages listed in
@@ -460,17 +557,25 @@ const dependenciesForPeer_overrides = {
 // widget branch whose script-tag/IIFE consumers do not need react:
 //     "react": { "optional": true }
 const dependenciesForPeer_meta = {
-    /* Begin: Project originated "dependenciesForPeer_meta" */
+    /*
+    Begin: Project originated "dependenciesForPeer_meta"
+    */
 
     // No project originated "dependenciesForPeer_meta" yet
 
-    /* End: Project originated "dependenciesForPeer_meta" */
+    /*
+    End: Project originated "dependenciesForPeer_meta"
+    */
 
-    /* Begin: Template originated "dependenciesForPeer_meta" */
+    /*
+    Begin: Template originated "dependenciesForPeer_meta"
+    */
 
     // No template originated "dependenciesForPeer_meta" yet
 
-    /* End: Template originated "dependenciesForPeer_meta" */
+    /*
+    End: Template originated "dependenciesForPeer_meta"
+    */
 };
 
 // The category order (here and throughout this file) is deliberate, not alphabetical:
@@ -560,10 +665,16 @@ const packageJson = {
         // "setup:git-exclude" seeds this clone's .git/info/exclude (the secondary home, for
         // machine-local personal ignore patterns only - shared patterns live in the committed
         // .gitignore) from docs/template-project/git-info-exclude.example (idempotent, append-only).
+        // "setup:ai" installs the language server that coding agents drive through LSP (Claude Code
+        // spawns "typescript-language-server --stdio"); without it those tools silently do nothing,
+        // which scripts/health-checks/checks/check-lsp-server.ts detects. A global install lands in
+        // the ACTIVE Node version's bin directory, so re-run it after switching Node ("nvm use").
         "setup": [
             "node --run setup:editor",
-            "node --run setup:git-exclude"
+            "node --run setup:git-exclude",
+            "node --run setup:ai"
         ].join(" && "),
+        "setup:ai":          "npm install -g typescript-language-server",
         "setup:editor":      "./.vscode/soft-links/setup.sh",
         "setup:git-exclude": "./scripts/housekeeping/setup-git-info-exclude.sh",
 
@@ -613,9 +724,14 @@ const packageJson = {
         // Runs the test suite
         "vitest": "vitest run",
 
-        // Fast parse-check (module.stripTypeScriptTypes) of every repo JS/TS file discovered by
-        // `git ls-files --cached --others --exclude-standard` - catches syntax errors before ESLint/Vitest.
-        "syntaxlint": "./scripts/health-checks/checks/check-syntax.ts",
+        // Syntax checks, split by toolchain:
+        //     * syntaxlint:js - fast parse-check (module.stripTypeScriptTypes) of every repo JS/TS file discovered by
+        //       `git ls-files --cached --others --exclude-standard` - catches syntax errors before ESLint/Vitest
+        //     * syntaxlint:sh - `bash -n` over the repo's *.sh files and the extension-less git hooks in ".husky/",
+        //       discovered the same way (the only automated check the shell scripts get)
+        "syntaxlint":    "concurrently \"node --run syntaxlint:js\" \"node --run syntaxlint:sh\"",
+        "syntaxlint:js": "./scripts/health-checks/checks/check-syntax.ts",
+        "syntaxlint:sh": "./scripts/health-checks/checks/check-shell-syntax.sh",
 
         // Runs the full check suite via the all-is-well orchestrator (concurrently by default)
         "test": "node --run all-is-well",
@@ -728,6 +844,12 @@ const packageJson = {
         // (Re)generates package.json (and package-version.json) from package.json.ts
         "housekeeping:generate-package-json":            "./scripts/housekeeping/generate-package-json.sh",
 
+        // Long-running watcher which regenerates package.json on every change to package.json.ts or
+        // utils/package-json-utils/*.ts (started automatically by the folder-open task in ".vscode/tasks.json").
+        // This NEVER exits - do not run it in an agent session without a timeout; use
+        // housekeeping:generate-package-json for a one-shot regeneration instead.
+        "housekeeping:generate-package-json:watch":      "./scripts/housekeeping/watch-package-json.ts",
+
         // Bumps dependency versions in package.json.ts, then (re)generates package.json (and package-version.json)
         "housekeeping:update-and-generate-package-json": "./scripts/housekeeping/update-and-generate-package-json.sh",
 
@@ -785,19 +907,24 @@ const packageJson = {
 
         // Express server (backend/src/server/server.ts): serves the built publicDirectory statically
         // with an SPA fallback; USE_HMR=yes switches to Vite middleware mode (on-the-fly transforms +
-        // HMR - no separate build process needed)
-        "server:development:local":         "node --watch --watch-preserve-output backend/src/server/server.ts --config config/config.development.local.js",
-        "server:development:local:use-hmr": "USE_HMR=yes node --run server:development:local",
-        "server:production:live":           "NODE_ENV=production node backend/src/server/server.ts --config config/config.production.live.js",
+        // HMR - no separate build process needed); HTTP_PORT_DYNAMIC=yes picks the next free port
+        // when the configured one is busy
+        "server:development:local":                   "node --watch --watch-preserve-output backend/src/server/server.ts --config config/config.development.local.js",
+        "server:development:local:http-port-dynamic": "HTTP_PORT_DYNAMIC=yes node --run server:development:local",
+        "server:development:local:use-hmr":           "USE_HMR=yes node --run server:development:local",
+        "server:production:live":                     "NODE_ENV=production node backend/src/server/server.ts --config config/config.production.live.js",
 
         // Dev entry points: "start" runs the Express server and the watch build together;
-        // ":use-hmr" runs only the server with Vite middleware mode instead of a separate build
-        "start":                "node --run start:app",
-        "start:app":            "concurrently \"node --run start:server\" \"node --run start:build\" --prefix \"[{time}] [{index}]\" --timestamp-format \"HH:mm:ss.SSS\"",
-        "start:app:use-hmr":    "node --run start:server:use-hmr",
-        "start:build":          "node --run build",
-        "start:server":         "node --run server:development:local",
-        "start:server:use-hmr": "node --run server:development:local:use-hmr"
+        // ":use-hmr" runs only the server with Vite middleware mode instead of a separate build;
+        // ":http-port-dynamic" runs the same as "start" but with a dynamically picked port
+        "start":                          "node --run start:app",
+        "start:app":                      "concurrently \"node --run start:server\" \"node --run start:build\" --prefix \"[{time}] [{index}]\" --timestamp-format \"HH:mm:ss.SSS\"",
+        "start:app:http-port-dynamic":    "concurrently \"node --run start:server:http-port-dynamic\" \"node --run start:build\" --prefix \"[{time}] [{index}]\" --timestamp-format \"HH:mm:ss.SSS\"",
+        "start:app:use-hmr":              "node --run start:server:use-hmr",
+        "start:build":                    "node --run build",
+        "start:server":                   "node --run server:development:local",
+        "start:server:http-port-dynamic": "node --run server:development:local:http-port-dynamic",
+        "start:server:use-hmr":           "node --run server:development:local:use-hmr"
     }
 };
 

@@ -5,7 +5,7 @@
 # git-invisible after a branch switch, with zero per-clone setup. The SECONDARY escape hatch for
 # machine-local personal patterns is .git/info/exclude ("node --run setup:git-exclude"; see
 # docs/template-project/git-info-exclude.example). Policy:
-# .claude/skills/updating-ignore-rules/SKILL.md.
+# .claude/skills/skill-update-ignore-rules/SKILL.md.
 
 # Temporary folders
 tmp/
@@ -32,7 +32,7 @@ pids
 lib-cov
 
 # Coverage directory used by tools like istanbul
-coverage
+/coverage/
 *.lcov
 
 # nyc test coverage
@@ -51,7 +51,7 @@ bower_components
 build/Release
 
 # Dependency directories
-node_modules/
+/node_modules/
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
@@ -69,7 +69,7 @@ web_modules/
 # Optional stylelint cache
 .stylelintcache
 
-.cache/
+/.cache/
 
 # Optional REPL history
 .node_repl_history
@@ -83,7 +83,7 @@ web_modules/
 # dotenv environment variable files
 .env
 .env.*
-!.env.example
+!.env.example.env
 
 # parcel-bundler cache (https://parceljs.org/)
 .parcel-cache
@@ -94,7 +94,7 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
+/dist/
 .output
 
 # Gatsby files
@@ -169,13 +169,15 @@ vite.config.ts.timestamp-*
 # Temporary backup files
 *.backup.temp
 
-# Encryption keys (config/encryption/ on the web-app family; that family guards them via its
-# tracked config/encryption/keys/.gitignore - these lines keep leftovers invisible everywhere)
+# Encryption keys (config/encryption/ on the web-app family): these lines are the only guard, so
+# private-key leftovers stay invisible everywhere while the documented runtime pair and the public
+# keys stay visible/trackable
 /config/encryption/keys/*.pem
 !/config/encryption/keys/*.documented.runtime.*.pem
+!/config/encryption/keys/*.public.pem
 
 # Application data (databases etc.) - web-app family; that family keeps the directory structure
-# present via tracked per-directory .gitignore files
+# present via tracked per-directory .gitkeep files
 /app-data/
 
 # Playwright files

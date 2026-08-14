@@ -22,6 +22,9 @@ sources of truth rather than copies of them - follow a pointer to the file that 
 - [specs/](./specs/) - pre-implementation design docs for non-trivial changes.
 - [to-review/aspects-to-review.md](./to-review/aspects-to-review.md) - backlog of focused review
   subjects for the tooling and conventions.
+- [to-review/aspects-to-review-for-abstract-frontend-build.md](./to-review/aspects-to-review-for-abstract-frontend-build.md) -
+  frontend-build-layer additions to that backlog (Vite build, stylelint, minimal Express server);
+  completed reports live in [to-review/review-report/](./to-review/review-report/).
 
 ## Template family
 

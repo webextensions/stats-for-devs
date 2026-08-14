@@ -21,6 +21,7 @@ export default defineConfig([
     // override at the end of this file.)
     globalIgnores([
         '.cache/',
+        '.playwright-mcp/', // Playwright MCP artifacts - screenshots/traces (git-ignored family-wide)
         'coverage/',
         'dist/', // Library build output of the npm-package template branches
         'node_modules/',
@@ -106,6 +107,8 @@ export default defineConfig([
             ],
             'object-shorthand': ['error', 'properties'],
 
+            '@stylistic/comma-style': ['error', 'last'],
+
             '@stylistic/no-multi-spaces': [
                 'error',
                 {
@@ -136,8 +139,9 @@ export default defineConfig([
             // No namespace imports (import * as ns) - always destructure the named members
             'import-x/no-namespace': 'error',
 
-            // Callback-style calls must be `return`ed. Generic callee names only; the web-app
-            // family extends this list with its Express callees (next, res.*, send*Response).
+            // Callback-style calls must be `return`ed. Generic callee names only here; the
+            // backend/ override block below adds the Express callees (next, res.*), and the
+            // web-app family further extends that list with its send*Response helpers.
             'n/callback-return': [
                 'error',
                 [
@@ -170,6 +174,37 @@ export default defineConfig([
         }
     },
 
+    // Express server code: extend n/callback-return with the Express callees so a response call
+    // without `return` (a top cause of "headers already sent" bugs) is caught. The rule value is
+    // replaced, not merged, so the generic callees are repeated here. The web-app family further
+    // extends this list with its send*Response helpers (sendErrorResponse, sendSuccessResponse).
+    {
+        files: [
+            'backend/**/*.cjs',
+            'backend/**/*.cts',
+            'backend/**/*.js',
+            'backend/**/*.mjs',
+            'backend/**/*.mts',
+            'backend/**/*.ts'
+        ],
+        rules: {
+            'n/callback-return': [
+                'error',
+                [
+                    'callback',
+                    'done',
+                    'exitWithError',
+                    'next',
+                    'reject',
+                    'res.end',
+                    'res.send',
+                    'res.status',
+                    'resolve'
+                ]
+            ]
+        }
+    },
+
     // TypeScript files: ironplate's typeScriptDelta hands "no-unused-vars" over to
     // "@typescript-eslint/no-unused-vars" with default options; apply the same caught-error
     // leniency as the base rule above. Re-assert "no-unused-vars": "off" because the project-wide
@@ -188,7 +223,7 @@ export default defineConfig([
     },
 
     // Local config files (git-ignored, machine-specific - see the NOTE above the ignores list):
-    // their sibling imports (./app-customizations.js, ./config.*._.js, ./constants.js) exist only on
+    // their sibling imports (./project-customizations.js, ./config.*._.js, ./constants.js) exist only on
     // the web-app-family branches, so the rule is turned off for them here instead of via per-line
     // disables (which would be flagged as unused disable directives on the branches where the
     // imports resolve).

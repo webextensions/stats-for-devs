@@ -8,8 +8,9 @@
 # Husky pre-commit/pre-push checks (which only REPORT) rarely surprise you
 # later.
 #
-# Reuses the eslint:changed-files:fix package.json script (it writes autofixable
-# fixes AND reports whatever remains, exiting non-zero when errors survive).
+# Reuses the eslint:changed-files:fix and stylelint:changed-files:fix
+# package.json scripts (each writes autofixable fixes AND reports whatever
+# remains, exiting non-zero when errors survive).
 #
 # Paired with ".claude/hooks/Stop/fix-non-keyboard-characters.sh" (sibling Stop
 # autofix).
@@ -18,13 +19,24 @@
 # no file-path payload worth gating on).
 
 eslintOutput=$(node --run eslint:changed-files:fix 2>&1)
-if [ $? -ne 0 ]; then
+eslintExitCode=$?
+
+stylelintOutput=$(node --run stylelint:changed-files:fix 2>&1)
+stylelintExitCode=$?
+
+if [ "$eslintExitCode" -ne 0 ] || [ "$stylelintExitCode" -ne 0 ]; then
     {
         echo ''
         echo 'Stop hook - lint auto-fix applied; some problems need manual fixes:'
         echo ''
-        echo "$eslintOutput"
-        echo ''
+        if [ "$eslintExitCode" -ne 0 ]; then
+            echo "$eslintOutput"
+            echo ''
+        fi
+        if [ "$stylelintExitCode" -ne 0 ]; then
+            echo "$stylelintOutput"
+            echo ''
+        fi
     } >&2
 fi
 

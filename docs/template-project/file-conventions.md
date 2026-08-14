@@ -49,16 +49,16 @@ its own entries, so template merges routinely conflict on them - keep both sides
 your entries):
 
 - `knip.config.ts`, `scripts/health-checks/checks/status-of-files.config.ts`, `all-is-well.config.ts`
-- `.claude/skills/running-the-project/SKILL.md` - branch-aware by design; a branch replaces the sections the file
+- `.claude/skills/skill-run-the-project/SKILL.md` - branch-aware by design; a branch replaces the sections the file
   itself marks for replacement and keeps them on merges
-- Blocks fenced by `BEGIN: APP-CUSTOMIZATIONS` / `END: APP-CUSTOMIZATIONS` inside any otherwise-shared file
+- Blocks fenced by `BEGIN: PROJECT-CUSTOMIZATIONS` / `END: PROJECT-CUSTOMIZATIONS` inside any otherwise-shared file
   ([.claude/rules/comment-tags.md](../../.claude/rules/comment-tags.md)): keep your side inside the fences, take the
   template's side outside
 
 Two special cases resolve differently:
 
 - Ignore lists (`.gitignore`, the `globalIgnores` arrays, the `tsconfig.json` `exclude` list, `.cursorignore` - the
-  full set in [.claude/skills/updating-ignore-rules/SKILL.md](../../.claude/skills/updating-ignore-rules/SKILL.md))
+  full set in [.claude/skills/skill-update-ignore-rules/SKILL.md](../../.claude/skills/skill-update-ignore-rules/SKILL.md))
   are owned by the root base branch: conflicts resolve toward the base side.
 - `CHANGELOG.md` is generated from each branch's own git history (by auto-changelog during `npm version`, which runs
   only in forked functional projects): on conflict keep your side; never hand-edit it - the next `npm version`

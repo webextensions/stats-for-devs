@@ -1,6 +1,6 @@
 ---
 description: Import formatting and ordering conventions - file extensions, destructured members, group order
-globs: ["**/*.cjs", "**/*.cts", "**/*.js", "**/*.mjs", "**/*.mts", "**/*.ts"]
+paths: ["**/*.cjs", "**/*.cts", "**/*.js", "**/*.jsx", "**/*.mjs", "**/*.mts", "**/*.ts", "**/*.tsx"]
 ---
 
 # Import Organization
@@ -20,3 +20,6 @@ globs: ["**/*.cjs", "**/*.cts", "**/*.js", "**/*.mjs", "**/*.mts", "**/*.ts"]
 - Group order is governed by `simple-import-sort` (autofixable via `node --run eslint:fix`);
   within each group, members and statements stay alphabetized - see
   [alphabetical-sorting.md](./alphabetical-sorting.md).
+- Frontend files follow the same autofixed order - npm packages first, then relative/internal
+  imports. CSS-module imports sort like any other relative import (they are not forced last); do
+  not hand-reorder against the autofixer.

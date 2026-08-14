@@ -4,7 +4,7 @@
 # TypeScript, Cursor, ...) is the committed config of the "abstract-javascript-project" branch
 # (.gitignore, eslint.config.js, eslint.markdown.config.js, tsconfig.json, .cursorignore), flowing
 # into every other branch via the usual template merges - see
-# .claude/skills/updating-ignore-rules/SKILL.md.
+# .claude/skills/skill-update-ignore-rules/SKILL.md.
 #
 # .git/info/exclude is git's per-clone ignore file (gitignore syntax, never committed, applies on
 # every branch, shared by all worktrees of a clone). Use it only for patterns not worth committing:

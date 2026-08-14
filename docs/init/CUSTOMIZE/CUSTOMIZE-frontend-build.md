@@ -5,14 +5,17 @@ Applies to: new project, and template branches that customize the frontend basel
 The `abstract-frontend-build` layer ships a working placeholder frontend (build + server) -
 adapt it to your application:
 
-- Update the values in [config/app-customizations.js](../../../config/app-customizations.js)
+- Update the values in [config/project-customizations.js](../../../config/project-customizations.js)
   (application name, development hostname, live origin,
   `PREFERRED_HOSTNAMES_FOR_LOCAL_DEVELOPMENT` - the entries listed first among the reachable URLs
-  the server logs/notifies on startup) and, if needed, the port in
-  [config/constants.js](../../../config/constants.js) and the `publicDirectory` names /
+  the server logs/notifies on startup) and, if needed, the port (`PORT_NUMBER_HTTP`, default
+  `3000`) in [config/constants.js](../../../config/constants.js) and the `publicDirectory` names /
   `vite.configs` entries in the [config/](../../../config/) tiers. Edits meant for every developer
   go in the committed tiers / `*.local.example.js` files; machine-local tweaks go in your
   git-ignored `config/*.local.js` copy (auto-created from the example on `npm install`).
+- For each hostname you keep in `PREFERRED_HOSTNAMES_FOR_LOCAL_DEVELOPMENT` (e.g.
+  `my-demo-app.com.localhost`), add a matching entry to your local machine's hosts file
+  (`/etc/hosts`) - or remove the hostname from the list if you do not need it.
 - Update the `<title>` (and theme-color) in
   [frontend/src/index.html](../../../frontend/src/index.html) and replace
   [frontend/src/favicon.ico](../../../frontend/src/favicon.ico).

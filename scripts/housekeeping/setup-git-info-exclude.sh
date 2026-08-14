@@ -5,7 +5,7 @@
 # .git/info/exclude is git's per-clone ignore file; this repository uses it as the SECONDARY home
 # for machine-local personal ignore patterns (the PRIMARY home for every shared pattern is the
 # committed config of the abstract-javascript-project branch - see the example file's header and
-# .claude/skills/updating-ignore-rules/SKILL.md). Because the file lives inside .git/ it can never
+# .claude/skills/skill-update-ignore-rules/SKILL.md). Because the file lives inside .git/ it can never
 # be committed, so this script copies the committed example's patterns into it.
 #
 # Idempotent and append-only: every non-comment pattern line of the example that is not already

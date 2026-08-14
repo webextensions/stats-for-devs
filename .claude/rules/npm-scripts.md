@@ -1,6 +1,5 @@
 ---
 description: How to discover and run this project's npm scripts - package.json.ts is the documented catalogue
-globs: ["package.json", "package.json.ts"]
 ---
 
 # NPM Scripts
