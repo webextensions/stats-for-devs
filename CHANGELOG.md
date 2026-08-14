@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 0.0.1
+## [v0.0.2](https://github.com/webextensions/stats-for-devs/compare/v0.0.1...v0.0.2)
+
+### Commits
+
+- Added Device orientation group: gyro, motion, compass and bubble level [`00cb01c`](https://github.com/webextensions/stats-for-devs/commit/00cb01cbdc1cd676be3566bac6c8b0d3340138ca)
+- Adapted main after merging template: APP-CUSTOMIZATIONS fence markers as line comments for eslint-plugin-unicorn 73 [`71e69f2`](https://github.com/webextensions/stats-for-devs/commit/71e69f226cb46a8bcb636739a1a57738f66288ec)
+- Adapted template-widget TODO after merging template-npm-package-for-react [`ec51a20`](https://github.com/webextensions/stats-for-devs/commit/ec51a2049aa65c1f26d4dd18cf52362cb06f9d2a)
+
+## v0.0.1 - 2026-08-05
 
 ### Commits
 
