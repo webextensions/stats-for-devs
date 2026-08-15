@@ -254,5 +254,5 @@
     "type": "module",
     "types": "./dist/index.d.ts",
     "unpkg": "./dist/widget.min.js",
-    "version": "0.0.2"
+    "version": "0.0.3"
 }
