@@ -794,6 +794,13 @@ const packageJson = {
         // skip "npm version" and its preversion hook.
         "prepublishOnly": "node --run test",
 
+        // Runs after the "npm publish" upload: safety net restoring the generated package.json in
+        // case the pack-time "postpack" restore is lost (observed with np 12 / npm 11.12.1, which
+        // left the prepack-stripped manifest on disk and failed the subsequent pre-push suite - see
+        // docs/because/np-publish-stripped-manifest-recovery.md). Harmless for consumers: npm never
+        // runs "postpublish" from an installed dependency.
+        "postpublish": "node --run housekeeping:generate-package-json",
+
         // "npm version <patch|minor|major>" lifecycle. package.json.ts is the source of truth, so the
         // "version" step propagates the new version back into it and regenerates package.json.
         "preversion": "node --run test",

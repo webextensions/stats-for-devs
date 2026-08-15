@@ -7,11 +7,30 @@
 # source re-derives that new version automatically. We then regenerate package-version.json (the
 # version fallback) so it tracks the new version too, regenerate CHANGELOG.md from git history, and
 # stage all of them so they are part of the version commit npm is about to create.
+#
+# Steps that happen when a new version is created by the "npm version <patch|minor|major>" command:
+#     Step 1: (Handled by the "preversion" script)
+#         node --run test
+#     Step 2: (Handled by the "npm version ..." command)
+#         Update ./package.json (new version) and ./package-lock.json
+#     Step 3: (Handled by the "version" script - this file)
+#         Regenerate ./package.json from ./package.json.ts; regenerate ./package-version.json;
+#         regenerate ./CHANGELOG.md from git history
+#         git add ./package.json ./package-version.json ./CHANGELOG.md
+#     Step 4: (Handled by the "npm version ..." command)
+#         git add ./package.json ./package-lock.json
+#         git commit -m "<version>" (runs the pre-commit hook)
+#         git tag "v<version>"
+#     Step 5: (Handled by the "postversion" script)
+#         git push --follow-tags (runs the pre-push hook)
 
 cd "$(dirname "$0")" # Change directory to the folder containing this file
 cd ../../            # Change directory to project's root folder
 
 set -e
+# Echo each command as it runs: release runs are rare and non-interactive (inside "npm version",
+# sometimes wrapped by tools like np), so trace output in captured logs aids post-mortem of failures.
+set -x
 
 # Regenerate package.json from package.json.ts (which derives the new "version" back from the
 # package.json npm just wrote).

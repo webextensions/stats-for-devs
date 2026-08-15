@@ -7,7 +7,8 @@
 // Runs the full health-check suite and reports a single pass/fail. This is what "node --run test"
 // runs. The authoritative list of checks (and the order they are declared in) is the healthChecks
 // array below; sequential pre-steps whose outputs the checks consume (e.g. the library build) live
-// in the preSteps array next to it.
+// in the preSteps array next to it, and checks that mutate the worktree while running live in the
+// healthChecksWorktreeMutating array (they run as a second batch after the main one).
 //
 // Usage (from the project's root folder):
 //     $ ./scripts/health-checks/all-is-well.ts [--sequentially] [--optimize-for-change] [--no-cache]
@@ -443,7 +444,6 @@ const healthChecks: HealthCheck[] = [
     CHECK_LOCKFILE_LINT,
     CHECK_GIT_CONFLICT_MARKERS,
     CHECK_PREPACK_STRIP,
-    CHECK_PUBLINT,
     CHECK_ESLINT_STAGED,
     CHECK_ESLINT_MARKDOWN,
     CHECK_STYLELINT,
@@ -464,6 +464,17 @@ const healthChecks: HealthCheck[] = [
 // config disabling and "--optimize-for-change" filtering as for the checks applies.
 const preSteps: HealthCheck[] = [
     CHECK_BUILD_LIB
+];
+
+// Checks whose execution MUTATES the worktree while running: publint's real "npm pack" strips
+// package.json via prepack and restores it via postpack, so sibling checks that read package.json
+// (pkg-json-sync, prepack-strip, npm-ci-dry) must never run alongside it (see the header comment of
+// ./checks/check-prepack-strips-install-scripts.ts). These run as a second batch AFTER the main one
+// completes - even when the main batch failed, matching the suite's "run everything, report all
+// failures, cache each individual pass" semantics. Accepted trade-off: a cold full run gets a few
+// seconds longer since these no longer overlap the main batch; the result cache keeps warm runs fast.
+const healthChecksWorktreeMutating: HealthCheck[] = [
+    CHECK_PUBLINT
 ];
 
 const getStagedPathsAsync = async function (): Promise<Set<string>> {
@@ -575,9 +586,7 @@ const runSequentiallyAsync = async function (checks: HealthCheck[]): Promise<Run
 
     const passedChecks = results.filter((r) => r.exitCode === 0).map((r) => r.check);
     const flagAllPassed = passedChecks.length === results.length;
-    if (flagAllPassed) {
-        console.log(chalk.green('\nSuccess: All is well :-)'));
-    } else {
+    if (!flagAllPassed) {
         for (const r of results) {
             if (r.exitCode !== 0) {
                 console.log(chalk.red(`\nError: ${r.check.errorMsg}`));
@@ -632,7 +641,6 @@ const runConcurrentlyAsync = async function (checks: HealthCheck[]): Promise<Run
 
     try {
         await result;
-        console.log(chalk.green('\nSuccess: All is well :-)'));
         return { flagAllPassed: true, passedChecks: checks };
     } catch (closeEvents: unknown) {
         // concurrently rejects with an array of close events (for ALL spawned commands) on a failed
@@ -683,10 +691,10 @@ const config = await loadConfigAsync();
 // Fail loudly on config keys that match no check: a typo (e.g. "vittest") must not silently disable
 // nothing. Validated against the FULL check list and before any cache logic, so a typo'd config can
 // never no-op via a cached exit.
-const unknownConfigCheckNames = getUnknownConfigCheckNames({ checks: [...preSteps, ...healthChecks], config });
+const unknownConfigCheckNames = getUnknownConfigCheckNames({ checks: [...preSteps, ...healthChecks, ...healthChecksWorktreeMutating], config });
 if (unknownConfigCheckNames.length > 0) {
     console.log(chalk.red(`Error: the all-is-well config names unknown check(s): ${unknownConfigCheckNames.join(', ')}`));
-    console.log(chalk.red(`Valid check names: ${[...preSteps, ...healthChecks].map((check) => check.name).join(', ')}`));
+    console.log(chalk.red(`Valid check names: ${[...preSteps, ...healthChecks, ...healthChecksWorktreeMutating].map((check) => check.name).join(', ')}`));
     process.exit(1);
 }
 
@@ -716,9 +724,21 @@ const optimizedPreSteps = flagOptimizeForChange ?
     configFilteredPreSteps;
 const preStepsToRun = getChecksWithConfigEnv({ checks: optimizedPreSteps, config });
 
+// The worktree-mutating checks likewise go through the same config-disable and "--optimize-for-change"
+// filtering as the checks.
+const configFilteredMutatingChecks = getConfigFilteredChecks({
+    checks: healthChecksWorktreeMutating,
+    config,
+    isCi: Boolean(process.env.CI)
+});
+const optimizedMutatingChecks = flagOptimizeForChange ?
+    await getOptimizedHealthChecksAsync(configFilteredMutatingChecks) :
+    configFilteredMutatingChecks;
+const mutatingChecks = getChecksWithConfigEnv({ checks: optimizedMutatingChecks, config });
+
 // Edge: everything got disabled/skipped. Exit before the runners (concurrently([]) is an error
 // path, and a vacuous "pass" must not write a cache entry).
-if (preStepsToRun.length === 0 && checks.length === 0) {
+if (preStepsToRun.length === 0 && checks.length === 0 && mutatingChecks.length === 0) {
     console.log(chalk.yellow('No health checks left to run (all disabled by config or skipped); nothing to do.'));
     process.exit(0);
 }
@@ -736,7 +756,7 @@ if (preStepsToRun.length > 0) {
 }
 
 // Edge: only pre-steps were left to run (every check disabled/skipped) and they passed.
-if (checks.length === 0) {
+if (checks.length === 0 && mutatingChecks.length === 0) {
     console.log(chalk.green('\nSuccess: All is well :-)'));
     process.exit(0);
 }
@@ -749,13 +769,17 @@ const CACHE_NAMESPACE = 'checks';
 const flagCacheEnabled = !flagNoCache && !isCacheDisabledByEnv() && !config.disableCache;
 
 let checksToRun = checks;
+let mutatingChecksToRun = mutatingChecks;
 let cacheGitContentHash: string | null = null;
 let cacheHeadSha: string | null = null;
 // Keys of the cache-enabled checks that MISSED, kept to record their passes after the run.
 // (Config-cache-disabled checks never appear here, so they are never looked up or written.)
 const pendingCacheKeyByCheckName = new Map<string, string>();
 if (flagCacheEnabled) {
-    const { cacheEnabledChecks } = partitionChecksByCacheability({ checks, config });
+    // The worktree-mutating checks share the same content hash, namespace, and per-check entries - safe
+    // because they restore the worktree before exiting, so the content state the hash describes is
+    // unchanged when their passes are recorded.
+    const { cacheEnabledChecks } = partitionChecksByCacheability({ checks: [...checks, ...mutatingChecks], config });
     // With an empty cache-enabled subset there is nothing to look up or record - skip the git
     // hashing work entirely.
     if (cacheEnabledChecks.length > 0) {
@@ -779,9 +803,10 @@ if (flagCacheEnabled) {
             }
             if (cachedCheckNames.size > 0) {
                 console.log(chalk.yellow('To force a full run: HEALTHCHECKS_NO_CACHE=1 node --run test (or: node --run all-is-well -- --no-cache).'));
-                // Filter the original list so the launch order is preserved (config-cache-disabled
+                // Filter the original lists so the launch order is preserved (config-cache-disabled
                 // checks and cache misses run; cache hits are skipped).
                 checksToRun = checks.filter((check) => !cachedCheckNames.has(check.name));
+                mutatingChecksToRun = mutatingChecks.filter((check) => !cachedCheckNames.has(check.name));
             }
         } else {
             console.log(chalk.yellow('Note: could not compute git content hash; running health checks without cache.'));
@@ -790,14 +815,32 @@ if (flagCacheEnabled) {
 }
 
 // Everything was served from the cache (only possible when no check is config-cache-disabled).
-if (checksToRun.length === 0) {
+if (checksToRun.length === 0 && mutatingChecksToRun.length === 0) {
     console.log(chalk.green('\nSuccess: All is well :-) (cached)\n'));
     process.exit(0);
 }
 
-const { flagAllPassed, passedChecks } = flagRunSequentially ?
-    await runSequentiallyAsync(checksToRun) :
-    await runConcurrentlyAsync(checksToRun);
+const runChecksAsync = function (checksBatch: HealthCheck[]): Promise<RunResult> {
+    return flagRunSequentially ?
+        runSequentiallyAsync(checksBatch) :
+        runConcurrentlyAsync(checksBatch);
+};
+
+let flagAllPassed = true;
+const passedChecks: HealthCheck[] = [];
+if (checksToRun.length > 0) {
+    const mainRunResult = await runChecksAsync(checksToRun);
+    flagAllPassed = mainRunResult.flagAllPassed;
+    passedChecks.push(...mainRunResult.passedChecks);
+}
+// The worktree-mutating checks run after the main batch has fully completed, so their worktree mutations
+// (see the healthChecksWorktreeMutating comment) are never observed by a sibling check - even when the main
+// batch failed, so every individual pass still gets recorded.
+if (mutatingChecksToRun.length > 0) {
+    const mutatingRunResult = await runChecksAsync(mutatingChecksToRun);
+    flagAllPassed &&= mutatingRunResult.flagAllPassed;
+    passedChecks.push(...mutatingRunResult.passedChecks);
+}
 
 // Record every check that passed THIS run - even when the suite overall failed, each individual
 // pass is valid for this content state (failed checks are never written, so they always re-run).
@@ -829,6 +872,9 @@ if (cacheGitContentHash && cacheHeadSha) {
 }
 
 if (flagAllPassed) {
+    // The single success verdict for the whole run - the runners themselves stay verdict-free so a
+    // main-batch success cannot print "All is well" before the worktree-mutating checks have run.
+    console.log(chalk.green('\nSuccess: All is well :-)'));
     process.exit(0);
 } else {
     if (!config.disableNotifications) {

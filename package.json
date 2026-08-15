@@ -176,6 +176,7 @@
         "housekeeping:update-package-lock-json": "./scripts/housekeeping/update-package-lock-json.sh",
         "knip": "knip",
         "postpack": "./scripts/npm-run-scripts/postpack.sh",
+        "postpublish": "node --run housekeeping:generate-package-json",
         "postversion": "git push --follow-tags",
         "preinstall": "./scripts/npm-run-scripts/preinstall.sh",
         "prepack": "node --run build:lib && ./scripts/npm-run-scripts/prepack.sh",

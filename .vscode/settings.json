@@ -1,4 +1,6 @@
 {
+    "claudeCode.initialPermissionMode": "auto",
+
     // Run the editor's ESLint on the same Node the shell uses, via the workspace-relative symlink
     // created by "node --run setup:editor" (.vscode/soft-links/setup.sh). Without this, VS Code /
     // Cursor may pick a bundled or system Node and fail to load the flat config.
@@ -20,8 +22,9 @@
         ".env": ".env.*",
         ".gitignore": ".cursorignore, .stylelintignore",
         ".nvmrc": ".auto-changelog, .block-non-keyboard-characters.suppressions.json, .live-css.config.cjs, .npmrc, babel.config.cjs, copy-files-from-to.cjson, eslint.config.cjs, eslint.config.js, eslint.markdown.config.js, knip.config.ts, revisit.json, stylelint.config.js, vitest.config.ts",
+        "AGENTS.md": "CLAUDE.md",
         "package.json.ts": "package-lock.json, package-version.json, package.json",
-        "README.md": "LICENSE",
+        "README.md": "LICENSE, README*.md",
         "settings.json": "settings.example.json, settings.local.example.json, settings.local.json",
         "tsconfig.json": "tsconfig.tsbuildinfo"
     },
@@ -31,6 +34,21 @@
     // runs). Unlike the "search.exclude" globs below, watcher globs need the "**" suffix to cover
     // directory contents.
     "files.watcherExclude": {
+        // // Required to avoid issue where the "Source Control" panel in Visual
+        // // Studio Code keeps refreshing when MongoDB server is running in the
+        // // background.
+        // // To notice the original issue:
+        // //     * launch the MongoDB server at the concerned path
+        // //     * remove this watcher exclusion rule
+        // //     * launch VS Code with "code --verbose"
+        // //     * in VS Code, activate the "Git: Show Git Output" view to notice
+        // //       the unwanted Git related activities by VS Code and the relevant
+        // //       log entries
+        // // Reference: https://github.com/Microsoft/vscode/issues/43234#issuecomment-365228599
+        // //
+        // // Note: Somehow, the "**/" in the beginning is required and it doesn't work without that
+        // "**/app-data/database/mongodb/**": true,
+
         "app-data/database/**": true,
         "app-data/logs/**": true
     },
@@ -48,6 +66,12 @@
     // names, but VS Code's glob treats it literally on wildcard patterns - "public-*/" would match
     // nothing - so "public-*" stays slash-less.
     "search.exclude": {
+        // // https://github.com/Microsoft/vscode/issues/36438#issuecomment-337382427
+        // // When "search.useIgnoreFiles" is set to true (its default value), use this rule to
+        // // allow searching (and quick-opening) the files in the custom "node_modules" folder (the
+        // // one which is not at the root level)
+        // "**/node_modules": false, // Commented out this rule since we should not be using custom "node_modules" at sub-level
+
         ".playwright-mcp/": true,
         "**/.cache/": true,
         "**/temp/": true,

@@ -6,7 +6,9 @@ place:
 
 - The `healthChecks` array is the source of truth for **which checks run** and their **launch
   order** (concurrent by default, so checks can finish in any order); each check is described by
-  the comment above its const.
+  the comment above its const. Checks that mutate the worktree while running (publint's real
+  `npm pack`) run afterwards from the `healthChecksWorktreeMutating` array, isolated from
+  concurrent readers.
 - The usage header documents the flags (`--sequentially`, `--optimize-for-change`, `--no-cache`)
   and the per-check result cache (deep-dive:
   [checks-execution caching](../../.claude/rules/checks-execution-caching.md)).
